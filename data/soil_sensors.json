@@ -1,0 +1,62 @@
+﻿{
+    "plots":  {
+                  "plot-1":  {
+                                 "overallStatus":  "moderate",
+                                 "plotName":  "Plot 1",
+                                 "sensors":  [
+                                                 {
+                                                     "slot":  "D01",
+                                                     "name":  "Sensor 1",
+                                                     "model":  "HCS021FRF",
+                                                     "moisture":  50,
+                                                     "temperature":  40.7,
+                                                     "lux":  8054,
+                                                     "battery":  100,
+                                                     "status":  "moderate",
+                                                     "statusLabel":  "Moderate",
+                                                     "syncTime":  "2026-08-17 12:28:42"
+                                                 }
+                                             ],
+                                 "avgTemperature":  40.7,
+                                 "avgMoisture":  50
+                             },
+                  "plot-2":  {
+                                 "overallStatus":  "moderate",
+                                 "plotName":  "Plot 2",
+                                 "sensors":  [
+                                                 {
+                                                     "slot":  "D02",
+                                                     "name":  "Sensor 1",
+                                                     "model":  "HCS021FRF",
+                                                     "moisture":  44,
+                                                     "temperature":  40.5,
+                                                     "lux":  19625,
+                                                     "battery":  100,
+                                                     "status":  "moderate",
+                                                     "statusLabel":  "Moderate",
+                                                     "syncTime":  "2026-08-17 12:23:01"
+                                                 },
+                                                 {
+                                                     "slot":  "D03",
+                                                     "name":  "Sensor 2",
+                                                     "model":  "HCS021FRF",
+                                                     "moisture":  47,
+                                                     "temperature":  42.7,
+                                                     "lux":  23834,
+                                                     "battery":  100,
+                                                     "status":  "moderate",
+                                                     "statusLabel":  "Moderate",
+                                                     "syncTime":  "2026-08-17 12:27:45"
+                                                 }
+                                             ],
+                                 "avgTemperature":  41.6,
+                                 "avgMoisture":  46
+                             }
+              },
+    "lastUpdated":  "2026-08-17T13:08:18.8479205+08:00",
+    "gateway":  {
+                    "name":  "MAC-30C922CEA038",
+                    "mac":  "30:C9:22:CE:A0:38",
+                    "online":  true
+                }
+}

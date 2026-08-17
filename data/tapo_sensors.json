@@ -1,0 +1,22 @@
+﻿{
+    "lastUpdated":  "2026-08-17T10:58:38.8540779+08:00",
+    "hub":  {
+                "name":  "KH Agrifarm Smart Hub",
+                "model":  "H100(UK)",
+                "ip":  "192.168.0.182",
+                "mac":  "20:23:51:DC:DC:3C",
+                "online":  true
+            },
+    "sensor":  {
+                   "name":  "Nursery Greenhouse Sensor",
+                   "model":  "Tapo T315",
+                   "temperature":  37.1,
+                   "humidity":  61,
+                   "vpd":  2.46,
+                   "battery":  75,
+                   "signal":  "3/3",
+                   "status":  "optimal",
+                   "statusLabel":  "Optimal Nursery Climate",
+                   "syncTime":  "2026-08-17 10:58:38"
+               }
+}

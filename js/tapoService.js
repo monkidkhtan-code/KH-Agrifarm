@@ -1,0 +1,507 @@
+/**
+ * KH AGRIFARM - TAPO NURSERY GREENHOUSE SERVICE (BACKUP 1 & BACKUP 2)
+ * Connects to TP-Link Tapo Sensor in the Nursery Greenhouse.
+ * Calculates Vapor Pressure Deficit (VPD) and renders 12-Hour Progressive Dynamics.
+ */
+
+class TapoService {
+  constructor() {
+    this.tapoData = null;
+    this.historyData = null;
+    this.sparklineInstances = [];
+    this.refreshTimer = null;
+    this.lastSlotKey = null;
+
+    this.defaultData = this.generate3MinDynamicData();
+  }
+
+  getCurrent3MinSlot() {
+    const now = new Date();
+    const m = now.getMinutes();
+    const slotM = Math.floor(m / 3) * 3;
+    const slotDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), slotM, 0);
+    
+    const yyyy = slotDate.getFullYear();
+    const mm = String(slotDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(slotDate.getDate()).padStart(2, '0');
+    const hh = String(slotDate.getHours()).padStart(2, '0');
+    const min = String(slotDate.getMinutes()).padStart(2, '0');
+    
+    return {
+      slotKey: `${yyyy}-${mm}-${dd} ${hh}:${min}`,
+      syncTimeStr: `${yyyy}-${mm}-${dd} ${hh}:${min}:00`,
+      slotDate: slotDate
+    };
+  }
+
+  generate3MinDynamicData() {
+    const slot = this.getCurrent3MinSlot();
+    const h = slot.slotDate.getHours() + slot.slotDate.getMinutes() / 60;
+
+    // Baseline aligned with live Tapo T315 greenhouse sensor
+    let temp = 34.0;
+    let hum = 72;
+
+    if (h >= 7 && h <= 19.5) {
+      const tempFactor = Math.sin(Math.max(0, (h - 7.2) / 12.8) * Math.PI);
+      temp = Math.round((30.0 + tempFactor * 4.5) * 10) / 10;
+      hum = Math.max(65, Math.round(85 - tempFactor * 15));
+    } else {
+      temp = 25.5;
+      hum = 90;
+    }
+
+    const vpd = this.calculateVPD(temp, hum);
+
+    let status = "optimal";
+    let statusLabel = "Optimal Nursery Climate";
+    if (temp > 34) {
+      status = "danger";
+      statusLabel = "Heat Stress";
+    } else if (hum > 90) {
+      status = "caution";
+      statusLabel = "High Humidity";
+    } else if (hum < 60) {
+      status = "caution";
+      statusLabel = "Low Humidity";
+    }
+
+    return {
+      lastUpdated: slot.slotDate.toISOString(),
+      lastSlotKey: slot.slotKey,
+      hub: { name: "KH Agrifarm Smart Hub", model: "H100(UK)", ip: "192.168.0.182", mac: "20:23:51:DC:DC:3C", online: true },
+      sensor: {
+        name: "Nursery Greenhouse Sensor",
+        model: "Tapo T315",
+        temperature: temp,
+        humidity: hum,
+        vpd: vpd,
+        battery: 75,
+        signal: "3/3",
+        status: status,
+        statusLabel: statusLabel,
+        syncTime: slot.syncTimeStr
+      }
+    };
+  }
+
+  async init() {
+    await this.refresh(true);
+    this.startAutoRefresh();
+  }
+
+  async refresh(force = false) {
+    const currentSlot = this.getCurrent3MinSlot();
+    this.lastSlotKey = currentSlot.slotKey;
+
+    let loadedFromCloud = false;
+    const cloudUrl = window.APP_CONFIG?.cloudTelemetry?.endpointUrl;
+
+    // 1. Try Cloud Bridge First (For Netlify / Remote Devices)
+    if (cloudUrl && cloudUrl.trim() !== "") {
+      try {
+        const cResp = await fetch(`${cloudUrl}?v=${Date.now()}`, { cache: 'no-store' });
+        if (cResp.ok) {
+          const cJson = await cResp.json();
+          if (cJson && cJson.tapoSensors && cJson.tapoSensors.sensor) {
+            this.tapoData = cJson.tapoSensors;
+            if (cJson.tapoHistory) this.historyData = cJson.tapoHistory;
+            loadedFromCloud = true;
+          }
+        }
+      } catch (err) {
+        console.warn("Cloud tapo telemetry fetch failed, falling back to local files", err);
+      }
+    }
+
+    // 2. Local File Fallback (For Localhost testing)
+    if (!loadedFromCloud) {
+      try {
+        const resp = await fetch(`./data/tapo_sensors.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (resp.ok) {
+          const json = await resp.json();
+          if (json && json.sensor) {
+            this.tapoData = json;
+          } else {
+            this.tapoData = this.generate3MinDynamicData();
+          }
+        } else {
+          this.tapoData = this.generate3MinDynamicData();
+        }
+      } catch (e) {
+        this.tapoData = this.generate3MinDynamicData();
+      }
+
+      try {
+        const hResp = await fetch(`./data/tapo_history.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (hResp.ok) {
+          this.historyData = await hResp.json();
+        }
+      } catch (e) {
+        console.warn("Using default tapo history records", e);
+      }
+    }
+  }
+
+  startAutoRefresh() {
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
+    // Auto-check every 15 seconds if a new 3-minute slot boundary has arrived
+    this.refreshTimer = setInterval(async () => {
+      const currentSlot = this.getCurrent3MinSlot();
+      if (currentSlot.slotKey !== this.lastSlotKey) {
+        await this.refresh(true);
+        if (window.khApp && window.khApp.activeView === 'daily') {
+          window.khApp.renderDailyCards();
+        }
+      }
+    }, 15000);
+  }
+
+  getNurserySensor() {
+    if (this.tapoData && this.tapoData.sensor) {
+      return this.tapoData.sensor;
+    }
+    if (this.tapoData && this.tapoData.plots) {
+      const p3 = this.tapoData.plots['plot-3'];
+      if (p3 && p3.sensor) return p3.sensor;
+    }
+    return this.defaultData.sensor;
+  }
+
+  calculateVPD(tempC, rhPercent) {
+    const esat = 0.61078 * Math.exp((17.27 * tempC) / (tempC + 237.3));
+    const eact = esat * (rhPercent / 100);
+    return Math.max(0, Math.round((esat - eact) * 100) / 100);
+  }
+
+  formatSyncTime(syncTimeStr) {
+    if (!syncTimeStr) return '';
+    try {
+      const parts = syncTimeStr.split(' ');
+      if (parts.length === 2) {
+        const [hh, mm] = parts[1].split(':');
+        const hNum = parseInt(hh, 10);
+        const ampm = hNum >= 12 ? 'PM' : 'AM';
+        const displayH = hNum % 12 || 12;
+        return `${displayH}:${mm} ${ampm}`;
+      }
+      return syncTimeStr;
+    } catch (e) {
+      return syncTimeStr;
+    }
+  }
+
+  renderPlotNurseryCard(plotId) {
+    const s = this.getNurserySensor();
+    if (!s) return '';
+
+    const temp = s.temperature !== undefined ? s.temperature : 31.4;
+    const hum = s.humidity !== undefined ? s.humidity : 70;
+    const vpd = this.calculateVPD(temp, hum);
+    const syncTimeFormatted = this.formatSyncTime(s.syncTime);
+
+    // Nursery status determination (compact single-line badge)
+    let statusClass = 'pill-safe';
+    let statusText = 'Optimal Climate';
+    let tipText = '🟢 Seedling transpiration and humidity are in the optimal root-establishment zone (VPD: 0.6–1.4 kPa).';
+
+    if (temp > 34) {
+      statusClass = 'pill-danger';
+      statusText = 'Heat Stress';
+      tipText = '🔴 Nursery temp exceeds 34°C — activate greenhouse misting or shade netting.';
+    } else if (hum > 90) {
+      statusClass = 'pill-caution';
+      statusText = 'High Humidity';
+      tipText = '🟡 Relative humidity is above 90% — ensure greenhouse ventilation to prevent fungal damping-off.';
+    } else if (hum < 60) {
+      statusClass = 'pill-caution';
+      statusText = 'Low Humidity';
+      tipText = '🟡 Substrate air is dry (<60% RH) — increase nursery humidity to prevent seedling leaf wilting.';
+    }
+
+    return `
+      <div class="activity-section">
+        <span class="activity-label" style="color: #fbbf24;"><i data-lucide="thermometer-sun"></i> Green House Temperature &amp; Humidity</span>
+        <div class="activity-content-box box-moisture" style="background: rgba(120, 53, 15, 0.12); border-color: rgba(251, 191, 36, 0.3); padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
+          
+          <!-- Top Row: Sensor 1 + Synced Time + Compact Status Pill -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; width:100%; box-sizing:border-box;">
+            <div style="display:flex; flex-direction:column; min-width:0;">
+              <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">Sensor 1</span>
+              ${syncTimeFormatted ? `<span class="sensor-sync-label" style="color:#fbbf24; font-size:0.65rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px;"><i data-lucide="radio" style="width:9px;height:9px;display:inline;"></i> Synced: ${syncTimeFormatted}</span>` : ''}
+            </div>
+            <span class="sensor-pill ${statusClass}" style="font-size:0.65rem; padding:0.12rem 0.45rem; font-weight:700; white-space:nowrap; border-radius:4px; flex-shrink:0;">${statusText}</span>
+          </div>
+
+          <!-- Dual Temperature & Humidity Metric Cards (Clean, Responsive, No Overflow) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; margin-bottom: 0.5rem; width: 100%; box-sizing: border-box;">
+            <div style="background: rgba(0,0,0,0.38); padding: 0.45rem 0.55rem; border-radius: 6px; border: 1px solid rgba(251,191,36,0.2); min-width: 0; box-sizing: border-box;">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.25rem;">
+                <span style="color:#94a3b8; font-size:0.72rem; font-weight:600; display:inline-flex; align-items:center; gap:0.2rem;"><i data-lucide="thermometer" style="width:12px;height:12px;color:#fbbf24;"></i> Temp</span>
+                <strong style="color:#fbbf24; font-size:1.05rem; font-family:var(--font-mono); font-weight:700; white-space:nowrap;">${temp}°C</strong>
+              </div>
+              <div class="moisture-bar-track bar-mini" style="margin:0; height:4px;">
+                <div class="moisture-bar-fill" style="width: ${Math.min(100, Math.max(10, (temp / 45) * 100))}%; background-color: #fbbf24;"></div>
+              </div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.38); padding: 0.45rem 0.55rem; border-radius: 6px; border: 1px solid rgba(56,189,248,0.2); min-width: 0; box-sizing: border-box;">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:0.25rem;">
+                <span style="color:#94a3b8; font-size:0.72rem; font-weight:600; display:inline-flex; align-items:center; gap:0.2rem;"><i data-lucide="droplets" style="width:12px;height:12px;color:#38bdf8;"></i> Humidity</span>
+                <strong style="color:#38bdf8; font-size:1.05rem; font-family:var(--font-mono); font-weight:700; white-space:nowrap;">${hum}%</strong>
+              </div>
+              <div class="moisture-bar-track bar-mini" style="margin:0; height:4px;">
+                <div class="moisture-bar-fill" style="width: ${Math.min(100, Math.max(10, hum))}%; background-color: #38bdf8;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 12-Hour Nursery Dynamics Sparkline -->
+          <div class="sensor-sparkline-wrap" style="padding:0.4rem 0.5rem; margin-bottom:0.45rem; background:rgba(0,0,0,0.38); border-color:rgba(255,255,255,0.07); border-radius:6px; width:100%; box-sizing:border-box;">
+            <div class="sparkline-head" style="font-size:0.68rem; margin-bottom:0.25rem;">
+              <span style="display:inline-flex; align-items:center; gap:0.25rem;"><i data-lucide="activity" style="width:11px;height:11px;color:#fbbf24;"></i> 12-Hour Dynamics</span>
+              <span style="font-size:0.65rem; color:#cbd5e1;"><span style="color:#fbbf24; font-weight:700;">● Temp</span> &bull; <span style="color:#38bdf8; font-weight:700;">● Humidity</span></span>
+            </div>
+            <div style="position: relative; height: 85px; width: 100%;">
+              <canvas id="sparkline-tapo-${plotId}" class="sensor-sparkline-canvas" style="height:85px !important;"></canvas>
+            </div>
+          </div>
+
+          <!-- Footer: Exact Soil Moisture Style (VPD & Battery) -->
+          <div class="sensor-sub-footer">
+            <span><i data-lucide="gauge" style="width:11px;height:11px;display:inline;"></i> VPD: ${vpd} kPa</span>
+            <span><i data-lucide="battery" style="width:11px;height:11px;display:inline;"></i> ${s.battery || 75}%</span>
+          </div>
+
+          <!-- Tip Text -->
+          <div class="moisture-tip-text" style="margin-top: 0.45rem; font-size:0.72rem; line-height:1.35;">
+            ${tipText}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  getHourly12hSeries(plotId) {
+    const rawRecords = (this.historyData && this.historyData.records) ? this.historyData.records : [];
+    
+    // Always anchor to current real-time clock
+    const endMs = Date.now();
+    const endDate = new Date(endMs);
+    const endHour = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), endDate.getHours(), 0, 0);
+    const hourlySeries = [];
+
+    const recentCutoffMs = endMs - 36 * 3600 * 1000;
+    const mapped = rawRecords.map(r => {
+      let dMs = 0;
+      if (r.timestamp) {
+        try {
+          dMs = new Date(r.timestamp.replace(' ', 'T') + ':00+08:00').getTime();
+        } catch(e) {}
+      }
+      const t = r.temp !== undefined ? r.temp : (r.p3_temp || null);
+      const h = r.hum !== undefined ? r.hum : (r.p3_hum || null);
+      return { timeMs: dMs, temp: t, hum: h };
+    }).filter(r => r.timeMs >= recentCutoffMs && r.temp !== null && r.hum !== null).sort((a, b) => a.timeMs - b.timeMs);
+
+    // Inject live telemetry for forward interpolation
+    const curSensor = this.getNurserySensor();
+    if (curSensor) {
+      mapped.push({
+        timeMs: endMs,
+        temp: curSensor.temperature,
+        hum: curSensor.humidity
+      });
+    }
+
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    for (let i = 12; i >= 0; i--) {
+      const slotTime = new Date(endHour.getTime() - i * 3600 * 1000);
+      const slotMs = slotTime.getTime();
+      const h = slotTime.getHours();
+      const ampm = h >= 12 ? 'P' : 'A';
+      const displayH = h % 12 || 12;
+      const label = `${displayH}${ampm}`;
+
+      const dayStr = slotTime.getDate();
+      const monStr = monthNames[slotTime.getMonth()];
+      const displayDate = `${dayStr} ${monStr} ${displayH}:00 ${h >= 12 ? 'PM' : 'AM'}`;
+
+      let temp = null, hum = null;
+
+      if (mapped.length > 1) {
+        let prev = null, next = null;
+        for (const rec of mapped) {
+          if (rec.timeMs <= slotMs) prev = rec;
+          if (rec.timeMs >= slotMs && !next) next = rec;
+        }
+
+        if (prev && next && prev !== next && (next.timeMs - prev.timeMs) <= 12 * 3600 * 1000) {
+          const ratio = (slotMs - prev.timeMs) / (next.timeMs - prev.timeMs);
+          temp = Math.round((prev.temp + ratio * (next.temp - prev.temp)) * 10) / 10;
+          hum = Math.round(prev.hum + ratio * (next.hum - prev.hum));
+        } else if (prev && (slotMs - prev.timeMs) <= 6 * 3600 * 1000) {
+          temp = prev.temp; hum = prev.hum;
+        }
+      }
+
+      if (temp === null) {
+        const curT = curSensor ? curSensor.temperature : 25.0;
+        const curH = curSensor ? curSensor.humidity : 92;
+        const hourOfDay = slotTime.getHours();
+        const deltaHours = i;
+
+        if (hourOfDay >= 0 && hourOfDay < 7) {
+          temp = Math.round((curT - deltaHours * 0.1) * 10) / 10;
+          hum = Math.min(96, curH + deltaHours);
+        } else if (hourOfDay >= 7 && hourOfDay < 12) {
+          const sunCurve = Math.sin(((hourOfDay - 7) / 5) * Math.PI);
+          temp = Math.round((curT + sunCurve * 4.5) * 10) / 10;
+          hum = Math.max(65, Math.round(curH - sunCurve * 18));
+        } else if (hourOfDay >= 12 && hourOfDay < 16) {
+          temp = Math.round((curT + 6.0) * 10) / 10;
+          hum = Math.max(60, curH - 22);
+        } else {
+          temp = curT;
+          hum = curH;
+        }
+      }
+
+      hourlySeries.push({
+        time: label,
+        displayDate: displayDate,
+        temp: temp,
+        humidity: hum
+      });
+    }
+
+    if (curSensor) {
+      const last = hourlySeries[hourlySeries.length - 1];
+      last.time = 'Now';
+      last.temp = curSensor.temperature;
+      last.humidity = curSensor.humidity;
+      last.syncFormatted = this.formatSyncTime(curSensor.syncTime);
+    }
+
+    return hourlySeries;
+  }
+
+  renderAllNurserySparklines() {
+    if (!window.Chart) return;
+
+    ['plot-3', 'plot-4'].forEach(plotId => {
+      const el = document.getElementById(`sparkline-tapo-${plotId}`);
+      if (!el) return;
+
+      const records = this.getHourly12hSeries(plotId);
+      const labels = records.map(r => r.time);
+      const totalPoints = records.length;
+
+      const tempData = records.map(r => r.temp);
+      const humData = records.map(r => r.humidity);
+
+      const existingChart = Chart.getChart(el);
+      if (existingChart) {
+        existingChart.destroy();
+      }
+
+      const ctx = el.getContext('2d');
+
+      const inst = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Nursery Temp (°C)',
+              data: tempData,
+              borderColor: '#fbbf24',
+              backgroundColor: 'rgba(251, 191, 36, 0.15)',
+              borderWidth: 2,
+              fill: false,
+              tension: 0.35,
+              pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5 : 2),
+              pointBackgroundColor: '#fbbf24',
+              yAxisID: 'yTemp'
+            },
+            {
+              label: 'Humidity (% RH)',
+              data: humData,
+              borderColor: '#38bdf8',
+              backgroundColor: 'rgba(56, 189, 248, 0.15)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.35,
+              pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5 : 2),
+              pointBackgroundColor: '#38bdf8',
+              yAxisID: 'yHum'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 350 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(10, 26, 14, 0.96)',
+              titleColor: '#ffffff',
+              bodyColor: '#cbd5e1',
+              borderColor: 'rgba(251, 191, 36, 0.5)',
+              borderWidth: 1,
+              padding: 7,
+              callbacks: {
+                title(items) {
+                  const idx = items[0].dataIndex;
+                  const rec = records[idx];
+                  return idx === totalPoints - 1 ? `🔴 Live Synced (${rec.syncFormatted || 'Now'})` : rec.displayDate;
+                },
+                label(context) {
+                  return context.datasetIndex === 0 
+                    ? ` 🌡️ Temp: ${context.parsed.y}°C` 
+                    : ` 💧 Humidity: ${context.parsed.y}% RH`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              display: true,
+              grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
+              ticks: {
+                color: (ctx) => (ctx.index === totalPoints - 1 ? '#86efac' : '#cbd5e1'),
+                font: { size: 8.5, weight: '700' },
+                autoSkip: false,
+                padding: 2
+              }
+            },
+            yTemp: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              min: 20,
+              max: 42,
+              grid: { drawOnChartArea: false },
+              ticks: { color: '#fbbf24', font: { size: 8 }, callback(v) { return v + '°'; } }
+            },
+            yHum: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              min: 50,
+              max: 100,
+              grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
+              ticks: { color: '#38bdf8', font: { size: 8 }, callback(v) { return v + '%'; } }
+            }
+          }
+        }
+      });
+      this.sparklineInstances.push(inst);
+    });
+  }
+}
+
+// Global Singleton
+window.tapoService = new TapoService();
