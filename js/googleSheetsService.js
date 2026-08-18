@@ -142,16 +142,16 @@ class GoogleSheetsService {
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         return await resp.text();
       },
-      // 2. High-speed AllOrigins CORS proxy
+      // 2. High-speed AllOrigins CORS proxy with cache disable
       async () => {
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(directUrl)}`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(directUrl)}&disableCache=true&_t=${timestamp}`;
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
         if (!resp.ok) throw new Error(`Proxy 1 HTTP ${resp.status}`);
         return await resp.text();
       },
       // 3. Fallback CORS Proxy (corsproxy.io)
       async () => {
-        const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(directUrl)}`;
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
         if (!resp.ok) throw new Error(`Proxy 2 HTTP ${resp.status}`);
         return await resp.text();
@@ -190,6 +190,38 @@ class GoogleSheetsService {
   async fetchAllPlots() {
     const results = {};
     let liveSuccessCount = 0;
+    const cloudUrl = window.APP_CONFIG?.cloudTelemetry?.endpointUrl;
+
+    // Strategy 0: High-Speed Direct Cloud Bridge (Firebase RTDB)
+    if (cloudUrl && cloudUrl.trim() !== "") {
+      try {
+        const fbUrl = cloudUrl.replace('.json', '/sheetsData.json') + `?v=${Date.now()}`;
+        const fbResp = await fetch(fbUrl, { cache: 'no-store' });
+        if (fbResp.ok) {
+          const fbJson = await fbResp.json();
+          if (fbJson && typeof fbJson === 'object') {
+            let validPlots = 0;
+            this.config.sheets.plots.forEach(plot => {
+              if (fbJson[plot.name] && Array.isArray(fbJson[plot.name]) && fbJson[plot.name].length > 0) {
+                results[plot.name] = fbJson[plot.name];
+                validPlots++;
+              }
+            });
+            if (validPlots >= 2) {
+              this.saveToCache(results);
+              localStorage.setItem(this.lastSyncKey, new Date().toISOString());
+              return {
+                data: results,
+                liveSuccessCount: validPlots,
+                totalPlots: this.config.sheets.plots.length
+              };
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Firebase sheetsData fetch failed, trying CSV proxies", e);
+      }
+    }
 
     const plotPromises = this.config.sheets.plots.map(async (plot) => {
       const liveData = await this.fetchPlotCSV(plot);

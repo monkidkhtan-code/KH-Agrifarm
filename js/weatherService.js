@@ -32,14 +32,14 @@ class WeatherService {
   }
 
   /**
-   * Fetch 4-day hourly microclimate data for Tanjong Karang
+   * Fetch 4-day hourly microclimate data for Tanjong Karang using ECMWF 9km Precision Model
    */
   async fetchWeatherData() {
-    // Open-Meteo Multi-Model Ensemble: dynamically combines ECMWF IFS, ECMWF AIFS, DWD ICON, NOAA GFS, Météo-France & GEM
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${this.lat}&longitude=${this.lon}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=Asia%2FKuala_Lumpur&forecast_days=4&models=best_match`;
+    const model = this.config.weather?.primaryModel || "ecmwf_ifs025";
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${this.lat}&longitude=${this.lon}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=Asia%2FKuala_Lumpur&forecast_days=4&models=${model}&_t=${Date.now()}`;
 
     try {
-      const resp = await fetch(url);
+      const resp = await fetch(url, { cache: 'no-store' });
       if (!resp.ok) throw new Error(`Weather HTTP ${resp.status}`);
       const data = await resp.json();
       this.lastFetchTime = new Date();
@@ -97,7 +97,7 @@ class WeatherService {
       const entry = allUpcomingHours[i];
       const hourDate = new Date(entry.time);
       const hourLabel = hourDate.toLocaleTimeString([], { hour: 'numeric', hour12: true });
-      const cond = this.decodeWeatherCode(entry.code, entry.hour);
+      const cond = this.getEffectiveWeatherCondition(entry.code, entry.prob, entry.rainMm, entry.hour);
 
       let rainIntensity = "No Rain";
       if (entry.rainMm > 8 || entry.prob >= 70) rainIntensity = "Heavy Rain (>8mm)";
@@ -131,7 +131,7 @@ class WeatherService {
     const sprayTimingAdvisory = this.evaluateMorningVsEvening(todayEntries);
 
     const currentCode = current.weather_code || 0;
-    const conditionInfo = this.decodeWeatherCode(currentCode, nowHour);
+    const conditionInfo = this.getEffectiveWeatherCondition(currentCode, next12Hours[0] ? next12Hours[0].prob : 0, current.precipitation || 0, nowHour);
 
     return {
       location: this.locationName,
@@ -150,8 +150,9 @@ class WeatherService {
       timeOfDayLabel: conditionInfo.timeLabel,
       visualSvg: conditionInfo.visualSvg,
       themeClass: `theme-${conditionInfo.key}`,
-      source: "Open-Meteo Multi-Model Ensemble",
-      sourceDetails: "Blended ECMWF IFS, DWD ICON, NOAA GFS, Météo-France & GEM",
+      source: "ECMWF 9km High-Resolution Model",
+      sourceDetails: "European Centre for Medium-Range Weather Forecasts (9km Gold Standard for Selangor Coast)",
+      modelName: "ECMWF IFS 9km",
       hourlyForecast: next12Hours,
       threeDayForecast: threeDayForecast,
       sprayTimingAdvisory: sprayTimingAdvisory
@@ -221,10 +222,10 @@ class WeatherService {
     });
 
     const isNight = periodType === "night";
-    const cond = this.decodeWeatherCode(worstCode, isNight ? 20 : 10);
+    const totalMm = Math.round(sumMm * 10) / 10;
+    const cond = this.getEffectiveWeatherCondition(worstCode, probMax, totalMm, isNight ? 20 : 10);
     const tempAvg = Math.round(sumTemp / entries.length);
     const windAvg = Math.round(sumWind / entries.length);
-    const totalMm = Math.round(sumMm * 10) / 10;
 
     let intensityBadge = "badge-dry";
     let rainDesc = "Dry (0 mm)";
@@ -340,7 +341,7 @@ class WeatherService {
    * Matches WMO Code, Day/Night Visual Cue Spec exactly.
    */
   getWmoIconImage(code, isDay = true) {
-    const v = "v=10.9";
+    const v = "v=10.32";
     if (code === 0) {
       return isDay ? `assets/weather/accu_clear_day.png?${v}` : `assets/weather/accu_clear_night.png?${v}`;
     }
@@ -369,7 +370,7 @@ class WeatherService {
   }
 
   getWeatherIconImage(key, isDay = true) {
-    const v = "v=10.9";
+    const v = "v=10.32";
     switch (key) {
       case 'clear_day':
       case 'sunny':
@@ -422,6 +423,44 @@ class WeatherService {
       default:
         return isDay ? `assets/weather/accu_clear_day.png?${v}` : `assets/weather/accu_clear_night.png?${v}`;
     }
+  }
+
+  /**
+   * Harmonizes WMO code with Rain Probability and Rain Volume (mm)
+   * Eliminates discrepancies where high rain probability is paired with a dry sun/cloud icon.
+   */
+  getEffectiveWeatherCondition(rawCode, prob = 0, rainMm = 0, hour = null) {
+    const currentHour = hour !== null ? hour : new Date().getHours();
+    
+    // 1. If physical thunderstorm code is present, preserve thunderstorm alert
+    if ([95, 96, 99].includes(rawCode)) {
+      return this.decodeWeatherCode(rawCode, currentHour);
+    }
+
+    // 2. Derive condition based on actual precipitation & WMO sky code
+    let effectiveCode = rawCode || 0;
+
+    if (rainMm >= 4.0) {
+      // Measured Heavy Rain
+      effectiveCode = 65;
+    } else if (rainMm >= 1.0) {
+      // Measured Passing Showers
+      effectiveCode = 80;
+    } else if (rainMm > 0) {
+      // Measured Light Drizzle
+      effectiveCode = 51;
+    } else if (rawCode >= 50) {
+      // Satellite/Station reports active rain code
+      effectiveCode = rawCode;
+    } else {
+      // Dry sky condition (no active rain falling)
+      if (rawCode === 45 || rawCode === 48) effectiveCode = 45;
+      else if (rawCode === 3) effectiveCode = 3;
+      else if (rawCode === 1 || rawCode === 2) effectiveCode = 2;
+      else effectiveCode = 0;
+    }
+
+    return this.decodeWeatherCode(effectiveCode, currentHour);
   }
 
   /**

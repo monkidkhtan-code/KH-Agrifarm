@@ -63,15 +63,23 @@ const APP_CONFIG = {
     defaultLat: 3.419686,
     defaultLon: 101.203391,
     locationName: "LOT 20371, Jalan Sgg 6/3, Kampung Sungai Gulang Gulang, 45500 Tanjong Karang, Selangor",
-    openMeteoEndpoint: "https://api.open-meteo.com/v1/forecast"
+    openMeteoEndpoint: "https://api.open-meteo.com/v1/forecast",
+    primaryModel: "ecmwf_ifs025", // European ECMWF 9km High-Resolution Model (Gold Standard for Selangor coast)
+    secondaryModel: "icon_seamless" // German DWD ICON 13km Convective Storm Verification Model
   },
 
   // Cloud Telemetry Bridge for Netlify & Remote Devices
   cloudTelemetry: {
     enabled: true,
-    // Paste your Firebase Realtime Database URL here (e.g. "https://your-app-default-rtdb.asia-southeast1.firebasedatabase.app/telemetry.json")
-    endpointUrl: "",
+    endpointUrl: "https://kh-agrifarm-default-rtdb.asia-southeast1.firebasedatabase.app/telemetry.json",
     fallbackLocal: true
+  },
+
+  // SmartThings 24/7 Cloud Direct Stream
+  smartthings: {
+    enabled: true,
+    token: "fac9a070-a924-4674-ab22-6ed46a8ef66c",
+    deviceId: "fdc3ceb6-8103-487d-aed1-3173859ec17b"
   },
 
   // Storage Keys

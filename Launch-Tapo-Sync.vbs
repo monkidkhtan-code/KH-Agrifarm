@@ -1,0 +1,1 @@
+CreateObject("Wscript.Shell").Run "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File """ & Replace(WScript.ScriptFullName, "Launch-Tapo-Sync.vbs", "scripts\Start-TapoBackgroundSync.ps1") & """", 0, False

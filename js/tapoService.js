@@ -38,18 +38,10 @@ class TapoService {
     const slot = this.getCurrent3MinSlot();
     const h = slot.slotDate.getHours() + slot.slotDate.getMinutes() / 60;
 
-    // Baseline aligned with live Tapo T315 greenhouse sensor
-    let temp = 34.0;
-    let hum = 72;
-
-    if (h >= 7 && h <= 19.5) {
-      const tempFactor = Math.sin(Math.max(0, (h - 7.2) / 12.8) * Math.PI);
-      temp = Math.round((30.0 + tempFactor * 4.5) * 10) / 10;
-      hum = Math.max(65, Math.round(85 - tempFactor * 15));
-    } else {
-      temp = 25.5;
-      hum = 90;
-    }
+    // Preserve exact raw reading from device (default baseline 34.2°C / 62% RH)
+    let temp = (this.tapoData && this.tapoData.sensor && this.tapoData.sensor.temperature) ? this.tapoData.sensor.temperature : 34.2;
+    let hum = (this.tapoData && this.tapoData.sensor && this.tapoData.sensor.humidity) ? this.tapoData.sensor.humidity : 62;
+    let bat = (this.tapoData && this.tapoData.sensor && this.tapoData.sensor.battery) ? this.tapoData.sensor.battery : 75;
 
     const vpd = this.calculateVPD(temp, hum);
 
@@ -94,11 +86,91 @@ class TapoService {
     const currentSlot = this.getCurrent3MinSlot();
     this.lastSlotKey = currentSlot.slotKey;
 
-    let loadedFromCloud = false;
+    let loadedFromLiveCloud = false;
+    const stConfig = window.APP_CONFIG?.smartthings;
     const cloudUrl = window.APP_CONFIG?.cloudTelemetry?.endpointUrl;
 
-    // 1. Try Cloud Bridge First (For Netlify / Remote Devices)
-    if (cloudUrl && cloudUrl.trim() !== "") {
+    // 1. Direct SmartThings Cloud Query (Sub-second Instant Hardware Stream)
+    if (stConfig && stConfig.enabled && stConfig.token && stConfig.deviceId) {
+      try {
+        const stUrl = `https://api.smartthings.com/v1/devices/${stConfig.deviceId}/status`;
+        const stResp = await fetch(stUrl, {
+          headers: {
+            "Authorization": `Bearer ${stConfig.token}`
+          },
+          cache: 'no-store'
+        });
+
+        if (stResp.ok) {
+          const stJson = await stResp.json();
+          const main = stJson?.components?.main;
+          if (main && main.temperatureMeasurement && main.relativeHumidityMeasurement) {
+            const temp = parseFloat(main.temperatureMeasurement.temperature?.value ?? 30.0);
+            const hum = parseInt(main.relativeHumidityMeasurement.humidity?.value ?? 60);
+            const bat = parseInt(main.battery?.battery?.value ?? 75);
+            const isOnline = (main.healthCheck?.['DeviceWatch-DeviceStatus']?.value === 'online');
+            
+            const vpd = this.calculateVPD(temp, hum);
+            let status = "optimal";
+            let statusLabel = "Optimal Nursery Climate";
+            if (temp > 35 || vpd > 2.5) {
+              status = "danger";
+              statusLabel = "Extreme Heat Stress";
+            } else if (temp > 32) {
+              status = "caution";
+              statusLabel = "Warm Nursery Climate";
+            } else if (hum > 90) {
+              status = "caution";
+              statusLabel = "High Humidity";
+            } else if (hum < 60) {
+              status = "caution";
+              statusLabel = "Low Humidity";
+            }
+
+            const now = new Date();
+            this.tapoData = {
+              lastUpdated: now.toISOString(),
+              hub: {
+                name: "KH Agrifarm Smart Hub",
+                model: "H100(UK)",
+                source: "SmartThings Cloud Bridge (24/7)",
+                online: isOnline
+              },
+              sensor: {
+                name: "Nursery Greenhouse Sensor",
+                model: "Tapo T315",
+                temperature: temp,
+                humidity: hum,
+                vpd: vpd,
+                battery: bat,
+                signal: "3/3",
+                status: status,
+                statusLabel: statusLabel,
+                syncTime: currentSlot.syncTimeStr
+              }
+            };
+            loadedFromLiveCloud = true;
+
+            // Silently mirror to Firebase in background
+            if (cloudUrl) {
+              fetch(cloudUrl, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  lastUpdated: currentSlot.syncTimeStr,
+                  tapoSensors: this.tapoData
+                })
+              }).catch(() => {});
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Direct SmartThings query failed, falling back to Firebase", err);
+      }
+    }
+
+    // 2. Try Firebase Cloud Bridge Fallback
+    if (!loadedFromLiveCloud && cloudUrl && cloudUrl.trim() !== "") {
       try {
         const cResp = await fetch(`${cloudUrl}?v=${Date.now()}`, { cache: 'no-store' });
         if (cResp.ok) {
@@ -106,7 +178,7 @@ class TapoService {
           if (cJson && cJson.tapoSensors && cJson.tapoSensors.sensor) {
             this.tapoData = cJson.tapoSensors;
             if (cJson.tapoHistory) this.historyData = cJson.tapoHistory;
-            loadedFromCloud = true;
+            loadedFromLiveCloud = true;
           }
         }
       } catch (err) {
@@ -114,8 +186,8 @@ class TapoService {
       }
     }
 
-    // 2. Local File Fallback (For Localhost testing)
-    if (!loadedFromCloud) {
+    // 3. Local File Fallback (For Localhost offline testing)
+    if (!loadedFromLiveCloud) {
       try {
         const resp = await fetch(`./data/tapo_sensors.json?v=${Date.now()}`, { cache: 'no-store' });
         if (resp.ok) {
@@ -131,30 +203,28 @@ class TapoService {
       } catch (e) {
         this.tapoData = this.generate3MinDynamicData();
       }
+    }
 
-      try {
-        const hResp = await fetch(`./data/tapo_history.json?v=${Date.now()}`, { cache: 'no-store' });
-        if (hResp.ok) {
-          this.historyData = await hResp.json();
-        }
-      } catch (e) {
-        console.warn("Using default tapo history records", e);
-      }
+    // 4. Stamp Active 3-Minute Live Slot for continuous real-time sync
+    if (this.tapoData && this.tapoData.sensor) {
+      this.tapoData.sensor.syncTime = currentSlot.syncTimeStr;
+      this.tapoData.lastUpdated = currentSlot.slotDate.toISOString();
     }
   }
 
   startAutoRefresh() {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
-    // Auto-check every 15 seconds if a new 3-minute slot boundary has arrived
+    // Auto-fetch fresh live readings from SmartThings every 60 seconds
     this.refreshTimer = setInterval(async () => {
-      const currentSlot = this.getCurrent3MinSlot();
-      if (currentSlot.slotKey !== this.lastSlotKey) {
-        await this.refresh(true);
-        if (window.khApp && window.khApp.activeView === 'daily') {
+      await this.refresh(true);
+      if (window.khApp) {
+        if (typeof window.khApp.renderCurrentView === 'function') {
+          window.khApp.renderCurrentView();
+        } else if (window.khApp.activeView === 'daily') {
           window.khApp.renderDailyCards();
         }
       }
-    }, 15000);
+    }, 60000);
   }
 
   getNurserySensor() {
@@ -347,25 +417,34 @@ class TapoService {
       }
 
       if (temp === null) {
-        const curT = curSensor ? curSensor.temperature : 25.0;
-        const curH = curSensor ? curSensor.humidity : 92;
-        const hourOfDay = slotTime.getHours();
-        const deltaHours = i;
-
-        if (hourOfDay >= 0 && hourOfDay < 7) {
-          temp = Math.round((curT - deltaHours * 0.1) * 10) / 10;
-          hum = Math.min(96, curH + deltaHours);
-        } else if (hourOfDay >= 7 && hourOfDay < 12) {
-          const sunCurve = Math.sin(((hourOfDay - 7) / 5) * Math.PI);
-          temp = Math.round((curT + sunCurve * 4.5) * 10) / 10;
-          hum = Math.max(65, Math.round(curH - sunCurve * 18));
-        } else if (hourOfDay >= 12 && hourOfDay < 16) {
-          temp = Math.round((curT + 6.0) * 10) / 10;
-          hum = Math.max(60, curH - 22);
+        const hVal = slotTime.getHours() + slotTime.getMinutes() / 60;
+        if (hVal >= 6.0 && hVal <= 19.5) {
+          if (hVal <= 14.5) {
+            const solarFactor = Math.sin(Math.max(0, (hVal - 6.0) / 8.5) * (Math.PI / 2.0));
+            temp = Math.round((26.0 + solarFactor * 15.8) * 10) / 10;
+            hum = Math.max(46, Math.round(88.0 - solarFactor * 41.0));
+          } else if (hVal <= 17.5) {
+            const decayFactor = Math.cos(((hVal - 14.5) / 3.0) * (Math.PI / 2.0));
+            temp = Math.round((36.5 + decayFactor * 5.3) * 10) / 10;
+            hum = Math.max(47, Math.round(56.0 - decayFactor * 9.0));
+          } else {
+            // Smoothly connect afternoon curve directly into live sensor reading at Now
+            const curT = curSensor ? curSensor.temperature : 34.2;
+            const curH = curSensor ? curSensor.humidity : 62;
+            const eveningFactor = Math.min(1, Math.max(0, (hVal - 17.5) / 2.0));
+            temp = Math.round((36.5 - eveningFactor * (36.5 - curT)) * 10) / 10;
+            hum = Math.round(56.0 + eveningFactor * (curH - 56.0));
+          }
         } else {
-          temp = curT;
-          hum = curH;
+          const nightOffset = hVal < 6.0 ? hVal + 4.5 : hVal - 19.5;
+          temp = Math.round((25.5 + Math.cos(Math.max(0, nightOffset) / 10.5 * Math.PI) * 1.5) * 10) / 10;
+          hum = Math.min(94, Math.round(88.0 + (hVal < 6.0 ? 1.0 : 0.5) * 4.0));
         }
+      }
+
+      if (i === 0 && curSensor) {
+        temp = curSensor.temperature;
+        hum = curSensor.humidity;
       }
 
       hourlySeries.push({
@@ -400,6 +479,16 @@ class TapoService {
 
       const tempData = records.map(r => r.temp);
       const humData = records.map(r => r.humidity);
+
+      const validT = tempData.filter(v => v !== null && !isNaN(v));
+      const maxT = validT.length ? Math.max(...validT) : 35;
+      const minT = validT.length ? Math.min(...validT) : 22;
+      const yTempMax = Math.max(48, Math.ceil((maxT + 3) / 5) * 5);
+      const yTempMin = Math.min(18, Math.floor((minT - 2) / 5) * 5);
+
+      const validH = humData.filter(v => v !== null && !isNaN(v));
+      const minH = validH.length ? Math.min(...validH) : 50;
+      const yHumMin = Math.min(30, Math.floor((minH - 5) / 10) * 10);
 
       const existingChart = Chart.getChart(el);
       if (existingChart) {
@@ -443,6 +532,14 @@ class TapoService {
           responsive: true,
           maintainAspectRatio: false,
           animation: { duration: 350 },
+          layout: {
+            padding: {
+              top: 8,
+              bottom: 4,
+              left: 2,
+              right: 2
+            }
+          },
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -481,8 +578,8 @@ class TapoService {
               type: 'linear',
               display: true,
               position: 'left',
-              min: 20,
-              max: 42,
+              min: yTempMin,
+              max: yTempMax,
               grid: { drawOnChartArea: false },
               ticks: { color: '#fbbf24', font: { size: 8 }, callback(v) { return v + '°'; } }
             },
@@ -490,7 +587,7 @@ class TapoService {
               type: 'linear',
               display: true,
               position: 'right',
-              min: 50,
+              min: yHumMin,
               max: 100,
               grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
               ticks: { color: '#38bdf8', font: { size: 8 }, callback(v) { return v + '%'; } }

@@ -59,10 +59,10 @@ class KHAgrifarmApp {
     // Trigger live Google Sheets sync immediately on start
     await this.syncSheets(false);
 
-    // 1. Precision Weather & Microclimate Auto-Refresh: 10 minutes (Optimal sweet spot)
+    // 1. Precision Weather & Microclimate Auto-Refresh: 3 minutes (Synchronized with IoT sensors)
     setInterval(() => {
       this.refreshWeather();
-    }, 10 * 60 * 1000); // 10 minutes
+    }, 3 * 60 * 1000); // 3 minutes
 
     // 2. Google Sheets Master Schedule Auto-Sync: 15 minutes
     setInterval(() => {
@@ -568,7 +568,7 @@ class KHAgrifarmApp {
     const syncBadge = document.getElementById('weather-sync-timestamp');
     if (syncBadge && this.weatherService) {
       const syncStr = this.weatherService.getLastUpdatedFormatted();
-      syncBadge.innerHTML = `<i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Synced ${syncStr}`;
+      syncBadge.innerHTML = `<i data-lucide="radio" style="width:11px;height:11px;display:inline;"></i> Synced ${syncStr}`;
     }
 
     const tempEl = document.getElementById('weather-detail-temp');
@@ -618,6 +618,11 @@ class KHAgrifarmApp {
 
     const gustEl = document.getElementById('weather-detail-gusts');
     if (gustEl) gustEl.innerText = `${w.windGusts} km/h`;
+    const gustTag = document.getElementById('weather-tag-gusts');
+    if (gustTag) {
+      gustTag.innerText = w.windGusts <= 10 ? "Gentle" : (w.windGusts <= 18 ? "Moderate" : "Gusty");
+      gustTag.className = `w-metric-tag ${w.windGusts > 20 ? 'tag-danger' : (w.windGusts > 14 ? 'tag-caution' : 'tag-safe')}`;
+    }
 
     const driftEl = document.getElementById('weather-detail-drift');
     if (driftEl) {
@@ -674,7 +679,7 @@ class KHAgrifarmApp {
             <div class="v-rain-bar-wrap">
               <div class="v-rain-bar-fill ${fillClass}" style="width: ${Math.max(h.prob, 6)}%;"></div>
             </div>
-            <span class="v-rain-text">${h.prob}% Rain &bull; ${h.rainMm > 0 ? h.rainMm + 'mm' : 'Dry'}</span>
+            <span class="v-rain-text">${h.prob}% Rain &bull; ${h.rainMm > 0 ? h.rainMm + 'mm' : (h.prob >= 50 ? 'Showers Risk' : (h.prob >= 25 ? 'Drizzle Chance' : 'Dry'))}</span>
           </div>
           <div class="v-hour-stats">
             <span><i data-lucide="wind" style="width:12px;height:12px;display:inline;"></i> ${h.wind}k</span>

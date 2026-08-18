@@ -13,11 +13,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="KH Agrifarm">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=10.18">
-  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png?v=10.18">
-  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=10.18">
-  <link rel="icon" type="image/png" href="assets/kh-logo.png?v=10.18">
-  <link rel="manifest" href="manifest.json?v=10.18">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=10.60">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png?v=10.60">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=10.60">
+  <link rel="icon" type="image/png" href="assets/kh-logo.png?v=10.60">
+  <link rel="manifest" href="manifest.json?v=10.60">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Chart.js for EC & Fertilizer Trends -->
@@ -26,11 +26,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Custom Styles with cache-busting -->
-  <link rel="stylesheet" href="css/styles.css?v=10.18">
+  <link rel="stylesheet" href="css/styles.css?v=10.60">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=10.18').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=10.60').then(reg => {
           reg.update();
         }).catch(() => {});
       });
@@ -188,14 +188,16 @@
                 </div>
                 <div class="weather-header-sub-row">
                   <div class="weather-meta-left">
-                    <span class="weather-loc-label"><i data-lucide="map-pin" style="width:10px;height:10px;display:inline;"></i> Live Tanjong Karang</span>
+                    <span class="weather-loc-label"><i data-lucide="map-pin" style="width:11px;height:11px;display:inline;"></i> Tanjong Karang</span>
                     <span class="sub-sep">&bull;</span>
-                    <span id="weather-sync-timestamp" class="weather-sync-badge"><i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Synced Live</span>
+                    <span id="weather-sync-timestamp" class="weather-sync-label"><i data-lucide="radio" style="width:11px;height:11px;display:inline;"></i> Synced Live</span>
                   </div>
-                  <button class="btn-weather-refresh" id="btn-weather-refresh" title="Pull latest live weather update">
-                    <i data-lucide="rotate-cw" id="weather-refresh-spinner" style="width:11px;height:11px;"></i>
-                    <span>Update</span>
-                  </button>
+                  <div class="weather-meta-right">
+                    <button class="btn-weather-refresh" id="btn-weather-refresh" title="Pull latest live weather update">
+                      <i data-lucide="rotate-cw" id="weather-refresh-spinner" style="width:10px;height:10px;"></i>
+                      <span>Update</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -218,15 +220,17 @@
                 </div>
               </div>
 
-              <!-- Tidy 3-Metric Strip (Humidity, Wind Speed & Drift Risk) -->
+              <!-- Tidy 4-Metric Strip (3-Row Layout: Humidity, Wind Speed, Gusts & Drift Risk) -->
               <div class="weather-hero-metrics">
                 <div class="w-metric-card">
                   <div class="w-metric-top">
                     <i data-lucide="droplets" class="w-metric-icon" style="color: #38bdf8;"></i>
                     <span class="w-metric-label">Humidity</span>
                   </div>
-                  <div class="w-metric-bottom">
+                  <div class="w-metric-mid">
                     <span class="val" id="weather-detail-humidity">88%</span>
+                  </div>
+                  <div class="w-metric-bottom">
                     <span class="w-metric-tag tag-safe" id="weather-tag-humidity">Optimal</span>
                   </div>
                 </div>
@@ -236,9 +240,24 @@
                     <i data-lucide="wind" class="w-metric-icon" style="color: #86efac;"></i>
                     <span class="w-metric-label">Wind</span>
                   </div>
-                  <div class="w-metric-bottom">
+                  <div class="w-metric-mid">
                     <span class="val" id="weather-detail-wind">3 km/h</span>
+                  </div>
+                  <div class="w-metric-bottom">
                     <span class="w-metric-tag tag-safe" id="weather-tag-wind">Calm</span>
+                  </div>
+                </div>
+
+                <div class="w-metric-card">
+                  <div class="w-metric-top">
+                    <i data-lucide="activity" class="w-metric-icon" style="color: #38bdf8;"></i>
+                    <span class="w-metric-label">Gusts</span>
+                  </div>
+                  <div class="w-metric-mid">
+                    <span class="val" id="weather-detail-gusts">5 km/h</span>
+                  </div>
+                  <div class="w-metric-bottom">
+                    <span class="w-metric-tag tag-safe" id="weather-tag-gusts">Gentle</span>
                   </div>
                 </div>
 
@@ -247,8 +266,10 @@
                     <i data-lucide="shield-check" class="w-metric-icon" style="color: #fbbf24;"></i>
                     <span class="w-metric-label">Drift</span>
                   </div>
-                  <div class="w-metric-bottom">
+                  <div class="w-metric-mid">
                     <span class="val" id="weather-detail-drift">Low</span>
+                  </div>
+                  <div class="w-metric-bottom">
                     <span class="w-metric-tag tag-safe" id="weather-tag-drift">Safe</span>
                   </div>
                 </div>
@@ -751,7 +772,7 @@
                 <i data-lucide="map-pin" style="color: #ea580c; width: 18px; height: 18px;"></i>
                 <div>
                   <h4>Farm Location &amp; Weather Engine</h4>
-                  <span class="settings-hub-sub">Tanjong Karang, Selangor &bull; Multi-Model Ensemble (ECMWF, ICON, GFS)</span>
+                  <span class="settings-hub-sub">Tanjong Karang, Selangor &bull; ECMWF 9km Precision Model (Gold Standard)</span>
                 </div>
               </div>
             </div>
@@ -824,14 +845,14 @@
   </div>
 
   <!-- Application Scripts -->
-  <script src="js/config.js?v=10.18"></script>
-  <script src="js/sampleData.js?v=10.18"></script>
-  <script src="js/googleSheetsService.js?v=10.18"></script>
-  <script src="js/weatherService.js?v=10.18"></script>
-  <script src="js/sprayAdvisory.js?v=10.18"></script>
-  <script src="js/soilMoistureService.js?v=10.18"></script>
-  <script src="js/tapoService.js?v=10.18"></script>
-  <script src="js/radarService.js?v=10.18"></script>
-  <script src="js/app.js?v=10.18"></script>
+  <script src="js/config.js?v=10.60"></script>
+  <script src="js/sampleData.js?v=10.60"></script>
+  <script src="js/googleSheetsService.js?v=10.60"></script>
+  <script src="js/weatherService.js?v=10.60"></script>
+  <script src="js/sprayAdvisory.js?v=10.60"></script>
+  <script src="js/soilMoistureService.js?v=10.60"></script>
+  <script src="js/tapoService.js?v=10.60"></script>
+  <script src="js/radarService.js?v=10.60"></script>
+  <script src="js/app.js?v=10.60"></script>
 </body>
 </html>

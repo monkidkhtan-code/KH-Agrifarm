@@ -33,14 +33,14 @@ Write-Host "====================================================================
 $rainpointScript = Join-Path $scriptRoot "Get-LiveSoilSensors.ps1"
 if (Test-Path $rainpointScript) {
     Write-Host "`n[1/3] Syncing RainPoint Soil Moisture Probes (Plot 1 & 2)..."
-    & powershell -ExecutionPolicy Bypass -File $rainpointScript
+    try { . $rainpointScript } catch { Write-Warning "Soil sync error: $_" }
 }
 
 # 2. Sync Tapo T315 Nursery Greenhouse
 $tapoScript = Join-Path $scriptRoot "Get-LiveTapoSensors.ps1"
 if (Test-Path $tapoScript) {
     Write-Host "`n[2/3] Syncing Tapo T315 Nursery Greenhouse Sensor (Backup 1 & 2)..."
-    & powershell -ExecutionPolicy Bypass -File $tapoScript
+    try { . $tapoScript } catch { Write-Warning "Tapo sync error: $_" }
 }
 
 # 3. Upload to Cloud Bridge (For Netlify & Mobile)
