@@ -7,14 +7,27 @@ import hashlib
 import requests
 from datetime import datetime, timezone, timedelta
 
+# Ensure UTF-8 stdout encoding
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 # Explicit Malaysia Farm Timezone (UTC+8)
 MY_TZ = timezone(timedelta(hours=8))
 
-EMAIL = os.environ.get("RAINPOINT_EMAIL", "monkid_khtan@yahoo.com")
-PASSWORD = os.environ.get("RAINPOINT_PASSWORD", "789789tan")
+def get_env_var(name, default):
+    val = os.environ.get(name)
+    if val is None or str(val).strip() == "":
+        return default
+    return str(val).strip()
+
+EMAIL = get_env_var("RAINPOINT_EMAIL", "monkid_khtan@yahoo.com")
+PASSWORD = get_env_var("RAINPOINT_PASSWORD", "789789tan")
 AREA_CODE = "60"
 BASE_URL = "https://region3.homgarus.com"
-FIREBASE_URL = os.environ.get("FIREBASE_URL", "")
+FIREBASE_URL = get_env_var("FIREBASE_URL", "https://kh-agrifarm-default-rtdb.asia-southeast1.firebasedatabase.app/telemetry.json")
 
 def get_md5(s):
     return hashlib.md5(s.encode("utf-8")).hexdigest()
@@ -337,7 +350,7 @@ def main():
     soil_data, hist_entry = sync_rainpoint()
     
     # 2. Sync Tapo via SmartThings Cloud (24/7 Cloud Bridge)
-    st_token = os.environ.get("SMARTTHINGS_TOKEN", "fac9a070-a924-4674-ab22-6ed46a8ef66c")
+    st_token = get_env_var("SMARTTHINGS_TOKEN", "fac9a070-a924-4674-ab22-6ed46a8ef66c")
     tapo_data = sync_smartthings_tapo(st_token)
     
     # 3. Sync Google Sheets
