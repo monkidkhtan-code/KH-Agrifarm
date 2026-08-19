@@ -363,6 +363,15 @@ class KHAgrifarmApp {
     }
   }
 
+  async refreshSensorData(force = false) {
+    if (window.soilMoistureService) {
+      await window.soilMoistureService.refresh(force);
+    }
+    if (window.tapoService) {
+      await window.tapoService.refresh();
+    }
+  }
+
   /* -------------------------------------------------------------
      LIVE SYNC & WEATHER
      ------------------------------------------------------------- */

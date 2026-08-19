@@ -135,7 +135,7 @@ class SoilMoistureService {
             this.sensorData = cJson.soilSensors;
             if (cJson.soilHistory) this.historyData = cJson.soilHistory;
             loadedFromCloud = true;
-            this.triggerServerlessSyncIfStale(cJson.soilSensors.lastUpdated);
+            this.triggerServerlessSyncIfStale(cJson.soilSensors.lastUpdated, force);
           }
         }
       } catch (err) {
@@ -179,13 +179,52 @@ class SoilMoistureService {
 
   startAutoRefresh() {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
-    // Active background polling: queries Firebase every 15 seconds for live updates
+    // Active background polling: queries Firebase & triggers cloud sync every 15 seconds
     this.refreshTimer = setInterval(async () => {
-      await this.refresh(true);
+      await this.refresh(false);
       if (window.khApp && window.khApp.activeView === 'daily') {
         window.khApp.renderDailyCards();
       }
     }, 15000);
+  }
+
+  async triggerServerlessSyncIfStale(lastUpdatedStr, force = false) {
+    if (this._isServerlessSyncing) return;
+    const now = Date.now();
+    if (!force && this._lastServerlessAttempt && (now - this._lastServerlessAttempt < 60000)) return; // Max once every 60s in auto-mode
+
+    let isStale = false;
+    if (force || !lastUpdatedStr) {
+      isStale = true;
+    } else {
+      const diffMin = (now - new Date(lastUpdatedStr).getTime()) / 60000;
+      if (diffMin >= 2.0) isStale = true; // Auto-sync if data is older than 2 minutes
+    }
+
+    if (isStale) {
+      this._isServerlessSyncing = true;
+      this._lastServerlessAttempt = now;
+      console.log('⚡ Triggering instant background cloud sync via Netlify serverless function...');
+      try {
+        const fnResp = await fetch('/.netlify/functions/farm_sync', { cache: 'no-store' });
+        if (fnResp.ok) {
+          const fnData = await fnResp.json();
+          if (fnData && fnData.sensors) {
+            this.sensorData = {
+              plots: fnData.sensors,
+              lastUpdated: fnData.timestamp || new Date().toISOString()
+            };
+            if (window.khApp && window.khApp.activeView === 'daily') {
+              window.khApp.renderDailyCards();
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Serverless sync ping:', err);
+      } finally {
+        setTimeout(() => { this._isServerlessSyncing = false; }, 8000);
+      }
+    }
   }
 
   getPlotSensors(plotId) {
@@ -256,28 +295,6 @@ class SoilMoistureService {
       return ago ? `${timeFormatted} • ${ago}` : timeFormatted;
     } catch (e) {
       return syncTimeStr;
-    }
-  }
-
-  triggerServerlessSyncIfStale(lastUpdatedStr) {
-    if (this._isServerlessSyncing) return;
-    const now = Date.now();
-    if (this._lastServerlessAttempt && (now - this._lastServerlessAttempt < 120000)) return; // Max once every 2 mins
-
-    let isStale = false;
-    if (!lastUpdatedStr) {
-      isStale = true;
-    } else {
-      const diffMin = (now - new Date(lastUpdatedStr).getTime()) / 60000;
-      if (diffMin >= 5) isStale = true;
-    }
-
-    if (isStale) {
-      this._isServerlessSyncing = true;
-      this._lastServerlessAttempt = now;
-      console.log('⚡ Triggering instant background cloud sync via Netlify serverless function...');
-      fetch('/.netlify/functions/farm_sync').catch(() => {});
-      setTimeout(() => { this._isServerlessSyncing = false; }, 15000);
     }
   }
 

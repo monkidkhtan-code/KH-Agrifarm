@@ -1,0 +1,10 @@
+﻿{
+  "name": "kh-agrifarm",
+  "version": "1.0.0",
+  "description": "KH Agrifarm IoT & Field Operation Hub",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Build complete'"
+  },
+  "dependencies": {}
+}

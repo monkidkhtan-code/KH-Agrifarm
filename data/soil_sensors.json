@@ -8,17 +8,17 @@
                                                      "slot":  "D01",
                                                      "name":  "Sensor 1",
                                                      "model":  "HCS021FRF",
-                                                     "moisture":  68,
-                                                     "temperature":  25.2,
-                                                     "lux":  0,
+                                                     "moisture":  75,
+                                                     "temperature":  34.4,
+                                                     "lux":  3513,
                                                      "battery":  100,
                                                      "status":  "optimal",
                                                      "statusLabel":  "Optimal for Chili",
-                                                     "syncTime":  "2026-08-19 01:46:15"
+                                                     "syncTime":  "2026-08-19 11:30:40"
                                                  }
                                              ],
-                                 "avgTemperature":  25.2,
-                                 "avgMoisture":  68
+                                 "avgTemperature":  34.4,
+                                 "avgMoisture":  75
                              },
                   "plot-2":  {
                                  "overallStatus":  "moderate",
@@ -28,32 +28,32 @@
                                                      "slot":  "D02",
                                                      "name":  "Sensor 1",
                                                      "model":  "HCS021FRF",
-                                                     "moisture":  53,
-                                                     "temperature":  24.8,
-                                                     "lux":  0,
+                                                     "moisture":  52,
+                                                     "temperature":  36.2,
+                                                     "lux":  9186,
                                                      "battery":  100,
                                                      "status":  "moderate",
                                                      "statusLabel":  "Moderate",
-                                                     "syncTime":  "2026-08-19 01:51:05"
+                                                     "syncTime":  "2026-08-19 11:31:01"
                                                  },
                                                  {
                                                      "slot":  "D03",
                                                      "name":  "Sensor 2",
                                                      "model":  "HCS021FRF",
-                                                     "moisture":  65,
-                                                     "temperature":  24.9,
-                                                     "lux":  0,
+                                                     "moisture":  63,
+                                                     "temperature":  35.9,
+                                                     "lux":  10364,
                                                      "battery":  100,
                                                      "status":  "optimal",
                                                      "statusLabel":  "Optimal for Chili",
-                                                     "syncTime":  "2026-08-19 01:46:15"
+                                                     "syncTime":  "2026-08-19 11:29:45"
                                                  }
                                              ],
-                                 "avgTemperature":  24.8,
-                                 "avgMoisture":  59
+                                 "avgTemperature":  36,
+                                 "avgMoisture":  58
                              }
               },
-    "lastUpdated":  "2026-08-19T01:52:04.3738530+08:00",
+    "lastUpdated":  "2026-08-19T12:30:42.4823022+08:00",
     "gateway":  {
                     "name":  "MAC-30C922CEA038",
                     "mac":  "30:C9:22:CE:A0:38",

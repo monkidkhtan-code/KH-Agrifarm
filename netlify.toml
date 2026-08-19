@@ -2,7 +2,12 @@
   publish = "."
   functions = "netlify/functions"
 
-[[redirects]]
-  from = "/api/sync"
-  to = "/.netlify/functions/farm_sync"
-  status = 200
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
