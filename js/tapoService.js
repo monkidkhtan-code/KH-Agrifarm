@@ -454,27 +454,24 @@ class TapoService {
       }
 
       if (temp === null) {
-        const hVal = slotTime.getHours() + slotTime.getMinutes() / 60;
-        if (hVal >= 6.0 && hVal <= 19.5) {
-          if (hVal <= 14.5) {
-            const solarFactor = Math.sin(Math.max(0, (hVal - 6.0) / 8.5) * (Math.PI / 2.0));
-            temp = Math.round((26.0 + solarFactor * 15.8) * 10) / 10;
-            hum = Math.max(46, Math.round(88.0 - solarFactor * 41.0));
-          } else if (hVal <= 17.5) {
-            const decayFactor = Math.cos(((hVal - 14.5) / 3.0) * (Math.PI / 2.0));
-            temp = Math.round((36.5 + decayFactor * 5.3) * 10) / 10;
-            hum = Math.max(47, Math.round(56.0 - decayFactor * 9.0));
-          } else {
-            const curT = curSensor ? curSensor.temperature : 34.2;
-            const curH = curSensor ? curSensor.humidity : 62;
-            const eveningFactor = Math.min(1, Math.max(0, (hVal - 17.5) / 2.0));
-            temp = Math.round((36.5 - eveningFactor * (36.5 - curT)) * 10) / 10;
-            hum = Math.round(56.0 + eveningFactor * (curH - 56.0));
-          }
+        const hVal = slotTime.getHours() + slotTime.getMinutes() / 60.0;
+        const targetPeakT = curSensor ? curSensor.temperature : 38.0;
+        const targetMinH = curSensor ? curSensor.humidity : 57.0;
+
+        if (hVal >= 6.5 && hVal <= 14.0) {
+          // Linear morning heating ramp from 25.5°C to peak, humidity declining from 88% to min
+          const progress = (hVal - 6.5) / 7.5;
+          temp = Math.round((25.5 + progress * (targetPeakT - 25.5)) * 10) / 10;
+          hum = Math.round(88.0 - progress * (88.0 - targetMinH));
+        } else if (hVal > 14.0 && hVal <= 19.5) {
+          // Linear afternoon cooling ramp
+          const progress = (hVal - 14.0) / 5.5;
+          temp = Math.round((targetPeakT - progress * (targetPeakT - 26.5)) * 10) / 10;
+          hum = Math.round(targetMinH + progress * (84.0 - targetMinH));
         } else {
-          const nightOffset = hVal < 6.0 ? hVal + 4.5 : hVal - 19.5;
-          temp = Math.round((25.5 + Math.cos(Math.max(0, nightOffset) / 10.5 * Math.PI) * 1.5) * 10) / 10;
-          hum = Math.min(94, Math.round(88.0 + (hVal < 6.0 ? 1.0 : 0.5) * 4.0));
+          // Constant steady night greenhouse climate
+          temp = 25.5;
+          hum = 88;
         }
       }
 
@@ -546,7 +543,7 @@ class TapoService {
               backgroundColor: 'rgba(251, 191, 36, 0.15)',
               borderWidth: 2,
               fill: false,
-              tension: 0.35,
+              tension: 0,
               pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5.5 : (ctx.dataIndex % 2 === 0 ? 2 : 0)),
               pointBackgroundColor: (ctx) => (ctx.dataIndex === totalPoints - 1 ? '#ffffff' : '#fbbf24'),
               pointBorderColor: '#fbbf24',
@@ -560,7 +557,7 @@ class TapoService {
               backgroundColor: 'rgba(56, 189, 248, 0.15)',
               borderWidth: 2,
               fill: true,
-              tension: 0.35,
+              tension: 0,
               pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5.5 : (ctx.dataIndex % 2 === 0 ? 2 : 0)),
               pointBackgroundColor: (ctx) => (ctx.dataIndex === totalPoints - 1 ? '#ffffff' : '#38bdf8'),
               pointBorderColor: '#0284c7',

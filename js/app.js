@@ -1224,7 +1224,7 @@ class KHAgrifarmApp {
           borderColor: '#c084fc',
           backgroundColor: 'rgba(192, 132, 252, 0.15)',
           borderWidth: 2.5,
-          tension: 0.3,
+          tension: 0,
           fill: true,
           pointBackgroundColor: '#c084fc',
           pointRadius: 3,

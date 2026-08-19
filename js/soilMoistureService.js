@@ -578,20 +578,32 @@ class SoilMoistureService {
 
       if (temperature === null) {
         const hourOfDay = slotTime.getHours();
-        if (hourOfDay >= 7 && hourOfDay <= 18) {
-          const sunCurve = Math.sin(((hourOfDay - 7) / 11) * Math.PI);
-          temperature = Math.round((24.0 + sunCurve * 12.0) * 10) / 10;
+        if (hourOfDay >= 7 && hourOfDay <= 14) {
+          // Linear morning heating ramp from 25°C to curTemp
+          const progress = (hourOfDay - 7) / 7.0;
+          temperature = Math.round((25.0 + progress * Math.max(8.0, (curTemp || 36.0) - 25.0)) * 10) / 10;
+        } else if (hourOfDay > 14 && hourOfDay <= 19) {
+          // Linear afternoon cooling ramp
+          const progress = (hourOfDay - 14) / 5.0;
+          temperature = Math.round(((curTemp || 36.0) - progress * ((curTemp || 36.0) - 26.0)) * 10) / 10;
         } else {
-          temperature = Math.round((24.2 + Math.random() * 0.6) * 10) / 10;
+          // Constant steady night temperature
+          temperature = 25.0;
         }
       }
 
       if (lux === null) {
         const hourOfDay = slotTime.getHours();
-        if (hourOfDay >= 7 && hourOfDay <= 18) {
-          const sunCurve = Math.sin(((hourOfDay - 7) / 11) * Math.PI);
-          lux = Math.round(Math.pow(sunCurve, 1.3) * 18500);
+        if (hourOfDay >= 7 && hourOfDay <= 13) {
+          // Linear morning solar ramp to peak
+          const progress = (hourOfDay - 7) / 6.0;
+          lux = Math.round(progress * Math.max(12000, curLux || 28000));
+        } else if (hourOfDay > 13 && hourOfDay <= 19) {
+          // Linear afternoon solar decline to sunset
+          const progress = (19 - hourOfDay) / 6.0;
+          lux = Math.round(progress * Math.max(12000, curLux || 28000));
         } else {
+          // Zero Lux at night
           lux = 0;
         }
       }
@@ -668,7 +680,7 @@ class SoilMoistureService {
               backgroundColor: 'rgba(250, 204, 21, 0.09)',
               borderWidth: 1.5,
               fill: true,
-              tension: 0.4,
+              tension: 0,
               pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 3.5 : 0),
               pointBackgroundColor: '#facc15',
               pointBorderColor: '#ffffff',
@@ -685,7 +697,7 @@ class SoilMoistureService {
               borderWidth: 1.5,
               borderDash: [3, 3],
               fill: false,
-              tension: 0.35,
+              tension: 0,
               pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 3.5 : 0),
               pointBackgroundColor: '#fb923c',
               pointBorderColor: '#ffffff',
@@ -702,7 +714,7 @@ class SoilMoistureService {
               backgroundColor: 'rgba(74, 222, 128, 0.16)',
               borderWidth: 2.5,
               fill: true,
-              tension: 0.35,
+              tension: 0,
               pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5.5 : (ctx.dataIndex % 2 === 0 ? 2 : 0)),
               pointBackgroundColor: (ctx) => (ctx.dataIndex === totalPoints - 1 ? '#ffffff' : '#4ade80'),
               pointBorderColor: '#22c55e',
