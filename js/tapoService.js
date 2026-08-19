@@ -285,8 +285,7 @@ class TapoService {
         timeFormatted = syncTimeStr;
       }
 
-      const ago = this.getTimeAgo(syncTimeStr);
-      return ago ? `${timeFormatted} • ${ago}` : timeFormatted;
+      return timeFormatted;
     } catch (e) {
       return syncTimeStr;
     }

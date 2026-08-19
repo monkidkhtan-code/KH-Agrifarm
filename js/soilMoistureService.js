@@ -291,8 +291,7 @@ class SoilMoistureService {
         timeFormatted = syncTimeStr;
       }
 
-      const ago = this.getTimeAgo(syncTimeStr);
-      return ago ? `${timeFormatted} • ${ago}` : timeFormatted;
+      return timeFormatted;
     } catch (e) {
       return syncTimeStr;
     }
@@ -342,7 +341,7 @@ class SoilMoistureService {
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; width:100%; box-sizing:border-box;">
               <div style="display:flex; flex-direction:column; min-width:0;">
                 <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">${s.name || 'Sensor 1'}</span>
-                ${timeFormatted ? `<span class="sensor-sync-label" style="font-size:0.65rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px;"><i data-lucide="radio" style="width:9px;height:9px;display:inline;"></i> Synced: ${timeFormatted}</span>` : ''}
+                ${timeFormatted ? `<span class="sensor-sync-label" style="font-size:0.65rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px; color:#94a3b8;"><i data-lucide="radio" style="width:9px;height:9px;display:inline;"></i> RF Broadcast: ${timeFormatted}</span>` : ''}
               </div>
               <span class="sensor-pill ${st.badgeClass}" style="font-size:0.75rem; padding:0.12rem 0.5rem; font-weight:700; border-radius:4px; flex-shrink:0;">${mVal}%</span>
             </div>
@@ -409,7 +408,7 @@ class SoilMoistureService {
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; width:100%; box-sizing:border-box;">
                   <div style="display:flex; flex-direction:column; min-width:0;">
                     <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">${(s.name || '').replace(/\s*\((Top|Bottom)\)/i, '') || ('Sensor ' + (idx + 1))}</span>
-                    ${sTimeFormatted ? `<span class="sensor-sync-label" style="font-size:0.65rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px;"><i data-lucide="radio" style="width:9px;height:9px;display:inline;"></i> Synced: ${sTimeFormatted}</span>` : ''}
+                    ${sTimeFormatted ? `<span class="sensor-sync-label" style="font-size:0.65rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px; color:#94a3b8;"><i data-lucide="radio" style="width:9px;height:9px;display:inline;"></i> RF Broadcast: ${sTimeFormatted}</span>` : ''}
                   </div>
                   <span class="sensor-pill ${sSt.badgeClass}" style="font-size:0.75rem; padding:0.12rem 0.5rem; font-weight:700; border-radius:4px; flex-shrink:0;">${s.moisture}%</span>
                 </div>
