@@ -430,10 +430,10 @@ def main():
                 if m:
                     firebase_url = m.group(1).strip()
 
-    # In GitHub Actions (or continuous mode), loop 4 times with 60s sleep to provide 100% live coverage
+    # In GitHub Actions (or continuous mode), loop 10 times with 45s sleep to provide continuous 24/7 live coverage
     is_once = "--once" in sys.argv
-    total_iterations = 1 if is_once else 4
-    interval_sec = 60
+    total_iterations = 1 if is_once else 10
+    interval_sec = 45
 
     for i in range(total_iterations):
         if total_iterations > 1:
