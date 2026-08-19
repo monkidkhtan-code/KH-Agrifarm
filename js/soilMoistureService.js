@@ -122,6 +122,11 @@ class SoilMoistureService {
     const currentSlot = this.getCurrent3MinSlot();
     this.lastSlotKey = currentSlot.slotKey;
 
+    // If user explicitly pressed "Synced Live", trigger instant cloud execution FIRST
+    if (force) {
+      await this.triggerServerlessSyncIfStale(null, true);
+    }
+
     let loadedFromCloud = false;
     const cloudUrl = window.APP_CONFIG?.cloudTelemetry?.endpointUrl;
 
@@ -135,7 +140,9 @@ class SoilMoistureService {
             this.sensorData = cJson.soilSensors;
             if (cJson.soilHistory) this.historyData = cJson.soilHistory;
             loadedFromCloud = true;
-            this.triggerServerlessSyncIfStale(cJson.soilSensors.lastUpdated, force);
+            if (!force) {
+              this.triggerServerlessSyncIfStale(cJson.soilSensors.lastUpdated, false);
+            }
           }
         }
       } catch (err) {
@@ -144,7 +151,7 @@ class SoilMoistureService {
     }
 
     // 2. Local File Fallback (For Localhost testing)
-    if (!loadedFromCloud) {
+    if (!loadedFromCloud && !this.sensorData) {
       try {
         const resp = await fetch(`./data/soil_sensors.json?v=${Date.now()}`, { cache: 'no-store' });
         if (resp.ok) {
@@ -189,22 +196,32 @@ class SoilMoistureService {
   }
 
   async triggerServerlessSyncIfStale(lastUpdatedStr, force = false) {
-    if (this._isServerlessSyncing) return;
+    if (this._isServerlessSyncing && !force) return;
     const now = Date.now();
-    if (!force && this._lastServerlessAttempt && (now - this._lastServerlessAttempt < 60000)) return; // Max once every 60s in auto-mode
+    if (!force && this._lastServerlessAttempt && (now - this._lastServerlessAttempt < 45000)) return; // Max once every 45s in auto-mode
 
     let isStale = false;
     if (force || !lastUpdatedStr) {
       isStale = true;
     } else {
-      const diffMin = (now - new Date(lastUpdatedStr).getTime()) / 60000;
-      if (diffMin >= 2.0) isStale = true; // Auto-sync if data is older than 2 minutes
+      let parsedTime = 0;
+      try {
+        const cleanStr = lastUpdatedStr.replace(' ', 'T');
+        parsedTime = new Date(cleanStr.includes('+') || cleanStr.includes('Z') ? cleanStr : cleanStr + '+08:00').getTime();
+      } catch (e) {}
+
+      if (!parsedTime || isNaN(parsedTime)) {
+        isStale = true;
+      } else {
+        const diffMin = (now - parsedTime) / 60000;
+        if (diffMin >= 2.0) isStale = true; // Auto-sync if data is older than 2 minutes
+      }
     }
 
     if (isStale) {
       this._isServerlessSyncing = true;
       this._lastServerlessAttempt = now;
-      console.log('⚡ Triggering instant background cloud sync via Netlify serverless function...');
+      console.log('⚡ Executing live cloud sync via Netlify serverless function...');
       try {
         const fnResp = await fetch('/.netlify/functions/farm_sync', { cache: 'no-store' });
         if (fnResp.ok) {
@@ -222,7 +239,7 @@ class SoilMoistureService {
       } catch (err) {
         console.warn('Serverless sync ping:', err);
       } finally {
-        setTimeout(() => { this._isServerlessSyncing = false; }, 8000);
+        setTimeout(() => { this._isServerlessSyncing = false; }, 4000);
       }
     }
   }

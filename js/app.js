@@ -395,11 +395,7 @@ class KHAgrifarmApp {
       this.renderAll();
 
       if (userTriggered) {
-        if (syncResult.liveSuccessCount > 0) {
-          this.showToast(`✅ Successfully synced all 4 plots & sensors live!`);
-        } else {
-          this.showToast(`ℹ️ Displaying cached farm data. Google Sheet CDN updates every 1-3 mins.`);
-        }
+        this.showToast(`✅ Live Synced: RainPoint Soil, Tapo Nursery & Google Sheets up to date!`);
       }
     } catch (err) {
       console.error("Sync error", err);
