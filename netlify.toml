@@ -1,0 +1,8 @@
+﻿[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/sync"
+  to = "/.netlify/functions/farm_sync"
+  status = 200
