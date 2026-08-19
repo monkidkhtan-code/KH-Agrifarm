@@ -38,25 +38,22 @@ class KHAgrifarmApp {
     this.updateClock();
     setInterval(() => this.updateClock(), 1000);
 
-    // Initial load from cache or preloaded data
+    // Initial load from cache or preloaded data for instant render
     this.farmData = this.sheetsService.getCachedData();
     this.renderAll();
 
     // Fetch live weather immediately for Tanjong Karang
     this.refreshWeather();
 
-    // Initialize Soil Moisture Service (RainPoint Cloud Probes)
+    // Initialize Soil Moisture & Tapo Services
     if (window.soilMoistureService) {
       await window.soilMoistureService.init();
     }
-
-    // Initialize Tapo Nursery Greenhouse Service (Backup 1 & Backup 2)
     if (window.tapoService) {
       await window.tapoService.init();
     }
-    this.renderAll();
 
-    // Trigger live Google Sheets sync immediately on start
+    // Trigger instant live cloud sync for all sensors & Google Sheets on page launch
     await this.syncSheets(false);
 
     // 1. Precision Weather & Microclimate Auto-Refresh: 3 minutes (Synchronized with IoT sensors)
@@ -177,6 +174,13 @@ class KHAgrifarmApp {
 
     // 4. Live Sync Button
     document.getElementById('btn-sync').addEventListener('click', () => this.syncSheets(true));
+
+    // 5. Automatic Live Sync on Tab / App Focus
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        this.syncSheets(false);
+      }
+    });
 
     // 5. Calendar Month Navigation
     document.getElementById('cal-prev-month').addEventListener('click', () => this.shiftCalMonth(-1));

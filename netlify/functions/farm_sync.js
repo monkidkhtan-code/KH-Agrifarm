@@ -1,4 +1,4 @@
-﻿const crypto = require('crypto');
+const crypto = require('crypto');
 
 const MY_TZ_OFFSET = 8 * 60 * 60 * 1000;
 const EMAIL = process.env.RAINPOINT_EMAIL || 'monkid_khtan@yahoo.com';
@@ -115,10 +115,11 @@ async function syncRainPoint() {
     const authHeaders = { auth: token, lang: 'en', appCode: '2', version: '1.16.1065', sceneType: '1', 'User-Agent': 'okhttp/4.9.2' };
     const devRes = await fetch(`${BASE_URL}/app/device/getDeviceByHid?hid=64378`, { headers: authHeaders });
     const devJson = await devRes.json();
-    const hub = devJson?.data?.[0];
-    if (!hub?.mid) return null;
+    const rawData = devJson?.data;
+    const hub = Array.isArray(rawData) ? rawData[0] : (rawData || { mid: 67783 });
+    const mid = hub?.mid || 67783;
 
-    const stRes = await fetch(`${BASE_URL}/app/device/getDeviceStatus?mid=${hub.mid}`, { headers: authHeaders });
+    const stRes = await fetch(`${BASE_URL}/app/device/getDeviceStatus?mid=${mid}`, { headers: authHeaders });
     const stJson = await stRes.json();
     const subList = stJson?.data?.subDeviceStatus || [];
     const subStatuses = {};
