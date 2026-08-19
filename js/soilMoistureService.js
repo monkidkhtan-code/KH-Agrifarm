@@ -178,14 +178,13 @@ class SoilMoistureService {
 
   startAutoRefresh() {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
-    // Active background polling: queries Firebase every 30 seconds for live updates
+    // Active background polling: queries Firebase every 15 seconds for live updates
     this.refreshTimer = setInterval(async () => {
-      const prevUpdate = this.sensorData?.lastUpdated;
       await this.refresh(true);
       if (window.khApp && window.khApp.activeView === 'daily') {
         window.khApp.renderDailyCards();
       }
-    }, 30000);
+    }, 15000);
   }
 
   getPlotSensors(plotId) {
@@ -211,18 +210,49 @@ class SoilMoistureService {
     return { status: 'high', label: 'Waterlogged (>80%)', badgeClass: 'pill-info', color: '#60a5fa' };
   }
 
+  getTimeAgo(syncTimeStr) {
+    if (!syncTimeStr) return '';
+    try {
+      let dateObj = null;
+      if (syncTimeStr.includes('T')) {
+        dateObj = new Date(syncTimeStr);
+      } else {
+        const cleanStr = syncTimeStr.replace(' ', 'T');
+        dateObj = new Date(cleanStr + (cleanStr.length === 16 ? ':00+08:00' : '+08:00'));
+      }
+      if (!dateObj || isNaN(dateObj.getTime())) return '';
+
+      const diffSec = Math.max(0, Math.floor((Date.now() - dateObj.getTime()) / 1000));
+      if (diffSec < 60) return 'Just now';
+      if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+      if (diffSec < 86400) {
+        const h = Math.floor(diffSec / 3600);
+        const m = Math.floor((diffSec % 3600) / 60);
+        return m > 0 ? `${h}h ${m}m ago` : `${h}h ago`;
+      }
+      return `${Math.floor(diffSec / 86400)}d ago`;
+    } catch (e) {
+      return '';
+    }
+  }
+
   formatSyncTime(syncTimeStr) {
     if (!syncTimeStr) return '';
     try {
+      let timeFormatted = '';
       const parts = syncTimeStr.split(' ');
       if (parts.length === 2) {
         const [hh, mm] = parts[1].split(':');
         const hNum = parseInt(hh, 10);
         const ampm = hNum >= 12 ? 'PM' : 'AM';
         const displayH = hNum % 12 || 12;
-        return `${displayH}:${mm} ${ampm}`;
+        timeFormatted = `${displayH}:${mm} ${ampm}`;
+      } else {
+        timeFormatted = syncTimeStr;
       }
-      return syncTimeStr;
+
+      const ago = this.getTimeAgo(syncTimeStr);
+      return ago ? `${timeFormatted} • ${ago}` : timeFormatted;
     } catch (e) {
       return syncTimeStr;
     }
@@ -262,7 +292,13 @@ class SoilMoistureService {
 
       return `
         <div class="activity-section">
-          <span class="activity-label" style="color: #6ebc48;"><i data-lucide="sprout"></i> Soil Moisture</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+            <span class="activity-label" style="color: #6ebc48; margin-bottom:0;"><i data-lucide="sprout"></i> Soil Moisture</span>
+            <div style="display:flex; align-items:center; gap:0.35rem;">
+              <button onclick="window.soilMoistureService.fetchFromFirebase().then(() => window.khApp.renderDailyCards())" title="Fetch latest readings from Cloud" style="background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.3); color:#86efac; border-radius:4px; font-size:0.6rem; font-weight:700; padding:1px 5px; cursor:pointer; display:inline-flex; align-items:center; gap:2px;"><i data-lucide="refresh-cw" style="width:8px;height:8px;"></i> Sync</button>
+              <span style="font-size:0.6rem; color:#86efac; display:inline-flex; align-items:center; gap:3px; background:rgba(74,222,128,0.1); padding:1px 5px; border-radius:4px; border:1px solid rgba(74,222,128,0.25);"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;"></span> 24/7 Live</span>
+            </div>
+          </div>
           <div class="activity-content-box box-moisture" style="padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
             
             <!-- Top Row: Sensor 1 + Synced Time + Status Pill -->
@@ -279,18 +315,18 @@ class SoilMoistureService {
               <div class="moisture-bar-fill" style="width: ${Math.min(100, Math.max(8, mVal))}%; background-color: ${st.color};"></div>
             </div>
 
-            <!-- Progressive 12h Rolling Curve -->
+            <!-- Progressive 24h Rolling Curve -->
             <div class="sensor-sparkline-wrap" style="padding:0.4rem 0.5rem; margin-bottom:0.45rem; background:rgba(0,0,0,0.38); border-color:rgba(255,255,255,0.07); border-radius:6px; width:100%; box-sizing:border-box;">
               <div class="sparkline-head" style="font-size:0.68rem; margin-bottom:0.25rem; display:flex; justify-content:space-between; align-items:center;">
-                <span style="display:inline-flex; align-items:center; gap:0.25rem; font-weight:700;"><i data-lucide="activity" style="width:11px;height:11px;color:#4ade80;"></i> 12-Hour Dynamics</span>
+                <span style="display:inline-flex; align-items:center; gap:0.25rem; font-weight:700;"><i data-lucide="activity" style="width:11px;height:11px;color:#4ade80;"></i> 24-Hour Dynamics</span>
                 <div style="display:flex; align-items:center; gap:0.45rem; font-size:0.62rem;">
                   <span style="color:#4ade80; display:inline-flex; align-items:center; gap:2px;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#4ade80;"></span> Moisture</span>
                   <span style="color:#fb923c; display:inline-flex; align-items:center; gap:2px;"><span style="display:inline-block;width:6px;height:2px;background:#fb923c;"></span> Temp</span>
                   <span style="color:#facc15; display:inline-flex; align-items:center; gap:2px;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:rgba(250,204,21,0.45);"></span> Light</span>
                 </div>
               </div>
-              <div style="position: relative; height: 95px; width: 100%;">
-                <canvas id="sparkline-${plotId}-${s.slot}" data-plot="${plotId}" data-slot="${s.slot}" class="sensor-sparkline-canvas" style="height:95px !important; width:100% !important;"></canvas>
+              <div style="position: relative; height: 115px; width: 100%;">
+                <canvas id="sparkline-${plotId}-${s.slot}" data-plot="${plotId}" data-slot="${s.slot}" class="sensor-sparkline-canvas" style="height:115px !important; width:100% !important;"></canvas>
               </div>
             </div>
 
@@ -319,7 +355,13 @@ class SoilMoistureService {
 
     return `
       <div class="activity-section">
-        <span class="activity-label" style="color: #6ebc48;"><i data-lucide="sprout"></i> Soil Moisture</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+          <span class="activity-label" style="color: #6ebc48; margin-bottom:0;"><i data-lucide="sprout"></i> Soil Moisture</span>
+          <div style="display:flex; align-items:center; gap:0.35rem;">
+            <button onclick="window.soilMoistureService.fetchFromFirebase().then(() => window.khApp.renderDailyCards())" title="Fetch latest readings from Cloud" style="background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.3); color:#86efac; border-radius:4px; font-size:0.6rem; font-weight:700; padding:1px 5px; cursor:pointer; display:inline-flex; align-items:center; gap:2px;"><i data-lucide="refresh-cw" style="width:8px;height:8px;"></i> Sync</button>
+            <span style="font-size:0.6rem; color:#86efac; display:inline-flex; align-items:center; gap:3px; background:rgba(74,222,128,0.1); padding:1px 5px; border-radius:4px; border:1px solid rgba(74,222,128,0.25);"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;"></span> 24/7 Live</span>
+          </div>
+        </div>
         <div class="activity-content-box box-moisture" style="padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
           
           ${data.sensors.map((s, idx) => {
@@ -343,18 +385,18 @@ class SoilMoistureService {
                   <div class="moisture-bar-fill" style="width: ${Math.min(100, Math.max(8, s.moisture))}%; background-color: ${sSt.color};"></div>
                 </div>
 
-                <!-- 12-Hour Dynamics Sparkline -->
+                <!-- 24-Hour Dynamics Sparkline -->
                 <div class="sensor-sparkline-wrap" style="padding:0.4rem 0.5rem; margin-bottom:0.45rem; background:rgba(0,0,0,0.38); border-color:rgba(255,255,255,0.07); border-radius:6px; width:100%; box-sizing:border-box;">
                   <div class="sparkline-head" style="font-size:0.68rem; margin-bottom:0.25rem; display:flex; justify-content:space-between; align-items:center;">
-                    <span style="display:inline-flex; align-items:center; gap:0.25rem; font-weight:700;"><i data-lucide="activity" style="width:11px;height:11px;color:#4ade80;"></i> 12-Hour Dynamics</span>
+                    <span style="display:inline-flex; align-items:center; gap:0.25rem; font-weight:700;"><i data-lucide="activity" style="width:11px;height:11px;color:#4ade80;"></i> 24-Hour Dynamics</span>
                     <div style="display:flex; align-items:center; gap:0.45rem; font-size:0.62rem;">
                       <span style="color:#4ade80; display:inline-flex; align-items:center; gap:2px;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#4ade80;"></span> Moisture</span>
                       <span style="color:#fb923c; display:inline-flex; align-items:center; gap:2px;"><span style="display:inline-block;width:6px;height:2px;background:#fb923c;"></span> Temp</span>
                       <span style="color:#facc15; display:inline-flex; align-items:center; gap:2px;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:rgba(250,204,21,0.45);"></span> Light</span>
                     </div>
                   </div>
-                  <div style="position: relative; height: 95px; width: 100%;">
-                    <canvas id="sparkline-${plotId}-${s.slot}" data-plot="${plotId}" data-slot="${s.slot}" class="sensor-sparkline-canvas" style="height:95px !important; width:100% !important;"></canvas>
+                  <div style="position: relative; height: 115px; width: 100%;">
+                    <canvas id="sparkline-${plotId}-${s.slot}" data-plot="${plotId}" data-slot="${s.slot}" class="sensor-sparkline-canvas" style="height:115px !important; width:100% !important;"></canvas>
                   </div>
                 </div>
 
@@ -382,9 +424,9 @@ class SoilMoistureService {
   }
 
   /* -------------------------------------------------------------
-     PROGRESSIVE 12-HOUR HOURLY SERIES GENERATOR (ANCHORED TO LIVE PROBE)
+     PROGRESSIVE 24-HOUR HOURLY SERIES GENERATOR (ANCHORED TO LIVE PROBE)
      ------------------------------------------------------------- */
-  getHourly12hSeries(slot) {
+  getHourly24hSeries(slot) {
     const rawRecords = (this.historyData && this.historyData.records) ? this.historyData.records : [];
     
     // Always anchor to current real-time clock so window continuously slides forward
@@ -393,8 +435,8 @@ class SoilMoistureService {
     const endHour = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), endDate.getHours(), 0, 0);
     const hourlySeries = [];
 
-    // Filter to only consider recent records within the last 36 hours
-    const recentCutoffMs = endMs - 36 * 3600 * 1000;
+    // Filter to consider records within the last 48 hours
+    const recentCutoffMs = endMs - 48 * 3600 * 1000;
     const mapped = rawRecords.map(r => {
       let dMs = 0;
       if (r.timestamp) {
@@ -438,13 +480,17 @@ class SoilMoistureService {
 
     const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-    for (let i = 12; i >= 0; i--) {
+    // Generate 25 points spanning exactly 24 hours back to now
+    for (let i = 24; i >= 0; i--) {
       const slotTime = new Date(endHour.getTime() - i * 3600 * 1000);
       const slotMs = slotTime.getTime();
       const h = slotTime.getHours();
       const ampm = h >= 12 ? 'P' : 'A';
       const displayH = h % 12 || 12;
-      const label = `${displayH}${ampm}`;
+      
+      // Label placed every 2 hours for clean, clutter-free readability
+      const isEvery2Hours = (i % 2 === 0);
+      const label = isEvery2Hours ? `${displayH}${ampm}` : '';
 
       const dayStr = slotTime.getDate();
       const monStr = monthNames[slotTime.getMonth()];
@@ -484,13 +530,13 @@ class SoilMoistureService {
         const hourOfDay = slotTime.getHours();
         let diurnalOffset = 0;
         if (hourOfDay >= 0 && hourOfDay < 7) {
-          diurnalOffset = Math.min(3, deltaHours * 0.2);
+          diurnalOffset = Math.min(3, deltaHours * 0.15);
         } else if (hourOfDay >= 7 && hourOfDay <= 11) {
-          diurnalOffset = Math.sin(((hourOfDay - 7) / 4) * Math.PI) * 4 + deltaHours * 0.1;
+          diurnalOffset = Math.sin(((hourOfDay - 7) / 4) * Math.PI) * 3 + deltaHours * 0.08;
         } else if (hourOfDay > 11 && hourOfDay <= 16) {
-          diurnalOffset = (16 - hourOfDay) * 0.4;
+          diurnalOffset = (16 - hourOfDay) * 0.35;
         } else {
-          diurnalOffset = deltaHours * 0.15;
+          diurnalOffset = deltaHours * 0.1;
         }
         
         moisture = Math.round(Math.min(100, Math.max(20, curVal + diurnalOffset)));
@@ -500,9 +546,9 @@ class SoilMoistureService {
         const hourOfDay = slotTime.getHours();
         if (hourOfDay >= 7 && hourOfDay <= 18) {
           const sunCurve = Math.sin(((hourOfDay - 7) / 11) * Math.PI);
-          temperature = Math.round((26.0 + sunCurve * 12.5) * 10) / 10;
+          temperature = Math.round((24.0 + sunCurve * 12.0) * 10) / 10;
         } else {
-          temperature = Math.round((25.5 + Math.random() * 0.8) * 10) / 10;
+          temperature = Math.round((24.2 + Math.random() * 0.6) * 10) / 10;
         }
       }
 
@@ -521,7 +567,8 @@ class SoilMoistureService {
         displayDate: displayDate,
         moisture: moisture,
         temperature: temperature,
-        lux: lux
+        lux: lux,
+        isEvery2Hours: isEvery2Hours
       });
     }
 
@@ -558,7 +605,7 @@ class SoilMoistureService {
         }
       }
 
-      const records = this.getHourly12hSeries(historyKey);
+      const records = this.getHourly24hSeries(historyKey);
       const labels = records.map(r => r.time);
       const moistureValues = records.map(r => r.moisture);
       const tempValues = records.map(r => r.temperature);
@@ -583,12 +630,15 @@ class SoilMoistureService {
               data: luxValues,
               type: 'line',
               yAxisID: 'yLux',
-              borderColor: 'rgba(250, 204, 21, 0.45)',
-              backgroundColor: 'rgba(250, 204, 21, 0.08)',
-              borderWidth: 1,
+              borderColor: 'rgba(250, 204, 21, 0.85)',
+              backgroundColor: 'rgba(250, 204, 21, 0.09)',
+              borderWidth: 1.5,
               fill: true,
               tension: 0.4,
-              pointRadius: 0,
+              pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 3.5 : 0),
+              pointBackgroundColor: '#facc15',
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 1,
               order: 3
             },
             // 2. Soil Temperature (Secondary Overlay: Subtle Orange Dashed Line)
@@ -619,7 +669,7 @@ class SoilMoistureService {
               borderWidth: 2.5,
               fill: true,
               tension: 0.35,
-              pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5.5 : 2.5),
+              pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5.5 : (ctx.dataIndex % 2 === 0 ? 2 : 0)),
               pointBackgroundColor: (ctx) => (ctx.dataIndex === totalPoints - 1 ? '#ffffff' : '#4ade80'),
               pointBorderColor: '#22c55e',
               pointBorderWidth: 1.5,
@@ -638,26 +688,27 @@ class SoilMoistureService {
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: 'rgba(10, 26, 14, 0.96)',
-              titleColor: '#ffffff',
-              bodyColor: '#cbd5e1',
-              borderColor: 'rgba(74, 222, 128, 0.4)',
+              backgroundColor: 'rgba(5, 18, 10, 0.96)',
+              titleColor: '#86efac',
+              bodyColor: '#e2e8f0',
+              borderColor: 'rgba(74, 222, 128, 0.5)',
               borderWidth: 1,
-              padding: 8,
+              padding: 9,
+              cornerRadius: 6,
               callbacks: {
                 title(items) {
                   const idx = items[0].dataIndex;
                   const rec = records[idx];
-                  return idx === totalPoints - 1 ? `🔴 Live Reading (${rec.syncFormatted || 'Now'})` : rec.displayDate;
+                  return idx === totalPoints - 1 ? `🔴 LIVE READING (${rec.syncFormatted || 'Now'})` : `⏱️ ${rec.displayDate}`;
                 },
                 label(context) {
                   const ds = context.dataset.label;
                   if (ds.includes('Moisture')) {
-                    return ` 💧 Soil Moisture: ${context.parsed.y}% (Target: 60–75%)`;
+                    return ` 💧 Soil Moisture : ${context.parsed.y}% (Target: 60–75%)`;
                   } else if (ds.includes('Temp')) {
-                    return ` 🌡️ Soil Temp: ${context.parsed.y}°C`;
+                    return ` 🌡️ Soil Temp     : ${context.parsed.y}°C`;
                   } else if (ds.includes('Sunlight')) {
-                    return ` ☀️ Sunlight: ${context.parsed.y.toLocaleString()} Lux`;
+                    return ` ☀️ Sunlight      : ${context.parsed.y.toLocaleString()} Lux`;
                   }
                   return ` ${ds}: ${context.parsed.y}`;
                 }
@@ -670,17 +721,19 @@ class SoilMoistureService {
               grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
               ticks: {
                 color: (ctx) => (ctx.index === totalPoints - 1 ? '#86efac' : '#cbd5e1'),
-                font: { size: 8.5, weight: '700' },
+                font: { size: 8, weight: '700' },
                 autoSkip: false,
-                padding: 2
+                minRotation: 48,
+                maxRotation: 48,
+                padding: 1
               }
             },
             y: {
               // Primary Moisture Axis (%)
               display: true,
               position: 'left',
-              min: 20,
-              max: 95,
+              min: 15,
+              max: 98,
               grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
               ticks: {
                 color: '#86efac',
@@ -693,7 +746,7 @@ class SoilMoistureService {
               // Secondary Temperature Axis (°C) - Right side
               display: true,
               position: 'right',
-              min: 15,
+              min: 12,
               max: 48,
               grid: { drawOnChartArea: false, drawBorder: false },
               ticks: {
@@ -704,10 +757,10 @@ class SoilMoistureService {
               }
             },
             yLux: {
-              // Sunlight Axis (normalized in background without cluttering labels)
+              // Sunlight Axis: starts at -2500 so 0 Lux night line is always cleanly visible above floor
               display: false,
-              min: 0,
-              max: 25000
+              min: -2500,
+              max: 30000
             }
           }
         }

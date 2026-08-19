@@ -244,18 +244,49 @@ class TapoService {
     return Math.max(0, Math.round((esat - eact) * 100) / 100);
   }
 
+  getTimeAgo(syncTimeStr) {
+    if (!syncTimeStr) return '';
+    try {
+      let dateObj = null;
+      if (syncTimeStr.includes('T')) {
+        dateObj = new Date(syncTimeStr);
+      } else {
+        const cleanStr = syncTimeStr.replace(' ', 'T');
+        dateObj = new Date(cleanStr + (cleanStr.length === 16 ? ':00+08:00' : '+08:00'));
+      }
+      if (!dateObj || isNaN(dateObj.getTime())) return '';
+
+      const diffSec = Math.max(0, Math.floor((Date.now() - dateObj.getTime()) / 1000));
+      if (diffSec < 60) return 'Just now';
+      if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+      if (diffSec < 86400) {
+        const h = Math.floor(diffSec / 3600);
+        const m = Math.floor((diffSec % 3600) / 60);
+        return m > 0 ? `${h}h ${m}m ago` : `${h}h ago`;
+      }
+      return `${Math.floor(diffSec / 86400)}d ago`;
+    } catch (e) {
+      return '';
+    }
+  }
+
   formatSyncTime(syncTimeStr) {
     if (!syncTimeStr) return '';
     try {
+      let timeFormatted = '';
       const parts = syncTimeStr.split(' ');
       if (parts.length === 2) {
         const [hh, mm] = parts[1].split(':');
         const hNum = parseInt(hh, 10);
         const ampm = hNum >= 12 ? 'PM' : 'AM';
         const displayH = hNum % 12 || 12;
-        return `${displayH}:${mm} ${ampm}`;
+        timeFormatted = `${displayH}:${mm} ${ampm}`;
+      } else {
+        timeFormatted = syncTimeStr;
       }
-      return syncTimeStr;
+
+      const ago = this.getTimeAgo(syncTimeStr);
+      return ago ? `${timeFormatted} • ${ago}` : timeFormatted;
     } catch (e) {
       return syncTimeStr;
     }
@@ -270,37 +301,43 @@ class TapoService {
     const vpd = this.calculateVPD(temp, hum);
     const syncTimeFormatted = this.formatSyncTime(s.syncTime);
 
-    // Nursery status determination (compact single-line badge)
+    // Nursery status determination (2-line compact badge to prevent text overlap)
     let statusClass = 'pill-safe';
-    let statusText = 'Optimal Climate';
+    let statusText = 'Optimal<br>Climate';
     let tipText = '🟢 Seedling transpiration and humidity are in the optimal root-establishment zone (VPD: 0.6–1.4 kPa).';
 
     if (temp > 34) {
       statusClass = 'pill-danger';
-      statusText = 'Heat Stress';
+      statusText = 'Heat<br>Stress';
       tipText = '🔴 Nursery temp exceeds 34°C — activate greenhouse misting or shade netting.';
     } else if (hum > 90) {
       statusClass = 'pill-caution';
-      statusText = 'High Humidity';
+      statusText = 'High<br>Humidity';
       tipText = '🟡 Relative humidity is above 90% — ensure greenhouse ventilation to prevent fungal damping-off.';
     } else if (hum < 60) {
       statusClass = 'pill-caution';
-      statusText = 'Low Humidity';
+      statusText = 'Low<br>Humidity';
       tipText = '🟡 Substrate air is dry (<60% RH) — increase nursery humidity to prevent seedling leaf wilting.';
     }
 
     return `
       <div class="activity-section">
-        <span class="activity-label" style="color: #fbbf24;"><i data-lucide="thermometer-sun"></i> Green House Temperature &amp; Humidity</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+          <span class="activity-label" style="color: #fbbf24; margin-bottom:0;"><i data-lucide="thermometer-sun"></i> Green House Temp &amp; Humidity</span>
+          <div style="display:flex; align-items:center; gap:0.35rem;">
+            <button onclick="window.tapoService.fetchFromFirebase().then(() => window.khApp.renderDailyCards())" title="Fetch latest readings from Cloud" style="background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.3); color:#fbbf24; border-radius:4px; font-size:0.6rem; font-weight:700; padding:1px 5px; cursor:pointer; display:inline-flex; align-items:center; gap:2px;"><i data-lucide="refresh-cw" style="width:8px;height:8px;"></i> Sync</button>
+            <span style="font-size:0.6rem; color:#fbbf24; display:inline-flex; align-items:center; gap:3px; background:rgba(251,191,36,0.1); padding:1px 5px; border-radius:4px; border:1px solid rgba(251,191,36,0.25);"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#fbbf24;box-shadow:0 0 5px #fbbf24;"></span> 24/7 Live</span>
+          </div>
+        </div>
         <div class="activity-content-box box-moisture" style="background: rgba(120, 53, 15, 0.12); border-color: rgba(251, 191, 36, 0.3); padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
           
-          <!-- Top Row: Sensor 1 + Synced Time + Compact Status Pill -->
+          <!-- Top Row: Sensor 1 + Synced Time + 2-Line Status Pill -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; width:100%; box-sizing:border-box;">
-            <div style="display:flex; flex-direction:column; min-width:0;">
+            <div style="display:flex; flex-direction:column; min-width:0; padding-right:0.35rem;">
               <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">Sensor 1</span>
               ${syncTimeFormatted ? `<span class="sensor-sync-label" style="color:#fbbf24; font-size:0.65rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px;"><i data-lucide="radio" style="width:9px;height:9px;display:inline;"></i> Synced: ${syncTimeFormatted}</span>` : ''}
             </div>
-            <span class="sensor-pill ${statusClass}" style="font-size:0.65rem; padding:0.12rem 0.45rem; font-weight:700; white-space:nowrap; border-radius:4px; flex-shrink:0;">${statusText}</span>
+            <span class="sensor-pill ${statusClass}" style="font-size:0.62rem; padding:0.18rem 0.45rem; font-weight:700; line-height:1.15; text-align:center; border-radius:4px; flex-shrink:0;">${statusText}</span>
           </div>
 
           <!-- Dual Temperature & Humidity Metric Cards (Clean, Responsive, No Overflow) -->
@@ -326,14 +363,14 @@ class TapoService {
             </div>
           </div>
 
-          <!-- 12-Hour Nursery Dynamics Sparkline -->
+          <!-- 24-Hour Nursery Dynamics Sparkline -->
           <div class="sensor-sparkline-wrap" style="padding:0.4rem 0.5rem; margin-bottom:0.45rem; background:rgba(0,0,0,0.38); border-color:rgba(255,255,255,0.07); border-radius:6px; width:100%; box-sizing:border-box;">
             <div class="sparkline-head" style="font-size:0.68rem; margin-bottom:0.25rem;">
-              <span style="display:inline-flex; align-items:center; gap:0.25rem;"><i data-lucide="activity" style="width:11px;height:11px;color:#fbbf24;"></i> 12-Hour Dynamics</span>
+              <span style="display:inline-flex; align-items:center; gap:0.25rem; font-weight:700;"><i data-lucide="activity" style="width:11px;height:11px;color:#fbbf24;"></i> 24-Hour Dynamics</span>
               <span style="font-size:0.65rem; color:#cbd5e1;"><span style="color:#fbbf24; font-weight:700;">● Temp</span> &bull; <span style="color:#38bdf8; font-weight:700;">● Humidity</span></span>
             </div>
-            <div style="position: relative; height: 85px; width: 100%;">
-              <canvas id="sparkline-tapo-${plotId}" class="sensor-sparkline-canvas" style="height:85px !important;"></canvas>
+            <div style="position: relative; height: 115px; width: 100%;">
+              <canvas id="sparkline-tapo-${plotId}" class="sensor-sparkline-canvas" style="height:115px !important; width:100% !important;"></canvas>
             </div>
           </div>
 
@@ -352,7 +389,7 @@ class TapoService {
     `;
   }
 
-  getHourly12hSeries(plotId) {
+  getHourly24hSeries(plotId) {
     const rawRecords = (this.historyData && this.historyData.records) ? this.historyData.records : [];
     
     // Always anchor to current real-time clock
@@ -361,7 +398,7 @@ class TapoService {
     const endHour = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), endDate.getHours(), 0, 0);
     const hourlySeries = [];
 
-    const recentCutoffMs = endMs - 36 * 3600 * 1000;
+    const recentCutoffMs = endMs - 48 * 3600 * 1000;
     const mapped = rawRecords.map(r => {
       let dMs = 0;
       if (r.timestamp) {
@@ -386,13 +423,16 @@ class TapoService {
 
     const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-    for (let i = 12; i >= 0; i--) {
+    // 25 points spanning full 24-hour cycle
+    for (let i = 24; i >= 0; i--) {
       const slotTime = new Date(endHour.getTime() - i * 3600 * 1000);
       const slotMs = slotTime.getTime();
       const h = slotTime.getHours();
       const ampm = h >= 12 ? 'P' : 'A';
       const displayH = h % 12 || 12;
-      const label = `${displayH}${ampm}`;
+      
+      const isEvery2Hours = (i % 2 === 0);
+      const label = isEvery2Hours ? `${displayH}${ampm}` : '';
 
       const dayStr = slotTime.getDate();
       const monStr = monthNames[slotTime.getMonth()];
@@ -428,7 +468,6 @@ class TapoService {
             temp = Math.round((36.5 + decayFactor * 5.3) * 10) / 10;
             hum = Math.max(47, Math.round(56.0 - decayFactor * 9.0));
           } else {
-            // Smoothly connect afternoon curve directly into live sensor reading at Now
             const curT = curSensor ? curSensor.temperature : 34.2;
             const curH = curSensor ? curSensor.humidity : 62;
             const eveningFactor = Math.min(1, Math.max(0, (hVal - 17.5) / 2.0));
@@ -451,7 +490,8 @@ class TapoService {
         time: label,
         displayDate: displayDate,
         temp: temp,
-        humidity: hum
+        humidity: hum,
+        isEvery2Hours: isEvery2Hours
       });
     }
 
@@ -473,7 +513,7 @@ class TapoService {
       const el = document.getElementById(`sparkline-tapo-${plotId}`);
       if (!el) return;
 
-      const records = this.getHourly12hSeries(plotId);
+      const records = this.getHourly24hSeries(plotId);
       const labels = records.map(r => r.time);
       const totalPoints = records.length;
 
@@ -510,8 +550,10 @@ class TapoService {
               borderWidth: 2,
               fill: false,
               tension: 0.35,
-              pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5 : 2),
-              pointBackgroundColor: '#fbbf24',
+              pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5.5 : (ctx.dataIndex % 2 === 0 ? 2 : 0)),
+              pointBackgroundColor: (ctx) => (ctx.dataIndex === totalPoints - 1 ? '#ffffff' : '#fbbf24'),
+              pointBorderColor: '#fbbf24',
+              pointBorderWidth: 1.5,
               yAxisID: 'yTemp'
             },
             {
@@ -522,8 +564,10 @@ class TapoService {
               borderWidth: 2,
               fill: true,
               tension: 0.35,
-              pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5 : 2),
-              pointBackgroundColor: '#38bdf8',
+              pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5.5 : (ctx.dataIndex % 2 === 0 ? 2 : 0)),
+              pointBackgroundColor: (ctx) => (ctx.dataIndex === totalPoints - 1 ? '#ffffff' : '#38bdf8'),
+              pointBorderColor: '#0284c7',
+              pointBorderWidth: 1.5,
               yAxisID: 'yHum'
             }
           ]
@@ -534,8 +578,8 @@ class TapoService {
           animation: { duration: 350 },
           layout: {
             padding: {
-              top: 8,
-              bottom: 4,
+              top: 6,
+              bottom: 2,
               left: 2,
               right: 2
             }
@@ -548,12 +592,13 @@ class TapoService {
               bodyColor: '#cbd5e1',
               borderColor: 'rgba(251, 191, 36, 0.5)',
               borderWidth: 1,
-              padding: 7,
+              padding: 8,
+              cornerRadius: 6,
               callbacks: {
                 title(items) {
                   const idx = items[0].dataIndex;
                   const rec = records[idx];
-                  return idx === totalPoints - 1 ? `🔴 Live Synced (${rec.syncFormatted || 'Now'})` : rec.displayDate;
+                  return idx === totalPoints - 1 ? `🔴 LIVE READING (${rec.syncFormatted || 'Now'})` : `⏱️ ${rec.displayDate}`;
                 },
                 label(context) {
                   return context.datasetIndex === 0 
@@ -569,9 +614,11 @@ class TapoService {
               grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
               ticks: {
                 color: (ctx) => (ctx.index === totalPoints - 1 ? '#86efac' : '#cbd5e1'),
-                font: { size: 8.5, weight: '700' },
+                font: { size: 8, weight: '700' },
                 autoSkip: false,
-                padding: 2
+                minRotation: 48,
+                maxRotation: 48,
+                padding: 1
               }
             },
             yTemp: {
