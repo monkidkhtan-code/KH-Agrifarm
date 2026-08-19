@@ -1,0 +1,32 @@
+﻿name: KH Agrifarm 24/7 Cloud Sync
+
+on:
+  schedule:
+    # Runs automatically every 5 minutes 24/7 in the cloud
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          pip install requests
+
+      - name: Run 24/7 Cloud Telemetry Sync
+        env:
+          RAINPOINT_EMAIL: ${{ secrets.RAINPOINT_EMAIL || 'monkid_khtan@yahoo.com' }}
+          RAINPOINT_PASSWORD: ${{ secrets.RAINPOINT_PASSWORD || '789789tan' }}
+          SMARTTHINGS_TOKEN: ${{ secrets.SMARTTHINGS_TOKEN || 'fac9a070-a924-4674-ab22-6ed46a8ef66c' }}
+          FIREBASE_URL: ${{ secrets.FIREBASE_URL || 'https://kh-agrifarm-default-rtdb.asia-southeast1.firebasedatabase.app/telemetry.json' }}
+        run: |
+          python scripts/cloud_sync.py
