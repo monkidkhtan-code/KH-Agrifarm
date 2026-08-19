@@ -346,6 +346,7 @@ def main():
                 if m:
                     firebase_url = m.group(1).strip()
 
+def sync_cycle(firebase_url, is_first=True):
     # 1. Sync RainPoint Probes
     soil_data, hist_entry = sync_rainpoint()
     
@@ -353,8 +354,8 @@ def main():
     st_token = get_env_var("SMARTTHINGS_TOKEN", "fac9a070-a924-4674-ab22-6ed46a8ef66c")
     tapo_data = sync_smartthings_tapo(st_token)
     
-    # 3. Sync Google Sheets
-    sheets_data = sync_google_sheets()
+    # 3. Sync Google Sheets (on first pass)
+    sheets_data = sync_google_sheets() if is_first else None
     
     now_dt = datetime.now(MY_TZ)
     
@@ -380,9 +381,11 @@ def main():
             print(f"   ℹ️ History fetch: {e}")
 
     if hist_entry:
-        existing_history.append(hist_entry)
-        if len(existing_history) > 500:
-            existing_history = existing_history[-500:]
+        # Avoid duplicate consecutive entries if timestamp is identical
+        if not existing_history or existing_history[-1].get("timestamp") != hist_entry.get("timestamp"):
+            existing_history.append(hist_entry)
+            if len(existing_history) > 500:
+                existing_history = existing_history[-500:]
         payload["soilHistory"] = {"records": existing_history}
 
     if tapo_data:
@@ -410,6 +413,35 @@ def main():
             print(f"   ⚠️ Could not push to cloud: {e}")
     else:
         print("\n[4/4] No Firebase URL specified in config.js or FIREBASE_URL env.")
+
+def main():
+    print("==========================================================================")
+    print("   🌱 KH AGRIFARM - 24/7 CLOUD TELEMETRY SYNC (GITHUB ACTIONS RUNNER)     ")
+    print("==========================================================================")
+
+    firebase_url = get_env_var("FIREBASE_URL", "")
+    if not firebase_url:
+        config_path = os.path.join(os.path.dirname(__file__), "..", "js", "config.js")
+        if os.path.exists(config_path):
+            with open(config_path, "r", encoding="utf-8") as f:
+                content = f.read()
+                import re
+                m = re.search(r'endpointUrl:\s*"([^"]+)"', content)
+                if m:
+                    firebase_url = m.group(1).strip()
+
+    # In GitHub Actions (or continuous mode), loop 4 times with 60s sleep to provide 100% live coverage
+    is_once = "--once" in sys.argv
+    total_iterations = 1 if is_once else 4
+    interval_sec = 60
+
+    for i in range(total_iterations):
+        if total_iterations > 1:
+            print(f"\n🔄 [Iteration {i+1}/{total_iterations}] Starting Sync Cycle...")
+        sync_cycle(firebase_url, is_first=(i == 0))
+        if i < total_iterations - 1:
+            print(f"⏳ Sleeping {interval_sec}s before next check to maintain zero-gap live coverage...")
+            time.sleep(interval_sec)
 
     print("\n==========================================================================")
 
