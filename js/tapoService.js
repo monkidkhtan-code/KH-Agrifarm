@@ -322,12 +322,9 @@ class TapoService {
 
     return `
       <div class="activity-section">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
-          <span class="activity-label" style="color: #fbbf24; margin-bottom:0;"><i data-lucide="thermometer-sun"></i> Green House Temp &amp; Humidity</span>
-          <div style="display:flex; align-items:center; gap:0.35rem;">
-            <button onclick="window.tapoService.fetchFromFirebase().then(() => window.khApp.renderDailyCards())" title="Fetch latest readings from Cloud" style="background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.3); color:#fbbf24; border-radius:4px; font-size:0.6rem; font-weight:700; padding:1px 5px; cursor:pointer; display:inline-flex; align-items:center; gap:2px;"><i data-lucide="refresh-cw" style="width:8px;height:8px;"></i> Sync</button>
-            <span style="font-size:0.6rem; color:#fbbf24; display:inline-flex; align-items:center; gap:3px; background:rgba(251,191,36,0.1); padding:1px 5px; border-radius:4px; border:1px solid rgba(251,191,36,0.25);"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#fbbf24;box-shadow:0 0 5px #fbbf24;"></span> 24/7 Live</span>
-          </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem; width:100%; box-sizing:border-box;">
+          <span class="activity-label" style="color: #fbbf24; margin-bottom:0; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:0.3rem;"><i data-lucide="thermometer-sun"></i> Greenhouse Climate</span>
+          <span style="font-size:0.6rem; color:#fbbf24; display:inline-flex; align-items:center; gap:3px; background:rgba(251,191,36,0.1); padding:1px 5px; border-radius:4px; border:1px solid rgba(251,191,36,0.25); white-space:nowrap; flex-shrink:0;"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#fbbf24;box-shadow:0 0 5px #fbbf24;flex-shrink:0;"></span> 24/7 Live Cloud</span>
         </div>
         <div class="activity-content-box box-moisture" style="background: rgba(120, 53, 15, 0.12); border-color: rgba(251, 191, 36, 0.3); padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
           
@@ -369,8 +366,8 @@ class TapoService {
               <span style="display:inline-flex; align-items:center; gap:0.25rem; font-weight:700;"><i data-lucide="activity" style="width:11px;height:11px;color:#fbbf24;"></i> 24-Hour Dynamics</span>
               <span style="font-size:0.65rem; color:#cbd5e1;"><span style="color:#fbbf24; font-weight:700;">● Temp</span> &bull; <span style="color:#38bdf8; font-weight:700;">● Humidity</span></span>
             </div>
-            <div style="position: relative; height: 115px; width: 100%;">
-              <canvas id="sparkline-tapo-${plotId}" class="sensor-sparkline-canvas" style="height:115px !important; width:100% !important;"></canvas>
+            <div class="sensor-sparkline-canvas-box">
+              <canvas id="sparkline-tapo-${plotId}" class="sensor-sparkline-canvas"></canvas>
             </div>
           </div>
 

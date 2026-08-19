@@ -794,9 +794,19 @@ class KHAgrifarmApp {
       ? this.config.sheets.plots 
       : this.config.sheets.plots.filter(p => p.name === this.selectedPlot);
 
+    const isSinglePlot = (plotsToDisplay.length === 1);
+    if (isSinglePlot) {
+      grid.classList.add('single-plot-view');
+    } else {
+      grid.classList.remove('single-plot-view');
+    }
+
     plotsToDisplay.forEach(plotConf => {
       const rowData = this.getPlotRowForDate(plotConf.name, this.selectedDate);
       const card = this.createPlotDailyCard(plotConf, rowData);
+      if (isSinglePlot) {
+        card.classList.add('single-plot-card');
+      }
       grid.appendChild(card);
     });
 

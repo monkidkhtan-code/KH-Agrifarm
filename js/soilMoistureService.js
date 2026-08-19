@@ -292,12 +292,9 @@ class SoilMoistureService {
 
       return `
         <div class="activity-section">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
-            <span class="activity-label" style="color: #6ebc48; margin-bottom:0;"><i data-lucide="sprout"></i> Soil Moisture</span>
-            <div style="display:flex; align-items:center; gap:0.35rem;">
-              <button onclick="window.soilMoistureService.fetchFromFirebase().then(() => window.khApp.renderDailyCards())" title="Fetch latest readings from Cloud" style="background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.3); color:#86efac; border-radius:4px; font-size:0.6rem; font-weight:700; padding:1px 5px; cursor:pointer; display:inline-flex; align-items:center; gap:2px;"><i data-lucide="refresh-cw" style="width:8px;height:8px;"></i> Sync</button>
-              <span style="font-size:0.6rem; color:#86efac; display:inline-flex; align-items:center; gap:3px; background:rgba(74,222,128,0.1); padding:1px 5px; border-radius:4px; border:1px solid rgba(74,222,128,0.25);"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;"></span> 24/7 Live</span>
-            </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem; width:100%; box-sizing:border-box;">
+            <span class="activity-label" style="color: #6ebc48; margin-bottom:0; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:0.3rem;"><i data-lucide="sprout"></i> Soil Moisture</span>
+            <span style="font-size:0.6rem; color:#86efac; display:inline-flex; align-items:center; gap:3px; background:rgba(74,222,128,0.1); padding:1px 5px; border-radius:4px; border:1px solid rgba(74,222,128,0.25); white-space:nowrap; flex-shrink:0;"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;flex-shrink:0;"></span> 24/7 Live Cloud</span>
           </div>
           <div class="activity-content-box box-moisture" style="padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
             
@@ -325,8 +322,8 @@ class SoilMoistureService {
                   <span style="color:#facc15; display:inline-flex; align-items:center; gap:2px;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:rgba(250,204,21,0.45);"></span> Light</span>
                 </div>
               </div>
-              <div style="position: relative; height: 115px; width: 100%;">
-                <canvas id="sparkline-${plotId}-${s.slot}" data-plot="${plotId}" data-slot="${s.slot}" class="sensor-sparkline-canvas" style="height:115px !important; width:100% !important;"></canvas>
+              <div class="sensor-sparkline-canvas-box">
+                <canvas id="sparkline-${plotId}-${s.slot}" data-plot="${plotId}" data-slot="${s.slot}" class="sensor-sparkline-canvas"></canvas>
               </div>
             </div>
 
@@ -355,12 +352,9 @@ class SoilMoistureService {
 
     return `
       <div class="activity-section">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
-          <span class="activity-label" style="color: #6ebc48; margin-bottom:0;"><i data-lucide="sprout"></i> Soil Moisture</span>
-          <div style="display:flex; align-items:center; gap:0.35rem;">
-            <button onclick="window.soilMoistureService.fetchFromFirebase().then(() => window.khApp.renderDailyCards())" title="Fetch latest readings from Cloud" style="background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.3); color:#86efac; border-radius:4px; font-size:0.6rem; font-weight:700; padding:1px 5px; cursor:pointer; display:inline-flex; align-items:center; gap:2px;"><i data-lucide="refresh-cw" style="width:8px;height:8px;"></i> Sync</button>
-            <span style="font-size:0.6rem; color:#86efac; display:inline-flex; align-items:center; gap:3px; background:rgba(74,222,128,0.1); padding:1px 5px; border-radius:4px; border:1px solid rgba(74,222,128,0.25);"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;"></span> 24/7 Live</span>
-          </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem; width:100%; box-sizing:border-box;">
+          <span class="activity-label" style="color: #6ebc48; margin-bottom:0; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:0.3rem;"><i data-lucide="sprout"></i> Soil Moisture</span>
+          <span style="font-size:0.6rem; color:#86efac; display:inline-flex; align-items:center; gap:3px; background:rgba(74,222,128,0.1); padding:1px 5px; border-radius:4px; border:1px solid rgba(74,222,128,0.25); white-space:nowrap; flex-shrink:0;"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;flex-shrink:0;"></span> 24/7 Live Cloud</span>
         </div>
         <div class="activity-content-box box-moisture" style="padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
           
@@ -395,8 +389,8 @@ class SoilMoistureService {
                       <span style="color:#facc15; display:inline-flex; align-items:center; gap:2px;"><span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:rgba(250,204,21,0.45);"></span> Light</span>
                     </div>
                   </div>
-                  <div style="position: relative; height: 115px; width: 100%;">
-                    <canvas id="sparkline-${plotId}-${s.slot}" data-plot="${plotId}" data-slot="${s.slot}" class="sensor-sparkline-canvas" style="height:115px !important; width:100% !important;"></canvas>
+                  <div class="sensor-sparkline-canvas-box">
+                    <canvas id="sparkline-${plotId}-${s.slot}" data-plot="${plotId}" data-slot="${s.slot}" class="sensor-sparkline-canvas"></canvas>
                   </div>
                 </div>
 
