@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>KH Agrifarm | Farm Schedule, Spray & Fertilizer Tracker</title>
+  <meta name="description" content="Agricultural management dashboard for KH Agrifarm. Live Google Sheets sync for fertilizer levels, insecticide/fungicide spray logs, weather and rain forecast advisory in Tanjong Karang, Selangor.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#518d36">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="KH Agrifarm">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=10.81">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png?v=10.81">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=10.81">
+  <link rel="icon" type="image/png" href="assets/kh-logo.png?v=10.81">
+  <link rel="manifest" href="manifest.json?v=10.81">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js for EC & Fertilizer Trends -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Leaflet Map for MET Malaysia Rain Radar -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Custom Styles with cache-busting -->
+  <link rel="stylesheet" href="css/styles.css?v=10.81">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js?v=10.81').then(reg => {
+          reg.update();
+        }).catch(() => {});
+      });
+    }
+  </script>
+</head>
+<body>
+  <!-- Chili Farm Background Overlay -->
+  <div class="bg-overlay-container"></div>
+
+  <div id="app" class="app-container">
+    <!-- Top Navigation Header -->
+    <header class="top-navbar">
+      <div class="top-navbar-main">
+        <div class="brand-section">
+          <img src="assets/kh-logo-navbar.png" alt="KH AgriFarm Logo" class="brand-logo-img">
+          <div class="brand-text">
+            <div class="brand-title-wrap">
+              <span class="season-badge">Season 6 (2026/2027)</span>
+            </div>
+            <p class="brand-subtitle">Precision Chemical &amp; Fertilizer Management</p>
+          </div>
+        </div>
+
+        <!-- Top-Level Navigation Switcher in Title Bar -->
+        <nav class="header-main-nav" id="header-main-nav">
+          <button class="nav-mode-btn active" id="btn-mode-farmlog" data-mode="farmlog" title="View Farm &amp; Plot Operations">
+            <i data-lucide="sprout"></i>
+            <span>Farm Log</span>
+          </button>
+          <button class="nav-mode-btn" id="btn-mode-weather" data-mode="weather" title="View Weather &amp; Rain Forecast">
+            <i data-lucide="cloud-sun-rain"></i>
+            <span class="mode-label">Weather</span>
+            <span class="capsule-temp" id="capsule-temp">--°C</span>
+            <span class="capsule-spray-pill pill-safe" id="capsule-spray-pill">Checking...</span>
+          </button>
+        </nav>
+
+        <div class="header-actions">
+          <!-- Live Sync Status -->
+          <button id="btn-sync" class="btn-sync" title="Sync live with Google Sheets">
+            <i data-lucide="refresh-cw" id="sync-icon"></i>
+            <span id="sync-text">Synced Live</span>
+            <span id="sync-time" class="sync-time">Just now</span>
+          </button>
+
+          <!-- Settings / Config Modal Trigger -->
+          <button id="btn-settings" class="btn-icon" title="Settings & Sheet Config">
+            <i data-lucide="settings"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="main-layout">
+      <!-- 4-Plot Tab Navigation Bar -->
+      <section class="plot-navigation-section">
+        <div class="plot-tabs-bar" id="plot-tabs">
+          <button class="plot-tab active" data-plot="all">
+            <i data-lucide="layers" class="tab-icon"></i>
+            <span class="tab-label">ALL</span>
+            <span class="tab-count-badge" id="badge-all-count">4</span>
+          </button>
+          <button class="plot-tab tab-plot-1" data-plot="Season 6 PLOT 1">
+            <span class="plot-color-indicator dot-p1"></span>
+            <span class="tab-label">PLOT 1</span>
+          </button>
+          <button class="plot-tab tab-plot-2" data-plot="Season 6 PLOT 2">
+            <span class="plot-color-indicator dot-p2"></span>
+            <span class="tab-label">PLOT 2</span>
+          </button>
+          <button class="plot-tab tab-plot-3" data-plot="Backup Trees Batch 1">
+            <span class="plot-color-indicator dot-p3"></span>
+            <span class="tab-label">BACKUP 1</span>
+          </button>
+          <button class="plot-tab tab-plot-4" data-plot="Backup Trees Batch 2">
+            <span class="plot-color-indicator dot-p4"></span>
+            <span class="tab-label">BACKUP 2</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Date Control & View Mode Toolbar -->
+      <section class="date-toolbar-section">
+        <div class="date-navigator">
+          <button class="date-nav-btn" id="btn-prev-day" title="Previous Day">
+            <i data-lucide="chevron-left"></i>
+          </button>
+
+          <div class="current-date-picker-wrap" title="Tap to select custom date">
+            <input type="date" id="native-date-picker" class="native-date-input">
+            <i data-lucide="calendar" class="calendar-btn-icon"></i>
+            <span id="display-date-primary" class="date-primary">14 Aug 2026</span>
+            <span id="display-date-secondary" class="date-secondary-badge">Fri</span>
+          </div>
+
+          <button class="date-nav-btn" id="btn-next-day" title="Next Day">
+            <i data-lucide="chevron-right"></i>
+          </button>
+
+          <button class="btn-today-shortcut" id="btn-jump-today" title="Jump to Today">
+            <span>Today</span>
+          </button>
+        </div>
+
+        <!-- View Mode Switcher -->
+        <div class="view-mode-tabs">
+          <button class="view-tab active" data-view="daily" id="tab-view-daily" title="Daily Plot Log">
+            <i data-lucide="list-tree"></i>
+            <span>DAILY</span>
+          </button>
+          <button class="view-tab" data-view="calendar" id="tab-view-calendar" title="Month Calendar">
+            <i data-lucide="calendar-days"></i>
+            <span>CALENDAR</span>
+          </button>
+          <button class="view-tab" data-view="chemicals" id="tab-view-chemicals" title="Chemicals & EC History">
+            <i data-lucide="flask-conical"></i>
+            <span>CHEMICALS</span>
+          </button>
+          <button class="view-tab" data-view="all-season" id="tab-view-season" title="Full Master Schedule">
+            <i data-lucide="table-properties"></i>
+            <span>SCHEDULE</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Dynamic Views Container -->
+      <section class="content-views-container">
+        <!-- 1. DAILY ACTIVITIES VIEW (Default Main View) -->
+        <div id="view-daily-container" class="active-view">
+          <!-- 4-Plot Activity Cards Grid (No extra header banner, direct access to cards) -->
+          <div class="plot-cards-grid" id="daily-cards-grid">
+            <!-- Cards for Season 6 Plot 1, Plot 2, Backup Batch 1, Backup Batch 2 injected here -->
+          </div>
+        </div>
+
+        <!-- 2. DEDICATED WEATHER & RAIN FORECAST VIEW (Separate Tab) -->
+        <div id="view-weather-container" class="hidden-view">
+
+          <!-- 1 & 2. Top Weather Grid: Current Microclimate (Left) + Chili Spray Timing Advisory (Right) -->
+          <div class="weather-top-grid" style="margin-bottom: 1.25rem;">
+            <!-- 1. Current Microclimate Hero Card -->
+            <div class="card weather-hero-card" id="weather-hero-card">
+              <div class="weather-card-header">
+                <div class="weather-header-top-row">
+                  <div class="weather-title-wrap">
+                    <i data-lucide="gauge" class="header-icon text-amber" style="color: #fbbf24; width: 18px; height: 18px; flex-shrink: 0;"></i>
+                    <h3 class="card-title">Current Microclimate</h3>
+                  </div>
+                  <div class="weather-header-top-actions">
+                    <div id="weather-time-badge" class="weather-time-pill">
+                      <i data-lucide="sun" id="weather-time-icon" style="width:11px;height:11px;"></i>
+                      <span id="weather-time-text">Daylight</span>
+                    </div>
+                    <button class="btn-weather-refresh" id="btn-weather-refresh" title="Pull latest live weather update">
+                      <i data-lucide="rotate-cw" id="weather-refresh-spinner" style="width:10px;height:10px;"></i>
+                      <span>Update</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="weather-header-sub-row">
+                  <div class="weather-meta-left">
+                    <div class="weather-loc-line">
+                      <i data-lucide="map-pin" style="width:12px;height:12px;display:inline;color:#38bdf8;"></i>
+                      <span class="weather-loc-label">Tanjong Karang</span>
+                    </div>
+                    <div class="weather-sync-line">
+                      <span id="weather-sync-timestamp" class="weather-sync-label"><i data-lucide="radio" style="width:9px;height:9px;display:inline;"></i> Synced Live</span>
+                    </div>
+                  </div>
+                  <div class="weather-meta-right">
+                    <div class="weather-model-dropdown-wrap">
+                      <select id="select-weather-model-quick" class="weather-model-dropdown-select" title="Change meteorological forecast model">
+                        <option value="ecmwf_ifs025">🇪🇺 ECMWF (9km)</option>
+                        <option value="icon_seamless">🇩🇪 DWD ICON (13km)</option>
+                        <option value="gfs_seamless">🇺🇸 NOAA GFS (13km)</option>
+                        <option value="meteofrance_seamless">🇫🇷 ARPEGE (11km)</option>
+                        <option value="jma_seamless">🇯🇵 JMA (20km)</option>
+                        <option value="best_match">🌐 Best Match Ensemble</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hero Visual Display Box (Transparent Vector Illustration Art) -->
+              <div class="weather-hero-display" id="weather-hero-display-box">
+                <div class="weather-hero-info">
+                  <div class="weather-temp-wrap">
+                    <span id="weather-detail-temp" class="weather-temp-number">28°C</span>
+                  </div>
+                  <div class="weather-condition-wrap">
+                    <span id="weather-detail-condition" class="weather-condition-title">Overcast</span>
+                    <div class="weather-rain-prob-badge" id="weather-detail-rain-prob">
+                      <i data-lucide="umbrella" style="width:13px;height:13px;"></i>
+                      <span>41% Rain Probability</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="weather-hero-art" id="weather-hero-art-box">
+                  <!-- 100% Transparent Digital Illustration Vector Art -->
+                </div>
+              </div>
+
+              <!-- Tidy 4-Metric Strip (3-Row Layout: Humidity, Wind Speed, Gusts & Drift Risk) -->
+              <div class="weather-hero-metrics">
+                <div class="w-metric-card">
+                  <div class="w-metric-top">
+                    <i data-lucide="droplets" class="w-metric-icon" style="color: #38bdf8;"></i>
+                    <span class="w-metric-label">Humidity</span>
+                  </div>
+                  <div class="w-metric-mid">
+                    <span class="val" id="weather-detail-humidity">88%</span>
+                  </div>
+                  <div class="w-metric-bottom">
+                    <span class="w-metric-tag tag-safe" id="weather-tag-humidity">Optimal</span>
+                  </div>
+                </div>
+
+                <div class="w-metric-card">
+                  <div class="w-metric-top">
+                    <i data-lucide="wind" class="w-metric-icon" style="color: #86efac;"></i>
+                    <span class="w-metric-label">Wind</span>
+                  </div>
+                  <div class="w-metric-mid">
+                    <span class="val" id="weather-detail-wind">3 km/h</span>
+                  </div>
+                  <div class="w-metric-bottom">
+                    <span class="w-metric-tag tag-safe" id="weather-tag-wind">Calm</span>
+                  </div>
+                </div>
+
+                <div class="w-metric-card">
+                  <div class="w-metric-top">
+                    <i data-lucide="activity" class="w-metric-icon" style="color: #38bdf8;"></i>
+                    <span class="w-metric-label">Gusts</span>
+                  </div>
+                  <div class="w-metric-mid">
+                    <span class="val" id="weather-detail-gusts">5 km/h</span>
+                  </div>
+                  <div class="w-metric-bottom">
+                    <span class="w-metric-tag tag-safe" id="weather-tag-gusts">Gentle</span>
+                  </div>
+                </div>
+
+                <div class="w-metric-card">
+                  <div class="w-metric-top">
+                    <i data-lucide="shield-check" class="w-metric-icon" style="color: #fbbf24;"></i>
+                    <span class="w-metric-label">Drift</span>
+                  </div>
+                  <div class="w-metric-mid">
+                    <span class="val" id="weather-detail-drift">Low</span>
+                  </div>
+                  <div class="w-metric-bottom">
+                    <span class="w-metric-tag tag-safe" id="weather-tag-drift">Safe</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Chili Spray Timing Advisory: Morning vs. Evening Card -->
+            <div class="card spray-timing-card">
+              <div class="card-header">
+                <div class="header-title-group">
+                  <i data-lucide="sparkles" class="header-icon" style="color: #6ebc48;"></i>
+                  <div>
+                    <h3 class="card-title">Chili Spray Timing Advisory: Morning vs. Evening</h3>
+                    <p class="card-subtitle">Comparing Morning (&lt;10:00 AM) vs. Evening (&gt;5:30 PM) for optimal chemical adhesion and absorption</p>
+                  </div>
+                </div>
+                <div class="best-choice-badge" id="spray-best-choice-badge">
+                  <span class="best-label"><i data-lucide="check-circle-2"></i> Recommended Time</span>
+                  <span class="best-val" id="spray-best-choice-val">Evening (>5:30 PM)</span>
+                </div>
+              </div>
+
+              <div class="spray-windows-grid">
+                <!-- Morning Window -->
+                <div class="spray-window-box" id="window-morning-box">
+                  <div class="window-head">
+                    <div class="window-title-wrap">
+                      <i data-lucide="sunrise" style="color: #fbbf24; width: 22px; height: 22px;"></i>
+                      <h4>Morning Window (6:30 AM – 10:00 AM)</h4>
+                    </div>
+                    <span class="window-status-pill" id="morning-status-pill">RECOMMENDED</span>
+                  </div>
+                  <div class="window-body">
+                    <div class="window-metric-row">
+                      <span>Rain Risk: <strong id="morning-rain-risk">15%</strong></span>
+                      <span>Wind Speed: <strong id="morning-wind-speed">7 km/h</strong></span>
+                    </div>
+                    <p class="window-desc" id="morning-window-desc">Cooler temperature and open stomata promote active nutrient uptake. Spray before 10:00 AM to allow 3-4 hour rainfast drying before afternoon cloud buildup.</p>
+                  </div>
+                </div>
+
+                <!-- Evening Window -->
+                <div class="spray-window-box" id="window-evening-box">
+                  <div class="window-head">
+                    <div class="window-title-wrap">
+                      <i data-lucide="sunset" style="color: #f43f5e; width: 22px; height: 22px;"></i>
+                      <h4>Evening Window (5:30 PM – 7:30 PM)</h4>
+                    </div>
+                    <span class="window-status-pill pill-safe" id="evening-status-pill">HIGHLY RECOMMENDED</span>
+                  </div>
+                  <div class="window-body">
+                    <div class="window-metric-row">
+                      <span>Rain Risk: <strong id="evening-rain-risk">10%</strong></span>
+                      <span>Wind Speed: <strong id="evening-wind-speed">5 km/h</strong></span>
+                    </div>
+                    <p class="window-desc" id="evening-window-desc">Calmest winds and zero harsh UV sunlight. Eliminates leaf scorch (phytotoxicity) and gives systemic chemicals extended overnight absorption.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Verdict Summary Banner -->
+              <div class="spray-verdict-banner">
+                <i data-lucide="info" style="color: #6ebc48; width: 20px; height: 20px; flex-shrink: 0;"></i>
+                <p id="spray-verdict-summary-text">Loading agronomic timing analysis...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Live MET Malaysia Doppler Rain Radar & Forecast Map Card -->
+          <div class="card weather-radar-card" style="margin-bottom: 1.25rem;">
+            <div class="card-header">
+              <div class="header-title-group">
+                <i data-lucide="radar" class="header-icon" style="color: #38bdf8;"></i>
+                <div>
+                  <h3 class="card-title">Live MET Malaysia Doppler Rain Radar</h3>
+                  <p class="card-subtitle">Real-time radar cloud tracking &amp; rain nowcasting centered on Tanjong Karang</p>
+                </div>
+              </div>
+              <div class="radar-header-actions">
+                <a href="https://www.met.gov.my" target="_blank" rel="noopener noreferrer" class="btn-met-link" title="Open Official MET Malaysia Portal">
+                  <i data-lucide="external-link"></i> MET Malaysia
+                </a>
+              </div>
+            </div>
+
+            <div class="radar-container-wrap">
+              <div id="radar-map" class="radar-map-view"></div>
+              
+              <!-- Interactive Timeline Controls & Rain Scale Legend -->
+              <div class="radar-controls-bar">
+                <div class="radar-top-row">
+                  <button id="radar-play-btn" class="btn-radar-play"><i data-lucide="play"></i> Play</button>
+                  <div class="radar-slider-wrap">
+                    <input type="range" id="radar-time-slider" min="0" max="0" value="0" class="radar-slider">
+                  </div>
+                </div>
+                <div class="radar-bottom-row">
+                  <span id="radar-timestamp-label" class="radar-time-text">📡 <strong>Live Doppler</strong>: Loading...</span>
+                  <div class="radar-legend-bar">
+                    <span class="r-leg-item"><span class="r-leg-box" style="background: #00c853;"></span> Light</span>
+                    <span class="r-leg-item"><span class="r-leg-box" style="background: #ffd600;"></span> Mod</span>
+                    <span class="r-leg-item"><span class="r-leg-box" style="background: #ff6d00;"></span> Heavy</span>
+                    <span class="r-leg-item"><span class="r-leg-box" style="background: #d50000;"></span> Storm</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. 12-Hour Hourly Rain & Spray Safety Card -->
+          <div class="card hourly-rain-chart-box" style="margin-bottom: 1.25rem;">
+            <div class="card-header">
+              <div class="header-title-group">
+                <i data-lucide="clock" class="header-icon" style="color: #38bdf8;"></i>
+                <div>
+                  <h3 class="card-title">12-Hour Hourly Rain &amp; Spray Safety</h3>
+                  <p class="card-subtitle">Hourly timeline for chemical application</p>
+                </div>
+              </div>
+              <!-- View format switcher (Timeline vs. Mobile Vertical List) -->
+              <div class="hourly-layout-toggle">
+                <button id="btn-toggle-hourly-track" class="btn-toggle-view active" title="Timeline Chart"><i data-lucide="bar-chart-2"></i> Track</button>
+                <button id="btn-toggle-hourly-list" class="btn-toggle-view" title="Vertical Mobile List"><i data-lucide="list"></i> Vertical</button>
+              </div>
+            </div>
+
+            <!-- Desktop Horizontal Bar Track -->
+            <div class="hourly-forecast-track" id="hourly-forecast-track-full">
+              <!-- Injected via JS -->
+            </div>
+
+            <!-- Phone-Friendly Vertical List Format -->
+            <div class="hourly-vertical-list" id="hourly-vertical-list-full">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- 5. 3-Day Agricultural Rain Forecast -->
+          <div class="card threeday-forecast-card" style="margin-bottom: 1.25rem;">
+            <div class="card-header">
+              <div class="header-title-group">
+                <i data-lucide="calendar-range" class="header-icon" style="color: #60a5fa;"></i>
+                <div>
+                  <h3 class="card-title">3-Day Agricultural Rain Forecast</h3>
+                  <p class="card-subtitle">Rain probability, intensity (mm), and morning / noon / night breakdown for Tanjong Karang</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="threeday-grid" id="threeday-forecast-grid">
+              <!-- 3 Day Cards injected dynamically via JS -->
+            </div>
+          </div>
+
+          <!-- Simplified Weather Location Footer -->
+          <div class="weather-location-footer">
+            <div class="loc-footer-left">
+              <i data-lucide="map-pin" class="loc-footer-icon"></i>
+              <span class="loc-footer-text">Farm Location: <strong>LOT 20371, Kg. Sg. Gulang Gulang</strong></span>
+              <span class="loc-footer-coords" id="loc-coords-badge">GPS: 3.4197° N, 101.2034° E</span>
+            </div>
+            <a href="https://www.google.com/maps/search/?api=1&query=3.419685707205394,101.20339125840451" target="_blank" rel="noopener noreferrer" class="btn-maps-compact" id="btn-maps-locate">
+              <i data-lucide="external-link"></i>
+              <span>Open in Google Maps</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 3. MONTH CALENDAR VIEW -->
+        <div id="view-calendar-container" class="hidden-view">
+          <div class="calendar-card card">
+            <div class="calendar-header-nav">
+              <div class="cal-nav-buttons">
+                <button id="cal-prev-month" class="btn-icon"><i data-lucide="chevron-left"></i></button>
+                <h3 id="cal-month-title" class="calendar-title">August 2026</h3>
+                <button id="cal-next-month" class="btn-icon"><i data-lucide="chevron-right"></i></button>
+              </div>
+              <div class="calendar-legend">
+                <span class="legend-item"><span class="legend-dot dot-spray"></span> Insecticide &amp; Fungicide Spray</span>
+                <span class="legend-item"><span class="legend-dot dot-foliar"></span> Foliar Nutrition / Booster</span>
+                <span class="legend-item"><span class="legend-dot dot-drip"></span> Drip Fertigation / Fertilizer</span>
+                <span class="legend-item"><span class="legend-dot dot-task"></span> Field Tasks</span>
+              </div>
+            </div>
+            <div class="calendar-grid-header">
+              <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>
+            <div class="calendar-days-grid" id="calendar-days-grid">
+              <!-- Calendar day cells injected via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. CHEMICALS & EC TREND VIEW -->
+        <div id="view-chemicals-container" class="hidden-view">
+          <div class="chemicals-analytics-grid">
+            <!-- Chemical Search & Inventory Tracker -->
+            <div class="card chemical-search-card">
+              <div class="card-header">
+                <div class="header-title-group">
+                  <i data-lucide="search" class="header-icon" style="color: #6ebc48;"></i>
+                  <div>
+                    <h3 class="card-title">Chemical &amp; EC History</h3>
+                    <p class="card-subtitle">Search chemical application history and EC fertilizer progression</p>
+                  </div>
+                </div>
+              </div>
+              <div class="search-input-wrap">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="chemical-search-input" placeholder="Search e.g. Solomon, Mancozeb, Sivanto, Neem Oil, Super Amino, Plenum...">
+                <button id="btn-clear-search" class="btn-clear-search"><i data-lucide="x"></i></button>
+              </div>
+              <div class="quick-chemical-tags" id="quick-chemical-tags">
+                <!-- Quick filter tags -->
+              </div>
+              <div class="chemical-results-list" id="chemical-results-list">
+                <!-- Search results injected here -->
+              </div>
+            </div>
+
+            <!-- EC Level Chart Card -->
+            <div class="card ec-chart-card">
+              <div class="card-header">
+                <div class="header-title-group">
+                  <i data-lucide="activity" class="header-icon" style="color: #c084fc;"></i>
+                  <div>
+                    <h3 class="card-title">EC Level Progression</h3>
+                    <p class="card-subtitle">Fertilizer Electrical Conductivity curve throughout season</p>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="ecProgressionChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Soil Moisture & Temp Trend Chart Card -->
+            <div class="card moisture-chart-card" style="grid-column: 1 / -1;">
+              <div class="card-header">
+                <div class="header-title-group">
+                  <i data-lucide="sprout" class="header-icon" style="color: #6ebc48;"></i>
+                  <div>
+                    <h3 class="card-title">Soil Moisture &amp; Root Temp Dynamics</h3>
+                    <p class="card-subtitle">RainPoint Cloud 24-Hour telemetry curve across Plot 1 &amp; Plot 2 probes</p>
+                  </div>
+                </div>
+                <div class="chart-time-filter">
+                  <button class="btn-time-filter active" id="btn-moisture-filter-24h">24h</button>
+                  <button class="btn-time-filter" id="btn-moisture-filter-7d">7 Days</button>
+                </div>
+              </div>
+              <div class="chart-container" style="position: relative; height: 320px;">
+                <canvas id="soilMoistureTrendChart"></canvas>
+              </div>
+              <div class="moisture-chart-legend">
+                <span class="m-legend-item"><span class="m-legend-dot" style="background: #518d36;"></span> Plot 1: Sensor 1</span>
+                <span class="m-legend-item"><span class="m-legend-dot" style="background: #fbbf24;"></span> Plot 2: Sensor 1</span>
+                <span class="m-legend-item"><span class="m-legend-dot" style="background: #38bdf8;"></span> Plot 2: Sensor 2</span>
+                <span class="m-legend-item"><span class="m-legend-dot" style="background: #f87171; border-radius:0;"></span> Soil Temp (°C)</span>
+                <span class="m-legend-item"><span class="m-legend-band"></span> Optimal Zone (60–75%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. FULL SEASON TABLE VIEW -->
+        <div id="view-season-container" class="hidden-view">
+          <div class="card table-card">
+            <div class="card-header table-header-flex">
+              <div class="header-title-group">
+                <i data-lucide="table-2" class="header-icon" style="color: #fbbf24;"></i>
+                <div>
+                  <h3 class="card-title">Full Schedule Table</h3>
+                  <p class="card-subtitle" id="table-plot-subtitle">Showing all rows for Season 6</p>
+                </div>
+              </div>
+              <div class="table-controls">
+                <input type="text" id="table-filter-input" placeholder="Filter rows..." class="table-search-box">
+                <button id="btn-export-csv" class="btn-secondary"><i data-lucide="download"></i> Export CSV</button>
+              </div>
+            </div>
+            <div class="table-responsive-wrap">
+              <table class="master-farm-table" id="master-farm-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Day</th>
+                    <th>Stage</th>
+                    <th>Field Tasks &amp; Operations</th>
+                    <th>Insecticide &amp; Fungicide Spray</th>
+                    <th>Foliar Nutrition / Booster</th>
+                    <th>Drip Fertigation / Fertilizer</th>
+                    <th>EC Level</th>
+                  </tr>
+                </thead>
+                <tbody id="master-table-body">
+                  <!-- Rows injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <i data-lucide="leaf" class="footer-icon"></i>
+          <span><strong>KH AgriFarm</strong> &bull; LOT 20371, Kg. Sg. Gulang Gulang, 45500 Tanjong Karang, Selangor</span>
+        </div>
+        <div class="footer-links">
+          <span>Connected to Google Sheets</span>
+          <span class="divider">&bull;</span>
+          <span id="footer-data-count">Loading rows...</span>
+          <span class="divider">&bull;</span>
+          <span id="footer-live-time"></span>
+          <span class="divider">&bull;</span>
+          <span id="app-version-footer" class="app-version-badge">v10.81</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-backdrop hidden-modal">
+      <div class="modal-card modal-lg" style="max-width: 680px; max-height: 90vh; display: flex; flex-direction: column;">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i data-lucide="cpu" class="modal-header-icon" style="color: #6ebc48;"></i>
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <h3 style="font-size: 1.15rem; color: #ffffff; margin: 0;">KH Agrifarm Settings &amp; Connected Telemetry</h3>
+                <span id="app-version-settings" class="version-tag-settings">v10.81</span>
+              </div>
+              <p style="font-size: 0.74rem; color: #94a3b8; margin-top: 0.15rem;">Live hardware sensors, IoT hubs, and cloud database status</p>
+            </div>
+          </div>
+          <button id="modal-close-btn" class="btn-close-modal"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body" style="overflow-y: auto; gap: 1rem; padding: 1.25rem;">
+          
+          <!-- 1. Google Sheets Cloud Database Integration -->
+          <div class="settings-sec-box">
+            <div class="settings-sec-header">
+              <div class="settings-sec-title">
+                <i data-lucide="database" style="color: #38bdf8; width: 18px; height: 18px;"></i>
+                <div>
+                  <h4>Google Sheets Master Schedule Database</h4>
+                  <span class="settings-hub-sub">Google Cloud Direct CSV Feed &bull; Auto 15-Min Live Refresh</span>
+                </div>
+              </div>
+            </div>
+            <div class="settings-sec-body">
+              <div class="settings-probes-table">
+                <!-- Plots 1 & 2 -->
+                <div class="settings-probe-row">
+                  <div class="probe-row-line1">
+                    <span class="probe-name">Season 6 Plots (1 &amp; 2)</span>
+                    <span class="sensor-pill pill-safe" id="settings-sheet-p1p2-status">🟢 Active (Live CSV)</span>
+                  </div>
+                  <div class="probe-row-line2">
+                    <span class="probe-reading text-emerald" id="settings-sheet-p1p2-rows">478 Schedule Entries (P1+P2)</span>
+                  </div>
+                  <div class="probe-row-line3">
+                    <span class="probe-spec">Active: PLOT 1, PLOT 2</span>
+                    <span class="probe-sync" id="settings-sheet-p1p2-sync"><i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Synced: Live</span>
+                  </div>
+                </div>
+
+                <!-- Backup 1 & 2 -->
+                <div class="settings-probe-row">
+                  <div class="probe-row-line1">
+                    <span class="probe-name">Backup Trees (Batch 1 &amp; 2)</span>
+                    <span class="sensor-pill pill-safe" id="settings-sheet-bk-status">🟢 Active (Live CSV)</span>
+                  </div>
+                  <div class="probe-row-line2">
+                    <span class="probe-reading text-amber" id="settings-sheet-bk-rows">56 Schedule Entries (B1+B2)</span>
+                  </div>
+                  <div class="probe-row-line3">
+                    <span class="probe-spec">Active: Batch 1, Batch 2</span>
+                    <span class="probe-sync" id="settings-sheet-bk-sync"><i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Synced: Live</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Direct Master Spreadsheet Link -->
+              <div style="margin-top: 0.75rem; padding: 0.75rem 0.85rem; background: rgba(0,0,0,0.38); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <i data-lucide="file-spreadsheet" style="width: 18px; height: 18px; color: #10b981;"></i>
+                  <div>
+                    <div style="font-size: 0.78rem; color: #ffffff; font-weight: 700;">Google Sheets Master Database</div>
+                    <div style="font-size: 0.65rem; color: #94a3b8;">Direct verified link to season master schedule</div>
+                  </div>
+                </div>
+                <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQSIn4Ad6HiOlE5ko3fCnHjVVn4su9QTVzau6t-wrke4sbycCDSZSf5cgACsLrP_hsxc0PNoc--OPmz/pubhtml" target="_blank" rel="noopener noreferrer" class="btn-view-spreadsheet">
+                  <i data-lucide="external-link"></i> View Master Spreadsheet
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. RainPoint Soil Moisture Probes (Plot 1 & Plot 2) -->
+          <div class="settings-sec-box">
+            <div class="settings-sec-header">
+              <div class="settings-sec-title">
+                <i data-lucide="sprout" style="color: #6ebc48; width: 18px; height: 18px;"></i>
+                <div>
+                  <h4>RainPoint Smart Soil Moisture Probes</h4>
+                  <span class="settings-hub-sub">Gateway: HWG023WRF (MAC-30C922CEA038) &bull; Cloud Polling: 3 Mins</span>
+                </div>
+              </div>
+            </div>
+            <div class="settings-sec-body">
+              <div class="settings-probes-table">
+                <!-- Probe 1: Plot 1 -->
+                <div class="settings-probe-row">
+                  <div class="probe-row-line1">
+                    <span class="probe-name">Plot 1 (Sensor 1)</span>
+                    <span class="sensor-pill pill-safe" id="settings-p1-status">🟢 Online</span>
+                  </div>
+                  <div class="probe-row-line2">
+                    <span class="probe-reading" id="settings-p1-reading">48% Moisture &bull; 28.8°C</span>
+                    <span class="probe-bat" id="settings-p1-bat"><i data-lucide="battery" style="width:11px;height:11px;display:inline;"></i> 100%</span>
+                  </div>
+                  <div class="probe-row-line3">
+                    <span class="probe-spec">Slot D01 &bull; Model HCS021FRF</span>
+                    <span class="probe-sync" id="settings-p1-sync"><i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Synced: Live</span>
+                  </div>
+                </div>
+
+                <!-- Probe 2: Plot 2 Sensor 1 -->
+                <div class="settings-probe-row">
+                  <div class="probe-row-line1">
+                    <span class="probe-name">Plot 2 (Sensor 1)</span>
+                    <span class="sensor-pill pill-safe" id="settings-p2s1-status">🟢 Online</span>
+                  </div>
+                  <div class="probe-row-line2">
+                    <span class="probe-reading" id="settings-p2s1-reading">42% Moisture &bull; 28.2°C</span>
+                    <span class="probe-bat" id="settings-p2s1-bat"><i data-lucide="battery" style="width:11px;height:11px;display:inline;"></i> 100%</span>
+                  </div>
+                  <div class="probe-row-line3">
+                    <span class="probe-spec">Slot D02 &bull; Model HCS021FRF</span>
+                    <span class="probe-sync" id="settings-p2s1-sync"><i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Synced: Live</span>
+                  </div>
+                </div>
+
+                <!-- Probe 3: Plot 2 Sensor 2 -->
+                <div class="settings-probe-row">
+                  <div class="probe-row-line1">
+                    <span class="probe-name">Plot 2 (Sensor 2)</span>
+                    <span class="sensor-pill pill-safe" id="settings-p2s2-status">🟢 Online</span>
+                  </div>
+                  <div class="probe-row-line2">
+                    <span class="probe-reading" id="settings-p2s2-reading">46% Moisture &bull; 28.7°C</span>
+                    <span class="probe-bat" id="settings-p2s2-bat"><i data-lucide="battery" style="width:11px;height:11px;display:inline;"></i> 100%</span>
+                  </div>
+                  <div class="probe-row-line3">
+                    <span class="probe-spec">Slot D03 &bull; Model HCS021FRF</span>
+                    <span class="probe-sync" id="settings-p2s2-sync"><i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Synced: Live</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Tapo T315 Nursery Greenhouse (Backup 1 & Backup 2) -->
+          <div class="settings-sec-box">
+            <div class="settings-sec-header">
+              <div class="settings-sec-title">
+                <i data-lucide="thermometer-sun" style="color: #fbbf24; width: 18px; height: 18px;"></i>
+                <div>
+                  <h4>Tapo T315 Nursery Greenhouse Sensors</h4>
+                  <span class="settings-hub-sub">Local Hub: H100 (UK) at 192.168.0.182 &bull; Protocol: KLAP v2 (Local LAN)</span>
+                </div>
+              </div>
+            </div>
+            <div class="settings-sec-body">
+              <div class="settings-probes-table">
+                <!-- Backup 1 Row -->
+                <div class="settings-probe-row">
+                  <div class="probe-row-line1">
+                    <span class="probe-name">Backup 1 (Batch 1)</span>
+                    <span class="sensor-pill pill-safe" id="settings-tapo-status-bk1">🟢 Online</span>
+                  </div>
+                  <div class="probe-row-line2">
+                    <span class="probe-reading text-amber font-mono" id="settings-tapo-reading-bk1">34.4°C &bull; 70% RH (1.63 kPa)</span>
+                    <span class="probe-bat" id="settings-tapo-bat-bk1"><i data-lucide="battery" style="width:11px;height:11px;display:inline;"></i> 75% &bull; 📡 3/3</span>
+                  </div>
+                  <div class="probe-row-line3">
+                    <span class="probe-spec">Slot: Nursery &bull; Tapo T315</span>
+                    <span class="probe-sync" id="settings-tapo-sync-bk1"><i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Synced: Live</span>
+                  </div>
+                </div>
+
+                <!-- Backup 2 Row -->
+                <div class="settings-probe-row">
+                  <div class="probe-row-line1">
+                    <span class="probe-name">Backup 2 (Batch 2)</span>
+                    <span class="sensor-pill pill-safe" id="settings-tapo-status-bk2">🟢 Online</span>
+                  </div>
+                  <div class="probe-row-line2">
+                    <span class="probe-reading text-purple font-mono" id="settings-tapo-reading-bk2">34.4°C &bull; 70% RH (1.63 kPa)</span>
+                    <span class="probe-bat" id="settings-tapo-bat-bk2"><i data-lucide="battery" style="width:11px;height:11px;display:inline;"></i> 75% &bull; 📡 3/3</span>
+                  </div>
+                  <div class="probe-row-line3">
+                    <span class="probe-spec">Slot: Nursery &bull; Tapo T315</span>
+                    <span class="probe-sync" id="settings-tapo-sync-bk2"><i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Synced: Live</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Farm Coordinates & Weather Forecast Engine -->
+          <div class="settings-sec-box">
+            <div class="settings-sec-header">
+              <div class="settings-sec-title">
+                <i data-lucide="cloud-sun" style="color: #38bdf8; width: 18px; height: 18px;"></i>
+                <div>
+                  <h4>Weather Forecast Engine &amp; Model Switcher</h4>
+                  <span class="settings-hub-sub" id="settings-weather-model-subtitle">Active: ECMWF 9km Precision Model (Gold Standard)</span>
+                </div>
+              </div>
+            </div>
+            <div class="settings-sec-body">
+              
+              <!-- Forecast Model Selector Dropdown -->
+              <div style="margin-bottom: 0.75rem;">
+                <label for="select-weather-model" style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 0.35rem;">
+                  Select Meteorological Forecasting Model:
+                </label>
+                <select id="select-weather-model" class="form-select" style="width: 100%; background: #0f172a; color: #f8fafc; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; padding: 0.55rem 0.75rem; font-size: 0.82rem; font-weight: 600; cursor: pointer;">
+                  <option value="ecmwf_ifs025" selected>🇪🇺 ECMWF IFS (9km) — European Centre (Gold Standard)</option>
+                  <option value="icon_seamless">🇩🇪 DWD ICON (13km) — German Met Service (Best for Storms &amp; Afternoon Rain)</option>
+                  <option value="gfs_seamless">🇺🇸 NOAA GFS (13km) — US Global Forecast System</option>
+                  <option value="meteofrance_seamless">🇫🇷 Météo-France ARPEGE (11km) — Maritime Tropical Model</option>
+                  <option value="ukmo_seamless">🇬🇧 UK Met Office (10km) — Global Atmospheric Model</option>
+                  <option value="jma_seamless">🇯🇵 JMA GSM (20km) — Japan Met Agency (SE Asia Monsoon Expert)</option>
+                  <option value="best_match">🌐 Best Match (Ensemble) — Auto Multi-Model Consensus</option>
+                </select>
+                <div id="weather-model-desc" style="margin-top: 0.4rem; padding: 0.5rem 0.65rem; background: rgba(0,0,0,0.3); border-left: 3px solid #38bdf8; border-radius: 4px; font-size: 0.72rem; color: #94a3b8; line-height: 1.35;">
+                  Gold Standard global model. Exceptional tropical rainfall &amp; wind pattern accuracy for Selangor coast.
+                </div>
+              </div>
+
+              <div class="settings-probes-table">
+                <div class="settings-probe-row">
+                  <div class="probe-row-line1">
+                    <span class="probe-name">Precision Microclimate GPS</span>
+                    <span class="sensor-pill pill-safe">🟢 Tanjong Karang</span>
+                  </div>
+                  <div class="probe-row-line2">
+                    <span class="probe-reading font-mono text-cyan" id="settings-weather-coords">3.4197° N, 101.2034° E</span>
+                  </div>
+                  <div class="probe-row-line3">
+                    <span class="probe-spec">LOT 20371, Kg. Sg. Gulang Gulang</span>
+                    <span class="probe-sync"><i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Live Auto 10m</span>
+                  </div>
+                </div>
+              </div>
+              <div class="coords-row" style="margin-top: 0.65rem;">
+                <input type="number" step="0.0001" id="input-location-lat" class="form-input" placeholder="Latitude" value="3.4197">
+                <input type="number" step="0.0001" id="input-location-lon" class="form-input" placeholder="Longitude" value="101.2034">
+                <button id="btn-detect-gps" class="btn-secondary" title="Auto-detect current GPS location"><i data-lucide="map-pin"></i> GPS</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-actions" style="margin-top: 0.5rem;">
+            <button id="btn-save-settings" class="btn-primary"><i data-lucide="refresh-cw"></i> Sync &amp; Refresh All Sensors</button>
+            <button id="btn-reset-defaults" class="btn-text">Reset Coordinates</button>
+          </div>
+
+          <!-- Settings Modal Footer Version Info -->
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0.25rem 0.1rem 0.25rem; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.72rem; color: #64748b;">
+            <span>KH Agrifarm Operating System</span>
+            <span style="display: inline-flex; align-items: center; gap: 5px; color: #34d399; font-weight: 700; font-family: monospace;">
+              <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+              Build <span id="app-version-detail">v10.81</span> (Live PWA)
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Soil Moisture Trend Modal (Quick Access from Daily Cards) -->
+    <div id="moisture-modal" class="modal-backdrop hidden-modal">
+      <div class="modal-card modal-lg">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <i data-lucide="sprout" class="modal-header-icon" style="color: #6ebc48;"></i>
+            <div>
+              <h3>Soil Moisture &amp; Root Temperature Dynamics</h3>
+              <p style="font-size: 0.76rem; color: #94a3b8; margin-top: 0.15rem;">Live 24-hour telemetry from RainPoint Gateway Hub probes</p>
+            </div>
+          </div>
+          <button id="moisture-modal-close-btn" class="btn-close-modal"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-chart-head">
+            <span style="font-size: 0.8rem; color: #cbd5e1;">Continuous telemetry curves for Plot 1 (Sensor 1), Plot 2 (Sensor 1 &amp; 2)</span>
+            <div class="chart-time-filter">
+              <button class="btn-time-filter active" id="modal-btn-filter-24h">24h</button>
+              <button class="btn-time-filter" id="modal-btn-filter-7d">7 Days</button>
+            </div>
+          </div>
+          <div class="chart-container" style="position: relative; height: 320px; margin: 0.8rem 0;">
+            <canvas id="modalSoilMoistureChart"></canvas>
+          </div>
+          <div class="moisture-chart-legend">
+            <span class="m-legend-item"><span class="m-legend-dot" style="background: #518d36;"></span> Plot 1: Sensor 1</span>
+            <span class="m-legend-item"><span class="m-legend-dot" style="background: #fbbf24;"></span> Plot 2: Sensor 1</span>
+            <span class="m-legend-item"><span class="m-legend-dot" style="background: #38bdf8;"></span> Plot 2: Sensor 2</span>
+            <span class="m-legend-item"><span class="m-legend-dot" style="background: #f87171; border-radius:0;"></span> Soil Temp (°C)</span>
+            <span class="m-legend-item"><span class="m-legend-band"></span> Optimal Zone (60–75%)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Scripts -->
+  <script src="js/config.js?v=10.81"></script>
+  <script src="js/sampleData.js?v=10.81"></script>
+  <script src="js/googleSheetsService.js?v=10.81"></script>
+  <script src="js/weatherService.js?v=10.81"></script>
+  <script src="js/sprayAdvisory.js?v=10.81"></script>
+  <script src="js/soilMoistureService.js?v=10.81"></script>
+  <script src="js/tapoService.js?v=10.81"></script>
+  <script src="js/radarService.js?v=10.81"></script>
+  <script src="js/app.js?v=10.81"></script>
+</body>
+</html>

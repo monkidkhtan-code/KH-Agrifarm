@@ -1,0 +1,36 @@
+{
+  "name": "KH Agrifarm - Farm Schedule & Weather",
+  "short_name": "KH Agrifarm",
+  "description": "Agricultural management app for KH Agrifarm. Fertilizer levels, spray logs, EC tracking and Tanjong Karang precision weather forecast.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#03140e",
+  "theme_color": "#518d36",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

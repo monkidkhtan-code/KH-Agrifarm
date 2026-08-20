@@ -1,0 +1,21 @@
+﻿{
+    "hub":  {
+                "source":  "SmartThings Cloud Bridge (24/7)",
+                "name":  "KH Agrifarm Smart Hub",
+                "model":  "H100(UK)",
+                "online":  true
+            },
+    "sensor":  {
+                   "humidity":  49,
+                   "statusLabel":  "Extreme Heat Stress",
+                   "vpd":  3.66,
+                   "status":  "danger",
+                   "name":  "Nursery Greenhouse Sensor",
+                   "model":  "Tapo T315",
+                   "signal":  "3/3",
+                   "battery":  75,
+                   "syncTime":  "2026-08-18 15:56:55",
+                   "temperature":  39.5
+               },
+    "lastUpdated":  "2026-08-18T15:56:55+08:00"
+}

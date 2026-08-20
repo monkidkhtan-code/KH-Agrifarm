@@ -1,0 +1,62 @@
+{
+  "plots": {
+    "plot-1": {
+      "plotName": "Plot 1",
+      "avgMoisture": 81,
+      "avgTemperature": 26.2,
+      "overallStatus": "optimal",
+      "sensors": [
+        {
+          "slot": "D01",
+          "name": "Sensor 1",
+          "model": "HCS021FRF",
+          "moisture": 81,
+          "temperature": 26.2,
+          "lux": 0,
+          "battery": 100,
+          "status": "optimal",
+          "statusLabel": "Optimal for Chili",
+          "syncTime": "2026-08-20 20:54:39"
+        }
+      ]
+    },
+    "plot-2": {
+      "plotName": "Plot 2",
+      "avgMoisture": 86,
+      "avgTemperature": 26.6,
+      "overallStatus": "optimal",
+      "sensors": [
+        {
+          "slot": "D02",
+          "name": "Sensor 1",
+          "model": "HCS021FRF",
+          "moisture": 83,
+          "temperature": 26.5,
+          "lux": 0,
+          "battery": 100,
+          "status": "optimal",
+          "statusLabel": "Optimal for Chili",
+          "syncTime": "2026-08-20 20:54:08"
+        },
+        {
+          "slot": "D03",
+          "name": "Sensor 2",
+          "model": "HCS021FRF",
+          "moisture": 89,
+          "temperature": 26.7,
+          "lux": 0,
+          "battery": 100,
+          "status": "optimal",
+          "statusLabel": "Optimal for Chili",
+          "syncTime": "2026-08-20 20:51:45"
+        }
+      ]
+    }
+  },
+  "lastUpdated": "2026-08-20T20:54:50.000Z",
+  "gateway": {
+    "name": "MAC-30C922CEA038",
+    "mac": "30:C9:22:CE:A0:38",
+    "online": true
+  }
+}
