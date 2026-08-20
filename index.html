@@ -13,11 +13,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="KH Agrifarm">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=10.69">
-  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png?v=10.69">
-  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=10.69">
-  <link rel="icon" type="image/png" href="assets/kh-logo.png?v=10.69">
-  <link rel="manifest" href="manifest.json?v=10.69">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=10.72">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png?v=10.72">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=10.72">
+  <link rel="icon" type="image/png" href="assets/kh-logo.png?v=10.72">
+  <link rel="manifest" href="manifest.json?v=10.72">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Chart.js for EC & Fertilizer Trends -->
@@ -26,11 +26,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Custom Styles with cache-busting -->
-  <link rel="stylesheet" href="css/styles.css?v=10.69">
+  <link rel="stylesheet" href="css/styles.css?v=10.72">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=10.69').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=10.72').then(reg => {
           reg.update();
         }).catch(() => {});
       });
@@ -607,14 +607,14 @@
         </div>
         <div class="modal-body" style="overflow-y: auto; gap: 1rem; padding: 1.25rem;">
           
-          <!-- 1. Google Sheets Cloud Database Integration (URL Hidden) -->
+          <!-- 1. Google Sheets Cloud Database Integration -->
           <div class="settings-sec-box">
             <div class="settings-sec-header">
               <div class="settings-sec-title">
                 <i data-lucide="database" style="color: #38bdf8; width: 18px; height: 18px;"></i>
                 <div>
                   <h4>Google Sheets Master Schedule Database</h4>
-                  <span class="settings-hub-sub">Google Cloud Secure Database &bull; Auto 15-Min Refresh</span>
+                  <span class="settings-hub-sub">Google Cloud Direct CSV Feed &bull; Auto 15-Min Live Refresh</span>
                 </div>
               </div>
             </div>
@@ -624,14 +624,14 @@
                 <div class="settings-probe-row">
                   <div class="probe-row-line1">
                     <span class="probe-name">Season 6 Plots (1 &amp; 2)</span>
-                    <span class="sensor-pill pill-safe">🟢 Active</span>
+                    <span class="sensor-pill pill-safe" id="settings-sheet-p1p2-status">🟢 Active (Live CSV)</span>
                   </div>
                   <div class="probe-row-line2">
-                    <span class="probe-reading text-emerald" id="settings-sheet-p1p2-rows">442 Schedule Entries (P1+P2)</span>
+                    <span class="probe-reading text-emerald" id="settings-sheet-p1p2-rows">478 Schedule Entries (P1+P2)</span>
                   </div>
                   <div class="probe-row-line3">
                     <span class="probe-spec">Active: PLOT 1, PLOT 2</span>
-                    <span class="probe-sync" id="settings-sheet-p1p2-sync"><i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Synced: Live (Auto 15m)</span>
+                    <span class="probe-sync" id="settings-sheet-p1p2-sync"><i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Synced: Live</span>
                   </div>
                 </div>
 
@@ -639,16 +639,30 @@
                 <div class="settings-probe-row">
                   <div class="probe-row-line1">
                     <span class="probe-name">Backup Trees (Batch 1 &amp; 2)</span>
-                    <span class="sensor-pill pill-safe">🟢 Active</span>
+                    <span class="sensor-pill pill-safe" id="settings-sheet-bk-status">🟢 Active (Live CSV)</span>
                   </div>
                   <div class="probe-row-line2">
                     <span class="probe-reading text-amber" id="settings-sheet-bk-rows">56 Schedule Entries (B1+B2)</span>
                   </div>
                   <div class="probe-row-line3">
                     <span class="probe-spec">Active: Batch 1, Batch 2</span>
-                    <span class="probe-sync" id="settings-sheet-bk-sync"><i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Synced: Live (Auto 15m)</span>
+                    <span class="probe-sync" id="settings-sheet-bk-sync"><i data-lucide="radio" style="width:10px;height:10px;display:inline;"></i> Synced: Live</span>
                   </div>
                 </div>
+              </div>
+
+              <!-- Direct Master Spreadsheet Link -->
+              <div style="margin-top: 0.75rem; padding: 0.75rem 0.85rem; background: rgba(0,0,0,0.38); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <i data-lucide="file-spreadsheet" style="width: 18px; height: 18px; color: #10b981;"></i>
+                  <div>
+                    <div style="font-size: 0.78rem; color: #ffffff; font-weight: 700;">Google Sheets Master Database</div>
+                    <div style="font-size: 0.65rem; color: #94a3b8;">Direct verified link to season master schedule</div>
+                  </div>
+                </div>
+                <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQSIn4Ad6HiOlE5ko3fCnHjVVn4su9QTVzau6t-wrke4sbycCDSZSf5cgACsLrP_hsxc0PNoc--OPmz/pubhtml" target="_blank" rel="noopener noreferrer" class="btn-view-spreadsheet">
+                  <i data-lucide="external-link"></i> View Master Spreadsheet
+                </a>
               </div>
             </div>
           </div>
@@ -845,14 +859,14 @@
   </div>
 
   <!-- Application Scripts -->
-  <script src="js/config.js?v=10.69"></script>
-  <script src="js/sampleData.js?v=10.69"></script>
-  <script src="js/googleSheetsService.js?v=10.69"></script>
-  <script src="js/weatherService.js?v=10.69"></script>
-  <script src="js/sprayAdvisory.js?v=10.69"></script>
-  <script src="js/soilMoistureService.js?v=10.69"></script>
-  <script src="js/tapoService.js?v=10.69"></script>
-  <script src="js/radarService.js?v=10.69"></script>
-  <script src="js/app.js?v=10.69"></script>
+  <script src="js/config.js?v=10.72"></script>
+  <script src="js/sampleData.js?v=10.72"></script>
+  <script src="js/googleSheetsService.js?v=10.72"></script>
+  <script src="js/weatherService.js?v=10.72"></script>
+  <script src="js/sprayAdvisory.js?v=10.72"></script>
+  <script src="js/soilMoistureService.js?v=10.72"></script>
+  <script src="js/tapoService.js?v=10.72"></script>
+  <script src="js/radarService.js?v=10.72"></script>
+  <script src="js/app.js?v=10.72"></script>
 </body>
 </html>

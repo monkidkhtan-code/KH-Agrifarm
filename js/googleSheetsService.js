@@ -185,14 +185,71 @@ class GoogleSheetsService {
   }
 
   /**
+   * Get direct clickable links for all Google Sheets data sources
+   */
+  getSourceLinks() {
+    const baseHtml = this.config.sheets.htmlUrl || "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSIn4Ad6HiOlE5ko3fCnHjVVn4su9QTVzau6t-wrke4sbycCDSZSf5cgACsLrP_hsxc0PNoc--OPmz/pubhtml";
+    const baseUrl = this.config.sheets.baseUrl || "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSIn4Ad6HiOlE5ko3fCnHjVVn4su9QTVzau6t-wrke4sbycCDSZSf5cgACsLrP_hsxc0PNoc--OPmz/pub";
+    
+    return {
+      spreadsheetHtml: baseHtml,
+      plots: this.config.sheets.plots.map(p => ({
+        id: p.id,
+        name: p.name,
+        shortName: p.shortName,
+        gid: p.gid,
+        csvUrl: `${baseUrl}?gid=${p.gid}&single=true&output=csv`,
+        htmlUrl: `${baseHtml}?gid=${p.gid}&single=true`
+      }))
+    };
+  }
+
+  /**
    * Fetch all 4 plots simultaneously with live status report
+   * Prioritizes live Google Sheets CSV over Firebase
    */
   async fetchAllPlots() {
     const results = {};
     let liveSuccessCount = 0;
-    const cloudUrl = window.APP_CONFIG?.cloudTelemetry?.endpointUrl;
 
-    // Strategy 0: High-Speed Direct Cloud Bridge (Firebase RTDB)
+    // Strategy 1: Fetch Live CSV directly from Google Sheets for all 4 plots
+    const plotPromises = this.config.sheets.plots.map(async (plot) => {
+      const liveData = await this.fetchPlotCSV(plot);
+      if (liveData && liveData.length > 0) {
+        results[plot.name] = liveData;
+        liveSuccessCount++;
+      }
+    });
+
+    await Promise.all(plotPromises);
+
+    // If live Google Sheets CSV fetch succeeded for all/most plots, save and return!
+    if (liveSuccessCount >= 2) {
+      this.saveToCache(results);
+      localStorage.setItem(this.lastSyncKey, new Date().toISOString());
+
+      // Silently sync fresh Google Sheets data to Firebase RTDB in background
+      const cloudUrl = window.APP_CONFIG?.cloudTelemetry?.endpointUrl;
+      if (cloudUrl) {
+        try {
+          fetch(cloudUrl.replace('.json', '/sheetsData.json'), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(results)
+          }).catch(() => {});
+        } catch(e) {}
+      }
+
+      return {
+        data: results,
+        liveSuccessCount: liveSuccessCount,
+        totalPlots: this.config.sheets.plots.length,
+        source: 'Google Sheets (Live CSV)'
+      };
+    }
+
+    // Strategy 2: Fallback to Cloud Firebase RTDB if direct Google Sheets CSV was blocked
+    const cloudUrl = window.APP_CONFIG?.cloudTelemetry?.endpointUrl;
     if (cloudUrl && cloudUrl.trim() !== "") {
       try {
         const fbUrl = cloudUrl.replace('.json', '/sheetsData.json') + `?v=${Date.now()}`;
@@ -213,38 +270,30 @@ class GoogleSheetsService {
               return {
                 data: results,
                 liveSuccessCount: validPlots,
-                totalPlots: this.config.sheets.plots.length
+                totalPlots: this.config.sheets.plots.length,
+                source: 'Firebase Cloud Bridge'
               };
             }
           }
         }
       } catch (e) {
-        console.warn("Firebase sheetsData fetch failed, trying CSV proxies", e);
+        console.warn("Firebase sheetsData fallback failed", e);
       }
     }
 
-    const plotPromises = this.config.sheets.plots.map(async (plot) => {
-      const liveData = await this.fetchPlotCSV(plot);
-      if (liveData && liveData.length > 0) {
-        results[plot.name] = liveData;
-        liveSuccessCount++;
-      } else {
+    // Strategy 3: Final Fallback to localStorage Cache or Preloaded Sample Data
+    this.config.sheets.plots.forEach(plot => {
+      if (!results[plot.name] || results[plot.name].length === 0) {
         const cached = this.getCachedPlotData(plot.name);
         results[plot.name] = cached || (window.SAMPLE_FARM_DATA ? window.SAMPLE_FARM_DATA[plot.name] : []);
       }
     });
 
-    await Promise.all(plotPromises);
-
-    if (liveSuccessCount > 0) {
-      this.saveToCache(results);
-      localStorage.setItem(this.lastSyncKey, new Date().toISOString());
-    }
-
     return {
       data: results,
       liveSuccessCount: liveSuccessCount,
-      totalPlots: this.config.sheets.plots.length
+      totalPlots: this.config.sheets.plots.length,
+      source: 'Local Farm Cache'
     };
   }
 
