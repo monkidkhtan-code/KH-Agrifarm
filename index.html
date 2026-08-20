@@ -13,11 +13,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="KH Agrifarm">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=10.81">
-  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png?v=10.81">
-  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=10.81">
-  <link rel="icon" type="image/png" href="assets/kh-logo.png?v=10.81">
-  <link rel="manifest" href="manifest.json?v=10.81">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=10.82">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png?v=10.82">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=10.82">
+  <link rel="icon" type="image/png" href="assets/kh-logo.png?v=10.82">
+  <link rel="manifest" href="manifest.json?v=10.82">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Chart.js for EC & Fertilizer Trends -->
@@ -26,11 +26,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Custom Styles with cache-busting -->
-  <link rel="stylesheet" href="css/styles.css?v=10.81">
+  <link rel="stylesheet" href="css/styles.css?v=10.82">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=10.81').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=10.82').then(reg => {
           reg.update();
         }).catch(() => {});
       });
@@ -615,16 +615,18 @@
       <div class="modal-card modal-lg" style="max-width: 680px; max-height: 90vh; display: flex; flex-direction: column;">
         <div class="modal-header">
           <div class="modal-title-group">
-            <i data-lucide="cpu" class="modal-header-icon" style="color: #6ebc48;"></i>
-            <div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <h3 style="font-size: 1.15rem; color: #ffffff; margin: 0;">KH Agrifarm Settings &amp; Connected Telemetry</h3>
-                <span id="app-version-settings" class="version-tag-settings">v10.81</span>
+            <div class="modal-icon-badge">
+              <i data-lucide="cpu" class="modal-header-icon"></i>
+            </div>
+            <div class="modal-title-text-wrap">
+              <div class="modal-title-heading-row">
+                <h3 class="modal-title">KH Agrifarm Settings &amp; Telemetry</h3>
+                <span id="app-version-settings" class="version-tag-settings">v10.82</span>
               </div>
-              <p style="font-size: 0.74rem; color: #94a3b8; margin-top: 0.15rem;">Live hardware sensors, IoT hubs, and cloud database status</p>
+              <p class="modal-subtitle">Live hardware sensors, IoT hubs &amp; cloud database status</p>
             </div>
           </div>
-          <button id="modal-close-btn" class="btn-close-modal"><i data-lucide="x"></i></button>
+          <button id="modal-close-btn" class="btn-close-modal" aria-label="Close Settings"><i data-lucide="x"></i></button>
         </div>
         <div class="modal-body" style="overflow-y: auto; gap: 1rem; padding: 1.25rem;">
           
@@ -673,16 +675,19 @@
               </div>
 
               <!-- Direct Master Spreadsheet Link -->
-              <div style="margin-top: 0.75rem; padding: 0.75rem 0.85rem; background: rgba(0,0,0,0.38); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <i data-lucide="file-spreadsheet" style="width: 18px; height: 18px; color: #10b981;"></i>
-                  <div>
-                    <div style="font-size: 0.78rem; color: #ffffff; font-weight: 700;">Google Sheets Master Database</div>
-                    <div style="font-size: 0.65rem; color: #94a3b8;">Direct verified link to season master schedule</div>
+              <div class="settings-spreadsheet-card">
+                <div class="spreadsheet-card-content">
+                  <div class="spreadsheet-icon-badge">
+                    <i data-lucide="file-spreadsheet" class="spreadsheet-icon"></i>
+                  </div>
+                  <div class="spreadsheet-card-text">
+                    <div class="spreadsheet-card-title">Google Sheets Master Database</div>
+                    <div class="spreadsheet-card-subtitle">Direct verified link to season master schedule</div>
                   </div>
                 </div>
                 <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQSIn4Ad6HiOlE5ko3fCnHjVVn4su9QTVzau6t-wrke4sbycCDSZSf5cgACsLrP_hsxc0PNoc--OPmz/pubhtml" target="_blank" rel="noopener noreferrer" class="btn-view-spreadsheet">
-                  <i data-lucide="external-link"></i> View Master Spreadsheet
+                  <i data-lucide="external-link"></i>
+                  <span>View Master Spreadsheet</span>
                 </a>
               </div>
             </div>
@@ -865,7 +870,7 @@
             <span>KH Agrifarm Operating System</span>
             <span style="display: inline-flex; align-items: center; gap: 5px; color: #34d399; font-weight: 700; font-family: monospace;">
               <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
-              Build <span id="app-version-detail">v10.81</span> (Live PWA)
+              Build <span id="app-version-detail">v10.82</span> (Live PWA)
             </span>
           </div>
         </div>
@@ -877,13 +882,17 @@
       <div class="modal-card modal-lg">
         <div class="modal-header">
           <div class="modal-title-group">
-            <i data-lucide="sprout" class="modal-header-icon" style="color: #6ebc48;"></i>
-            <div>
-              <h3>Soil Moisture &amp; Root Temperature Dynamics</h3>
-              <p style="font-size: 0.76rem; color: #94a3b8; margin-top: 0.15rem;">Live 24-hour telemetry from RainPoint Gateway Hub probes</p>
+            <div class="modal-icon-badge">
+              <i data-lucide="sprout" class="modal-header-icon"></i>
+            </div>
+            <div class="modal-title-text-wrap">
+              <div class="modal-title-heading-row">
+                <h3 class="modal-title">Soil Moisture &amp; Dynamics</h3>
+              </div>
+              <p class="modal-subtitle">Live 24-hour telemetry from RainPoint Gateway Hub probes</p>
             </div>
           </div>
-          <button id="moisture-modal-close-btn" class="btn-close-modal"><i data-lucide="x"></i></button>
+          <button id="moisture-modal-close-btn" class="btn-close-modal" aria-label="Close Soil Moisture Modal"><i data-lucide="x"></i></button>
         </div>
         <div class="modal-body">
           <div class="modal-chart-head">
