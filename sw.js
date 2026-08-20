@@ -1,7 +1,7 @@
 /**
  * KH AGRIFARM - SERVICE WORKER (NETWORK FIRST STRATEGY)
  */
-const CACHE_NAME = 'kh-agrifarm-v10.73';
+const CACHE_NAME = 'kh-agrifarm-v10.74';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

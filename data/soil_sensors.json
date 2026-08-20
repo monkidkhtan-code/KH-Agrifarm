@@ -1,62 +1,62 @@
-﻿{
-    "plots":  {
-                  "plot-1":  {
-                                 "overallStatus":  "optimal",
-                                 "plotName":  "Plot 1",
-                                 "sensors":  [
-                                                 {
-                                                     "slot":  "D01",
-                                                     "name":  "Sensor 1",
-                                                     "model":  "HCS021FRF",
-                                                     "moisture":  75,
-                                                     "temperature":  34.4,
-                                                     "lux":  3513,
-                                                     "battery":  100,
-                                                     "status":  "optimal",
-                                                     "statusLabel":  "Optimal for Chili",
-                                                     "syncTime":  "2026-08-19 11:30:40"
-                                                 }
-                                             ],
-                                 "avgTemperature":  34.4,
-                                 "avgMoisture":  75
-                             },
-                  "plot-2":  {
-                                 "overallStatus":  "moderate",
-                                 "plotName":  "Plot 2",
-                                 "sensors":  [
-                                                 {
-                                                     "slot":  "D02",
-                                                     "name":  "Sensor 1",
-                                                     "model":  "HCS021FRF",
-                                                     "moisture":  52,
-                                                     "temperature":  36.2,
-                                                     "lux":  9186,
-                                                     "battery":  100,
-                                                     "status":  "moderate",
-                                                     "statusLabel":  "Moderate",
-                                                     "syncTime":  "2026-08-19 11:31:01"
-                                                 },
-                                                 {
-                                                     "slot":  "D03",
-                                                     "name":  "Sensor 2",
-                                                     "model":  "HCS021FRF",
-                                                     "moisture":  63,
-                                                     "temperature":  35.9,
-                                                     "lux":  10364,
-                                                     "battery":  100,
-                                                     "status":  "optimal",
-                                                     "statusLabel":  "Optimal for Chili",
-                                                     "syncTime":  "2026-08-19 11:29:45"
-                                                 }
-                                             ],
-                                 "avgTemperature":  36,
-                                 "avgMoisture":  58
-                             }
-              },
-    "lastUpdated":  "2026-08-19T12:30:42.4823022+08:00",
-    "gateway":  {
-                    "name":  "MAC-30C922CEA038",
-                    "mac":  "30:C9:22:CE:A0:38",
-                    "online":  true
-                }
+{
+  "plots": {
+    "plot-1": {
+      "plotName": "Plot 1",
+      "avgMoisture": 82,
+      "avgTemperature": 34.4,
+      "overallStatus": "optimal",
+      "sensors": [
+        {
+          "slot": "D01",
+          "name": "Sensor 1",
+          "model": "HCS021FRF",
+          "moisture": 82,
+          "temperature": 34.4,
+          "lux": 1598,
+          "battery": 100,
+          "status": "optimal",
+          "statusLabel": "Optimal for Chili",
+          "syncTime": "2026-08-20 17:52:38"
+        }
+      ]
+    },
+    "plot-2": {
+      "plotName": "Plot 2",
+      "avgMoisture": 88,
+      "avgTemperature": 34.7,
+      "overallStatus": "optimal",
+      "sensors": [
+        {
+          "slot": "D02",
+          "name": "Sensor 1",
+          "model": "HCS021FRF",
+          "moisture": 85,
+          "temperature": 34.7,
+          "lux": 2380,
+          "battery": 100,
+          "status": "optimal",
+          "statusLabel": "Optimal for Chili",
+          "syncTime": "2026-08-20 17:52:07"
+        },
+        {
+          "slot": "D03",
+          "name": "Sensor 2",
+          "model": "HCS021FRF",
+          "moisture": 90,
+          "temperature": 34.7,
+          "lux": 2757,
+          "battery": 100,
+          "status": "optimal",
+          "statusLabel": "Optimal for Chili",
+          "syncTime": "2026-08-20 17:47:44"
+        }
+      ]
+    }
+  },
+  "lastUpdated": "2026-08-20T17:52:50.000Z",
+  "gateway": {
+    "name": "MAC-30C922CEA038",
+    "mac": "30:C9:22:CE:A0:38",
+    "online": true
+  }
 }
