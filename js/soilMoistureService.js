@@ -122,7 +122,7 @@ class SoilMoistureService {
     const currentSlot = this.getCurrent3MinSlot();
     this.lastSlotKey = currentSlot.slotKey;
 
-    // If user explicitly pressed "Synced Live", trigger instant cloud execution FIRST
+    // If user explicitly pressed "Synced Live" or 10-minute force sync triggered
     if (force) {
       await this.triggerServerlessSyncIfStale(null, true);
     }
@@ -130,7 +130,7 @@ class SoilMoistureService {
     let loadedFromCloud = false;
     const cloudUrl = window.APP_CONFIG?.cloudTelemetry?.endpointUrl;
 
-    // 1. Try Cloud Bridge First (For Netlify / Remote Devices)
+    // 1. Try Cloud Bridge First (Firebase Realtime Database)
     if (cloudUrl && cloudUrl.trim() !== "") {
       try {
         const cResp = await fetch(`${cloudUrl}?v=${Date.now()}`, { cache: 'no-store' });
@@ -186,13 +186,24 @@ class SoilMoistureService {
 
   startAutoRefresh() {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
-    // Active background polling: queries Firebase & triggers cloud sync every 15 seconds
+    if (this.tenMinSyncTimer) clearInterval(this.tenMinSyncTimer);
+
+    // 1. Active background polling: queries Firebase & updates UI every 20 seconds
     this.refreshTimer = setInterval(async () => {
       await this.refresh(false);
       if (window.khApp && window.khApp.activeView === 'daily') {
         window.khApp.renderDailyCards();
       }
-    }, 15000);
+    }, 20000);
+
+    // 2. Dedicated 10-minute automated background sync cycle: automatically queries Rainpoint cloud
+    this.tenMinSyncTimer = setInterval(async () => {
+      console.log('⏰ [10-Min Auto Sync] Automatically syncing latest Rainpoint soil moisture readings in background...');
+      await this.refresh(true);
+      if (window.khApp && window.khApp.activeView === 'daily') {
+        window.khApp.renderDailyCards();
+      }
+    }, 10 * 60 * 1000);
   }
 
   async triggerServerlessSyncIfStale(lastUpdatedStr, force = false) {
@@ -214,7 +225,7 @@ class SoilMoistureService {
         isStale = true;
       } else {
         const diffMin = (now - parsedTime) / 60000;
-        if (diffMin >= 2.0) isStale = true; // Auto-sync if data is older than 2 minutes
+        if (diffMin >= 10.0) isStale = true; // Auto-sync if data is older than 10 minutes
       }
     }
 
@@ -226,11 +237,14 @@ class SoilMoistureService {
         const fnResp = await fetch('/.netlify/functions/farm_sync', { cache: 'no-store' });
         if (fnResp.ok) {
           const fnData = await fnResp.json();
-          if (fnData && fnData.sensors) {
-            this.sensorData = {
+          if (fnData && (fnData.sensors || fnData.soilSensors)) {
+            this.sensorData = fnData.soilSensors || {
               plots: fnData.sensors,
               lastUpdated: fnData.timestamp || new Date().toISOString()
             };
+            if (fnData.soilHistory) {
+              this.historyData = fnData.soilHistory;
+            }
             if (window.khApp && window.khApp.activeView === 'daily') {
               window.khApp.renderDailyCards();
             }

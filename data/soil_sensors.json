@@ -1,62 +1,62 @@
-{
-  "plots": {
-    "plot-1": {
-      "plotName": "Plot 1",
-      "avgMoisture": 81,
-      "avgTemperature": 26.2,
-      "overallStatus": "optimal",
-      "sensors": [
-        {
-          "slot": "D01",
-          "name": "Sensor 1",
-          "model": "HCS021FRF",
-          "moisture": 81,
-          "temperature": 26.2,
-          "lux": 0,
-          "battery": 100,
-          "status": "optimal",
-          "statusLabel": "Optimal for Chili",
-          "syncTime": "2026-08-20 20:54:39"
-        }
-      ]
-    },
-    "plot-2": {
-      "plotName": "Plot 2",
-      "avgMoisture": 86,
-      "avgTemperature": 26.6,
-      "overallStatus": "optimal",
-      "sensors": [
-        {
-          "slot": "D02",
-          "name": "Sensor 1",
-          "model": "HCS021FRF",
-          "moisture": 83,
-          "temperature": 26.5,
-          "lux": 0,
-          "battery": 100,
-          "status": "optimal",
-          "statusLabel": "Optimal for Chili",
-          "syncTime": "2026-08-20 20:54:08"
-        },
-        {
-          "slot": "D03",
-          "name": "Sensor 2",
-          "model": "HCS021FRF",
-          "moisture": 89,
-          "temperature": 26.7,
-          "lux": 0,
-          "battery": 100,
-          "status": "optimal",
-          "statusLabel": "Optimal for Chili",
-          "syncTime": "2026-08-20 20:51:45"
-        }
-      ]
-    }
-  },
-  "lastUpdated": "2026-08-20T20:54:50.000Z",
-  "gateway": {
-    "name": "MAC-30C922CEA038",
-    "mac": "30:C9:22:CE:A0:38",
-    "online": true
-  }
+﻿{
+    "plots":  {
+                  "plot-1":  {
+                                 "overallStatus":  "moderate",
+                                 "plotName":  "Plot 1",
+                                 "sensors":  [
+                                                 {
+                                                     "slot":  "D01",
+                                                     "name":  "Sensor 1",
+                                                     "model":  "HCS021FRF",
+                                                     "moisture":  79,
+                                                     "temperature":  33.7,
+                                                     "lux":  544,
+                                                     "battery":  100,
+                                                     "status":  "moderate",
+                                                     "statusLabel":  "Moderate",
+                                                     "syncTime":  "2026-08-21 18:00:37"
+                                                 }
+                                             ],
+                                 "avgTemperature":  33.7,
+                                 "avgMoisture":  79
+                             },
+                  "plot-2":  {
+                                 "overallStatus":  "moderate",
+                                 "plotName":  "Plot 2",
+                                 "sensors":  [
+                                                 {
+                                                     "slot":  "D02",
+                                                     "name":  "Sensor 1",
+                                                     "model":  "HCS021FRF",
+                                                     "moisture":  73,
+                                                     "temperature":  33.5,
+                                                     "lux":  1169,
+                                                     "battery":  100,
+                                                     "status":  "optimal",
+                                                     "statusLabel":  "Optimal for Chili",
+                                                     "syncTime":  "2026-08-21 18:00:07"
+                                                 },
+                                                 {
+                                                     "slot":  "D03",
+                                                     "name":  "Sensor 2",
+                                                     "model":  "HCS021FRF",
+                                                     "moisture":  84,
+                                                     "temperature":  34,
+                                                     "lux":  1443,
+                                                     "battery":  100,
+                                                     "status":  "high",
+                                                     "statusLabel":  "Waterlogged",
+                                                     "syncTime":  "2026-08-21 18:01:49"
+                                                 }
+                                             ],
+                                 "avgTemperature":  33.8,
+                                 "avgMoisture":  78
+                             }
+              },
+    "lastUpdated":  "2026-08-21T19:23:44.3857414+08:00",
+    "gateway":  {
+                    "name":  "MAC-30C922CEA038",
+                    "mac":  "30:C9:22:CE:A0:38",
+                    "online":  true
+                }
 }

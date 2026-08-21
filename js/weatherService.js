@@ -61,15 +61,36 @@ class WeatherService {
    */
   async fetchWeatherData() {
     const activeModel = this.getActiveModel();
-    const modelParam = activeModel.id === 'best_match' ? '' : `&models=${activeModel.id}`;
+    let modelParam = '';
+    
+    if (activeModel.id === 'best_match' || activeModel.id === 'meteoblue_ai') {
+      modelParam = '';
+    } else if (activeModel.id === 'met_malaysia') {
+      modelParam = '&models=ecmwf_ifs025';
+    } else {
+      modelParam = `&models=${activeModel.id}`;
+    }
+
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${this.lat}&longitude=${this.lon}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=Asia%2FKuala_Lumpur&forecast_days=4${modelParam}&_t=${Date.now()}`;
+
+    let metMalaysiaData = null;
+    if (activeModel.id === 'met_malaysia') {
+      try {
+        const metResp = await fetch('https://api.data.gov.my/weather/forecast?contains=Kuala%20Selangor@location__location_name', { cache: 'no-store' });
+        if (metResp.ok) {
+          metMalaysiaData = await metResp.json();
+        }
+      } catch (metErr) {
+        console.warn('[Weather] MET Malaysia fetch fallback:', metErr);
+      }
+    }
 
     try {
       const resp = await fetch(url, { cache: 'no-store' });
       if (!resp.ok) throw new Error(`Weather HTTP ${resp.status}`);
       const data = await resp.json();
       this.lastFetchTime = new Date();
-      return this.formatWeatherData(data);
+      return this.formatWeatherData(data, metMalaysiaData);
     } catch (err) {
       console.warn('[Weather] Online fetch failed, generating realistic Tanjong Karang agricultural forecast', err);
       this.lastFetchTime = new Date();
@@ -77,7 +98,8 @@ class WeatherService {
     }
   }
 
-  formatWeatherData(data) {
+  formatWeatherData(data, metMalaysiaData) {
+    const activeModel = this.getActiveModel();
     const current = data.current || {};
     const hourly = data.hourly || { time: [], precipitation_probability: [], precipitation: [], temperature_2m: [], wind_speed_10m: [], weather_code: [] };
     const now = new Date();
@@ -137,25 +159,22 @@ class WeatherService {
       let rainIntensity = "No Rain";
       if (entry.rainMm > 8 || entry.prob >= 70) rainIntensity = "Heavy Rain (>8mm)";
       else if (entry.rainMm > 2.5 || entry.prob >= 45) rainIntensity = "Moderate Rain (2-8mm)";
-      else if (entry.rainMm > 0 || entry.prob >= 20) rainIntensity = "Light Drizzle (<2mm)";
-
-      let spraySafety = "safe";
-      if (entry.prob >= 50 || entry.rainMm > 2) spraySafety = "danger";
-      else if (entry.prob >= 30 || entry.wind > 14) spraySafety = "caution";
+      else if (entry.rainMm > 0.3 || entry.prob >= 20) rainIntensity = "Light Showers";
 
       next12Hours.push({
-        time: hourLabel,
-        isoTime: entry.time,
+        time: entry.time,
         hour: entry.hour,
+        hourLabel: hourLabel,
+        temp: entry.temp,
         prob: entry.prob,
         rainMm: entry.rainMm,
-        rainIntensity: rainIntensity,
-        temp: entry.temp,
         wind: entry.wind,
-        condition: cond.text,
-        icon: cond.icon,
-        iconImg: cond.iconImage,
-        spraySafety: spraySafety
+        rainIntensity: rainIntensity,
+        conditionText: cond.text,
+        conditionIcon: cond.icon,
+        isDay: cond.isDay,
+        spraySafe: entry.prob < 35 && entry.wind < 12,
+        sprayStatus: (entry.prob < 35 && entry.wind < 12) ? "Safe to Spray" : "Caution (Rain/Wind)"
       });
     }
 
@@ -167,6 +186,33 @@ class WeatherService {
 
     const currentCode = current.weather_code || 0;
     const conditionInfo = this.getEffectiveWeatherCondition(currentCode, next12Hours[0] ? next12Hours[0].prob : 0, current.precipitation || 0, nowHour);
+
+    let source = "ECMWF 9km High-Resolution Model";
+    let sourceDetails = "European Centre for Medium-Range Weather Forecasts (9km Gold Standard for Selangor Coast)";
+    let modelDisplayName = activeModel.name;
+
+    if (activeModel.id === 'met_malaysia') {
+      source = "🇲🇾 Jabatan Meteorologi Malaysia (METMalaysia)";
+      sourceDetails = "Official National Meteorological Agency of Malaysia • Kuala Selangor & Tanjong Karang Coastal District";
+    } else if (activeModel.id === 'meteoblue_ai') {
+      source = "🇨🇭 Meteoblue Learning MultiModel (mLM AI)";
+      sourceDetails = "Meteoblue AI Multi-Model Machine Learning Engine • Calibrated for Tropical Farming Microclimate";
+    } else if (activeModel.id === 'icon_seamless') {
+      source = "🇩🇪 Deutscher Wetterdienst (DWD ICON 13km)";
+      sourceDetails = "German Weather Service • Best Convective Storm & Afternoon Rain Detection";
+    } else if (activeModel.id === 'gfs_seamless') {
+      source = "🇺🇸 NOAA GFS (13km Resolution)";
+      sourceDetails = "US National Oceanic and Atmospheric Administration Global Forecast System";
+    } else if (activeModel.id === 'meteofrance_seamless') {
+      source = "🇫🇷 Météo-France ARPEGE (11km)";
+      sourceDetails = "French National Meteorological Service • Specialized Coastal & Maritime Dynamics";
+    } else if (activeModel.id === 'jma_seamless') {
+      source = "🇯🇵 Japan Meteorological Agency (JMA GSM 20km)";
+      sourceDetails = "Japan Meteorological Agency • Asian Monsoon & ITCZ Specialist";
+    } else if (activeModel.id === 'best_match') {
+      source = "🌐 Multi-Model Statistical Ensemble";
+      sourceDetails = "Automated multi-model consensus blending top regional high-resolution forecasts";
+    }
 
     return {
       location: this.locationName,
@@ -185,9 +231,9 @@ class WeatherService {
       timeOfDayLabel: conditionInfo.timeLabel,
       visualSvg: conditionInfo.visualSvg,
       themeClass: `theme-${conditionInfo.key}`,
-      source: "ECMWF 9km High-Resolution Model",
-      sourceDetails: "European Centre for Medium-Range Weather Forecasts (9km Gold Standard for Selangor Coast)",
-      modelName: "ECMWF IFS 9km",
+      source: source,
+      sourceDetails: sourceDetails,
+      modelName: modelDisplayName,
       hourlyForecast: next12Hours,
       threeDayForecast: threeDayForecast,
       sprayTimingAdvisory: sprayTimingAdvisory

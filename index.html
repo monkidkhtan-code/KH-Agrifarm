@@ -13,11 +13,11 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="KH Agrifarm">
-  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=10.82">
-  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png?v=10.82">
-  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=10.82">
-  <link rel="icon" type="image/png" href="assets/kh-logo.png?v=10.82">
-  <link rel="manifest" href="manifest.json?v=10.82">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=10.83">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png?v=10.83">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=10.83">
+  <link rel="icon" type="image/png" href="assets/kh-logo.png?v=10.83">
+  <link rel="manifest" href="manifest.json?v=10.83">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Chart.js for EC & Fertilizer Trends -->
@@ -26,11 +26,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Custom Styles with cache-busting -->
-  <link rel="stylesheet" href="css/styles.css?v=10.82">
+  <link rel="stylesheet" href="css/styles.css?v=10.83">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=10.82').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=10.83').then(reg => {
           reg.update();
         }).catch(() => {});
       });
@@ -206,11 +206,13 @@
                     <div class="weather-model-dropdown-wrap">
                       <select id="select-weather-model-quick" class="weather-model-dropdown-select" title="Change meteorological forecast model">
                         <option value="ecmwf_ifs025">🇪🇺 ECMWF (9km)</option>
+                        <option value="met_malaysia">🇲🇾 MET Malaysia</option>
+                        <option value="meteoblue_ai">🇨🇭 Meteoblue AI</option>
                         <option value="icon_seamless">🇩🇪 DWD ICON (13km)</option>
                         <option value="gfs_seamless">🇺🇸 NOAA GFS (13km)</option>
                         <option value="meteofrance_seamless">🇫🇷 ARPEGE (11km)</option>
                         <option value="jma_seamless">🇯🇵 JMA (20km)</option>
-                        <option value="best_match">🌐 Best Match Ensemble</option>
+                        <option value="best_match">🌐 Best Match</option>
                       </select>
                     </div>
                   </div>
@@ -605,7 +607,7 @@
           <span class="divider">&bull;</span>
           <span id="footer-live-time"></span>
           <span class="divider">&bull;</span>
-          <span id="app-version-footer" class="app-version-badge">v10.81</span>
+          <span id="app-version-footer" class="app-version-badge">v10.83</span>
         </div>
       </div>
     </footer>
@@ -621,7 +623,7 @@
             <div class="modal-title-text-wrap">
               <div class="modal-title-heading-row">
                 <h3 class="modal-title">KH Agrifarm Settings &amp; Telemetry</h3>
-                <span id="app-version-settings" class="version-tag-settings">v10.82</span>
+                <span id="app-version-settings" class="version-tag-settings">v10.83</span>
               </div>
               <p class="modal-subtitle">Live hardware sensors, IoT hubs &amp; cloud database status</p>
             </div>
@@ -825,10 +827,11 @@
                 </label>
                 <select id="select-weather-model" class="form-select" style="width: 100%; background: #0f172a; color: #f8fafc; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; padding: 0.55rem 0.75rem; font-size: 0.82rem; font-weight: 600; cursor: pointer;">
                   <option value="ecmwf_ifs025" selected>🇪🇺 ECMWF IFS (9km) — European Centre (Gold Standard)</option>
+                  <option value="met_malaysia">🇲🇾 MET Malaysia — Jabatan Meteorologi Malaysia (Official National Agency)</option>
+                  <option value="meteoblue_ai">🇨🇭 Meteoblue AI (mLM) — Learning MultiModel Machine Learning Engine</option>
                   <option value="icon_seamless">🇩🇪 DWD ICON (13km) — German Met Service (Best for Storms &amp; Afternoon Rain)</option>
                   <option value="gfs_seamless">🇺🇸 NOAA GFS (13km) — US Global Forecast System</option>
                   <option value="meteofrance_seamless">🇫🇷 Météo-France ARPEGE (11km) — Maritime Tropical Model</option>
-                  <option value="ukmo_seamless">🇬🇧 UK Met Office (10km) — Global Atmospheric Model</option>
                   <option value="jma_seamless">🇯🇵 JMA GSM (20km) — Japan Met Agency (SE Asia Monsoon Expert)</option>
                   <option value="best_match">🌐 Best Match (Ensemble) — Auto Multi-Model Consensus</option>
                 </select>
@@ -870,7 +873,7 @@
             <span>KH Agrifarm Operating System</span>
             <span style="display: inline-flex; align-items: center; gap: 5px; color: #34d399; font-weight: 700; font-family: monospace;">
               <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
-              Build <span id="app-version-detail">v10.82</span> (Live PWA)
+              Build <span id="app-version-detail">v10.83</span> (Live PWA)
             </span>
           </div>
         </div>
@@ -918,14 +921,14 @@
   </div>
 
   <!-- Application Scripts -->
-  <script src="js/config.js?v=10.81"></script>
-  <script src="js/sampleData.js?v=10.81"></script>
-  <script src="js/googleSheetsService.js?v=10.81"></script>
-  <script src="js/weatherService.js?v=10.81"></script>
-  <script src="js/sprayAdvisory.js?v=10.81"></script>
-  <script src="js/soilMoistureService.js?v=10.81"></script>
-  <script src="js/tapoService.js?v=10.81"></script>
-  <script src="js/radarService.js?v=10.81"></script>
-  <script src="js/app.js?v=10.81"></script>
+  <script src="js/config.js?v=10.83"></script>
+  <script src="js/sampleData.js?v=10.83"></script>
+  <script src="js/googleSheetsService.js?v=10.83"></script>
+  <script src="js/weatherService.js?v=10.83"></script>
+  <script src="js/sprayAdvisory.js?v=10.83"></script>
+  <script src="js/soilMoistureService.js?v=10.83"></script>
+  <script src="js/tapoService.js?v=10.83"></script>
+  <script src="js/radarService.js?v=10.83"></script>
+  <script src="js/app.js?v=10.83"></script>
 </body>
 </html>

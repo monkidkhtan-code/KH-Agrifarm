@@ -67,10 +67,10 @@ class KHAgrifarmApp {
       this.refreshWeather();
     }, 3 * 60 * 1000); // 3 minutes
 
-    // 2. Google Sheets Master Schedule Auto-Sync: 15 minutes
+    // 2. Automated Farm Sensors & Master Schedule Auto-Sync: 10 minutes
     setInterval(() => {
       this.syncSheets(false);
-    }, 15 * 60 * 1000); // 15 minutes
+    }, 10 * 60 * 1000); // 10 minutes
 
     // Initialize Lucide Icons
     if (window.lucide) {

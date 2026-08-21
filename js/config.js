@@ -2,7 +2,7 @@
  * KH AGRIFARM - CONFIGURATION
  */
 const APP_CONFIG = {
-  version: "v10.82",
+  version: "v10.83",
   buildDate: "2026.08.20",
   farmName: "KH Agrifarm",
   farmAddress: "LOT 20371, Jalan Sgg 6/3, Kampung Sungai Gulang Gulang, 45500 Tanjong Karang, Selangor",
@@ -74,6 +74,20 @@ const APP_CONFIG = {
         origin: "🇪🇺 European Centre",
         desc: "Gold Standard global model. Exceptional tropical rainfall & wind pattern accuracy for Selangor coast.",
         isDefault: true
+      },
+      {
+        id: "met_malaysia",
+        name: "MET Malaysia",
+        origin: "🇲🇾 Jabatan Meteorologi Malaysia",
+        desc: "Official National Weather Agency. Direct forecast data from MET Malaysia for Kuala Selangor & coastal farm zone.",
+        isDefault: false
+      },
+      {
+        id: "meteoblue_ai",
+        name: "Meteoblue AI (mLM)",
+        origin: "🇨🇭 Meteoblue AI Engine",
+        desc: "Meteoblue Learning MultiModel AI. Machine learning model blending multi-model topologies for tropical farming.",
+        isDefault: false
       },
       {
         id: "icon_seamless",

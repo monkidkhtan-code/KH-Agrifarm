@@ -8,16 +8,17 @@
 #>
 
 param(
-    [int]$IntervalMinutes = 3
+    [int]$IntervalMinutes = 10
 )
 
-$scriptPath = Join-Path $PSScriptRoot "Get-LiveSoilSensors.ps1"
+$scriptPath = Join-Path $PSScriptRoot "Sync-AllFarmSensors.ps1"
+if (!(Test-Path $scriptPath)) { $scriptPath = Join-Path $PSScriptRoot "Get-LiveSoilSensors.ps1" }
 
 Write-Host "==========================================================================" -ForegroundColor Green
-Write-Host "   🌱 KH AGRIFARM - CONTINUOUS RAINPOINT SOIL TELEMETRY LOGGER            " -ForegroundColor Green
+Write-Host "   🌱 KH AGRIFARM - CONTINUOUS RAINPOINT SOIL & FARM TELEMETRY LOGGER     " -ForegroundColor Green
 Write-Host "==========================================================================" -ForegroundColor Green
 Write-Host "   Interval : Every $IntervalMinutes minutes" -ForegroundColor Yellow
-Write-Host "   Target   : data/soil_sensors.json & data/soil_moisture_history.json" -ForegroundColor Yellow
+Write-Host "   Target   : Live RainPoint Cloud -> Firebase & Local Storage" -ForegroundColor Yellow
 Write-Host "==========================================================================" -ForegroundColor Green
 
 while ($true) {

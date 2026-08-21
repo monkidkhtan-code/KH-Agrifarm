@@ -299,7 +299,10 @@ exports.handler = async function (event, context) {
     body: JSON.stringify({
       success: success,
       timestamp: payload.lastUpdated,
-      sensors: rainPointRes?.soilData?.plots
+      sensors: rainPointRes?.soilData?.plots,
+      soilSensors: rainPointRes?.soilData,
+      soilHistory: payload.soilHistory,
+      tapoSensors: tapoData
     })
   };
 };
