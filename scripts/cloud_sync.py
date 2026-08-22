@@ -208,8 +208,14 @@ def sync_rainpoint():
             "timestamp": now_my.strftime("%Y-%m-%d %H:%M"),
             "time": now_my.strftime("%I:%M %p"),
             "p1_s1": p1_sensors[0]["moisture"] if p1_sensors else None,
+            "p1_s1_temp": p1_sensors[0]["temperature"] if p1_sensors else None,
+            "p1_s1_lux": p1_sensors[0]["lux"] if p1_sensors else 0,
             "p2_s1": p2_sensors[0]["moisture"] if len(p2_sensors) > 0 else None,
+            "p2_s1_temp": p2_sensors[0]["temperature"] if len(p2_sensors) > 0 else None,
+            "p2_s1_lux": p2_sensors[0]["lux"] if len(p2_sensors) > 0 else 0,
             "p2_s2": p2_sensors[1]["moisture"] if len(p2_sensors) > 1 else None,
+            "p2_s2_temp": p2_sensors[1]["temperature"] if len(p2_sensors) > 1 else None,
+            "p2_s2_lux": p2_sensors[1]["lux"] if len(p2_sensors) > 1 else 0,
             "temp": round((p1_avg_t + p2_avg_t) / 2.0, 1),
             "lux": p1_sensors[0]["lux"] if p1_sensors else 0
         }

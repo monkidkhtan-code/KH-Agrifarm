@@ -188,28 +188,43 @@ class SoilMoistureService {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
     if (this.tenMinSyncTimer) clearInterval(this.tenMinSyncTimer);
 
-    // 1. Active background polling: queries Firebase & updates UI every 20 seconds
+    // 1. Active background polling: queries Firebase & updates UI every 15 seconds
     this.refreshTimer = setInterval(async () => {
       await this.refresh(false);
       if (window.khApp && window.khApp.activeView === 'daily') {
         window.khApp.renderDailyCards();
       }
-    }, 20000);
+    }, 15000);
 
-    // 2. Dedicated 10-minute automated background sync cycle: automatically queries Rainpoint cloud
+    // 2. High-Frequency automated background sync cycle: runs every 2 minutes
     this.tenMinSyncTimer = setInterval(async () => {
-      console.log('⏰ [10-Min Auto Sync] Automatically syncing latest Rainpoint soil moisture readings in background...');
+      console.log('⏰ [Auto Sync] Syncing latest RainPoint & Tapo readings from cloud...');
       await this.refresh(true);
       if (window.khApp && window.khApp.activeView === 'daily') {
         window.khApp.renderDailyCards();
       }
-    }, 10 * 60 * 1000);
+    }, 2 * 60 * 1000);
+
+    // 3. Instant On-Focus / App Open Sync (When user unlocks phone or opens tab)
+    if (typeof document !== 'undefined' && !this._visibilityBound) {
+      this._visibilityBound = true;
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          console.log('📱 [App Focus] Screen activated -> checking for fresh live telemetry...');
+          this.refresh(true).then(() => {
+            if (window.khApp && window.khApp.activeView === 'daily') {
+              window.khApp.renderDailyCards();
+            }
+          });
+        }
+      });
+    }
   }
 
   async triggerServerlessSyncIfStale(lastUpdatedStr, force = false) {
     if (this._isServerlessSyncing && !force) return;
     const now = Date.now();
-    if (!force && this._lastServerlessAttempt && (now - this._lastServerlessAttempt < 45000)) return; // Max once every 45s in auto-mode
+    if (!force && this._lastServerlessAttempt && (now - this._lastServerlessAttempt < 20000)) return; // Max once every 20s in auto-mode
 
     let isStale = false;
     if (force || !lastUpdatedStr) {
@@ -225,7 +240,7 @@ class SoilMoistureService {
         isStale = true;
       } else {
         const diffMin = (now - parsedTime) / 60000;
-        if (diffMin >= 10.0) isStale = true; // Auto-sync if data is older than 10 minutes
+        if (diffMin >= 2.0) isStale = true; // Auto-sync if data is older than 2 minutes
       }
     }
 
@@ -511,8 +526,12 @@ class SoilMoistureService {
       const val = slot === 'p1_s1' ? (r.p1_s1 !== undefined ? r.p1_s1 : null)
                 : slot === 'p2_s1' ? (r.p2_s1 !== undefined ? r.p2_s1 : null)
                 : (r.p2_s2 !== undefined ? r.p2_s2 : null);
-      const tempVal = r.temp !== undefined ? r.temp : null;
-      const luxVal = r.lux !== undefined ? r.lux : null;
+      const tempVal = slot === 'p1_s1' ? (r.p1_s1_temp !== undefined ? r.p1_s1_temp : r.temp)
+                    : slot === 'p2_s1' ? (r.p2_s1_temp !== undefined ? r.p2_s1_temp : r.temp)
+                    : (r.p2_s2_temp !== undefined ? r.p2_s2_temp : r.temp);
+      const luxVal = slot === 'p1_s1' ? (r.p1_s1_lux !== undefined ? r.p1_s1_lux : r.lux)
+                   : slot === 'p2_s1' ? (r.p2_s1_lux !== undefined ? r.p2_s1_lux : r.lux)
+                   : (r.p2_s2_lux !== undefined ? r.p2_s2_lux : r.lux);
       return { timeMs: dMs, val: val, temp: tempVal, lux: luxVal };
     }).filter(r => r.timeMs >= recentCutoffMs && r.val !== null && !isNaN(r.val)).sort((a, b) => a.timeMs - b.timeMs);
 

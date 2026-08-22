@@ -2,8 +2,8 @@
  * KH AGRIFARM - CONFIGURATION
  */
 const APP_CONFIG = {
-  version: "v10.83",
-  buildDate: "2026.08.20",
+  version: "v10.85",
+  buildDate: "2026.08.22",
   farmName: "KH Agrifarm",
   farmAddress: "LOT 20371, Jalan Sgg 6/3, Kampung Sungai Gulang Gulang, 45500 Tanjong Karang, Selangor",
   season: "Season 6 (June 2026 - Jan 2027)",

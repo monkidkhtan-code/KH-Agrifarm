@@ -184,8 +184,14 @@ async function syncRainPoint() {
       timestamp: nowMyDate.toISOString().replace('T', ' ').substring(0, 16),
       time: nowMyDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'UTC' }),
       p1_s1: p1Sensors[0]?.moisture ?? null,
+      p1_s1_temp: p1Sensors[0]?.temperature ?? null,
+      p1_s1_lux: p1Sensors[0]?.lux ?? 0,
       p2_s1: p2Sensors[0]?.moisture ?? null,
+      p2_s1_temp: p2Sensors[0]?.temperature ?? null,
+      p2_s1_lux: p2Sensors[0]?.lux ?? 0,
       p2_s2: p2Sensors[1]?.moisture ?? null,
+      p2_s2_temp: p2Sensors[1]?.temperature ?? null,
+      p2_s2_lux: p2Sensors[1]?.lux ?? 0,
       temp: Math.round(((p1AvgT + p2AvgT) / 2.0) * 10) / 10,
       lux: p1Sensors[0]?.lux ?? 0
     };
