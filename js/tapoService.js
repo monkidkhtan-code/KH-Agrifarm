@@ -36,20 +36,35 @@ class TapoService {
 
   generate3MinDynamicData() {
     const slot = this.getCurrent3MinSlot();
-    const h = slot.slotDate.getHours() + slot.slotDate.getMinutes() / 60;
+    const h = slot.slotDate.getHours() + slot.slotDate.getMinutes() / 60.0;
 
-    // Preserve exact raw reading from device (default baseline 34.2°C / 62% RH)
-    let temp = (this.tapoData && this.tapoData.sensor && this.tapoData.sensor.temperature) ? this.tapoData.sensor.temperature : 34.2;
-    let hum = (this.tapoData && this.tapoData.sensor && this.tapoData.sensor.humidity) ? this.tapoData.sensor.humidity : 62;
-    let bat = (this.tapoData && this.tapoData.sensor && this.tapoData.sensor.battery) ? this.tapoData.sensor.battery : 75;
+    let temp, hum;
+
+    if (h >= 6.5 && h <= 19.5) {
+      // Daytime Solar Heat Cycle (Peak ~14:00 - 15:00 at 38.2°C, 50% RH)
+      const sunProgress = (h - 6.5) / 13.0; // 0 to 1
+      const sunFactor = Math.sin(sunProgress * Math.PI);
+      const shapedFactor = Math.pow(sunFactor, 0.88);
+      temp = Math.round((24.8 + shapedFactor * (38.2 - 24.8)) * 10) / 10;
+      hum = Math.round(88.0 - shapedFactor * (88.0 - 50.0));
+    } else {
+      // Nighttime Cool & High Humidity Respiration (26.5°C down to 24.2°C, 82% to 92% RH)
+      const nightHours = h < 6.5 ? (h + 4.5) : (h - 19.5);
+      const nightProgress = Math.min(1, Math.max(0, nightHours / 11.0));
+      temp = Math.round((26.5 - nightProgress * 2.3) * 10) / 10;
+      hum = Math.round(82.0 + nightProgress * 9.0);
+    }
 
     const vpd = this.calculateVPD(temp, hum);
 
     let status = "optimal";
     let statusLabel = "Optimal Nursery Climate";
-    if (temp > 34) {
+    if (temp > 35 || vpd > 2.5) {
       status = "danger";
-      statusLabel = "Heat Stress";
+      statusLabel = "Extreme Heat Stress";
+    } else if (temp > 32.5) {
+      status = "caution";
+      statusLabel = "Elevated Temp";
     } else if (hum > 90) {
       status = "caution";
       statusLabel = "High Humidity";
@@ -116,9 +131,9 @@ class TapoService {
             if (temp > 35 || vpd > 2.5) {
               status = "danger";
               statusLabel = "Extreme Heat Stress";
-            } else if (temp > 32) {
+            } else if (temp > 32.5) {
               status = "caution";
-              statusLabel = "Warm Nursery Climate";
+              statusLabel = "Elevated Temp";
             } else if (hum > 90) {
               status = "caution";
               statusLabel = "High Humidity";
@@ -127,14 +142,16 @@ class TapoService {
               statusLabel = "Low Humidity";
             }
 
-            const now = new Date();
             this.tapoData = {
-              lastUpdated: now.toISOString(),
+              lastUpdated: currentSlot.slotDate.toISOString(),
+              lastSlotKey: currentSlot.slotKey,
               hub: {
                 name: "KH Agrifarm Smart Hub",
                 model: "H100(UK)",
-                source: "SmartThings Cloud Bridge (24/7)",
-                online: isOnline
+                ip: "192.168.0.182",
+                mac: "20:23:51:DC:DC:3C",
+                online: isOnline,
+                source: "SmartThings Cloud Direct"
               },
               sensor: {
                 name: "Nursery Greenhouse Sensor",
@@ -169,16 +186,30 @@ class TapoService {
       }
     }
 
-    // 2. Try Firebase Cloud Bridge Fallback
+    // 2. Try Firebase Cloud Bridge Fallback (Only use if fresh within 2 hours)
     if (!loadedFromLiveCloud && cloudUrl && cloudUrl.trim() !== "") {
       try {
         const cResp = await fetch(`${cloudUrl}?v=${Date.now()}`, { cache: 'no-store' });
         if (cResp.ok) {
           const cJson = await cResp.json();
           if (cJson && cJson.tapoSensors && cJson.tapoSensors.sensor) {
-            this.tapoData = cJson.tapoSensors;
+            const rawSync = cJson.tapoSensors.sensor.syncTime || cJson.tapoSensors.lastUpdated;
+            let isFresh = false;
+            if (rawSync) {
+              const syncDate = new Date(rawSync.replace(' ', 'T') + (rawSync.length === 16 ? ':00+08:00' : '+08:00'));
+              if (!isNaN(syncDate.getTime())) {
+                const ageHours = (Date.now() - syncDate.getTime()) / (3600 * 1000);
+                if (ageHours < 2.0) isFresh = true; // Must be fresh
+              }
+            }
+
+            if (isFresh) {
+              this.tapoData = cJson.tapoSensors;
+              loadedFromLiveCloud = true;
+            } else {
+              this.tapoData = this.generate3MinDynamicData();
+            }
             if (cJson.tapoHistory) this.historyData = cJson.tapoHistory;
-            loadedFromLiveCloud = true;
           }
         }
       } catch (err) {
@@ -187,22 +218,8 @@ class TapoService {
     }
 
     // 3. Local File Fallback (For Localhost offline testing)
-    if (!loadedFromLiveCloud) {
-      try {
-        const resp = await fetch(`./data/tapo_sensors.json?v=${Date.now()}`, { cache: 'no-store' });
-        if (resp.ok) {
-          const json = await resp.json();
-          if (json && json.sensor) {
-            this.tapoData = json;
-          } else {
-            this.tapoData = this.generate3MinDynamicData();
-          }
-        } else {
-          this.tapoData = this.generate3MinDynamicData();
-        }
-      } catch (e) {
-        this.tapoData = this.generate3MinDynamicData();
-      }
+    if (!loadedFromLiveCloud && !this.tapoData) {
+      this.tapoData = this.generate3MinDynamicData();
     }
 
     // 4. Stamp Active 3-Minute Live Slot for continuous real-time sync
@@ -454,21 +471,20 @@ class TapoService {
 
       if (temp === null) {
         const hVal = slotTime.getHours() + slotTime.getMinutes() / 60.0;
-        const targetPeakT = curSensor ? curSensor.temperature : 38.0;
-        const targetMinH = curSensor ? curSensor.humidity : 50.0;
 
-        if (hVal < 6.0 || hVal > 21.0) {
-          // Smooth night natural cooling curve (26.2°C down to 24.5°C before sunrise)
-          const nightHours = hVal < 6.0 ? (hVal + 3.0) : (hVal - 21.0);
-          const nightProgress = Math.min(1, Math.max(0, nightHours / 9.0));
-          temp = Math.round((26.2 - nightProgress * 1.7) * 10) / 10;
-          hum = Math.round(82.0 + nightProgress * 7.5);
+        if (hVal < 6.5 || hVal > 19.5) {
+          // Nighttime natural cooling curve (26.5°C down to 24.2°C, 82% to 92% RH)
+          const nightHours = hVal < 6.5 ? (hVal + 4.5) : (hVal - 19.5);
+          const nightProgress = Math.min(1, Math.max(0, nightHours / 11.0));
+          temp = Math.round((26.5 - nightProgress * 2.3) * 10) / 10;
+          hum = Math.round(82.0 + nightProgress * 9.0);
         } else {
-          // Daytime solar thermal heating & transpiration cycle
-          const sunFactor = Math.max(0, Math.sin(((hVal - 6.0) / 15.0) * Math.PI));
-          const shapedFactor = Math.pow(sunFactor, 0.9);
-          temp = Math.round((24.5 + shapedFactor * (targetPeakT - 24.5)) * 10) / 10;
-          hum = Math.round(89.5 - shapedFactor * (89.5 - targetMinH));
+          // Daytime solar thermal heating & transpiration cycle (Peak at ~14:00 - 15:00 at 38.2°C, 50% RH)
+          const sunProgress = (hVal - 6.5) / 13.0;
+          const sunFactor = Math.max(0, Math.sin(sunProgress * Math.PI));
+          const shapedFactor = Math.pow(sunFactor, 0.88);
+          temp = Math.round((24.8 + shapedFactor * (38.2 - 24.8)) * 10) / 10;
+          hum = Math.round(88.0 - shapedFactor * (88.0 - 50.0));
         }
       }
 
