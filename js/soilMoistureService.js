@@ -368,18 +368,22 @@ class SoilMoistureService {
       return '';
     }
 
+    const cloudTimeAgo = this.getTimeAgo(this.sensorData?.lastUpdated);
+    const cloudBadgeText = cloudTimeAgo ? `Cloud: ${cloudTimeAgo}` : '24/7 Live Cloud';
+
     // Single Probe Layout (Plot 1: Sensor 1) - Single Box, No Nested Card
     if (data.sensors.length === 1) {
       const s = data.sensors[0];
       const mVal = s.moisture;
       const st = this.getMoistureStatus(mVal);
       const timeFormatted = this.formatSyncTime(s.syncTime);
+      const rfAgo = this.getTimeAgo(s.syncTime);
 
       return `
         <div class="activity-section">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem; width:100%; box-sizing:border-box;">
             <span class="activity-label" style="color: #6ebc48; margin-bottom:0; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:0.3rem;"><i data-lucide="sprout"></i> Soil Moisture</span>
-            <span style="font-size:0.6rem; color:#86efac; display:inline-flex; align-items:center; gap:3px; background:rgba(74,222,128,0.1); padding:1px 5px; border-radius:4px; border:1px solid rgba(74,222,128,0.25); white-space:nowrap; flex-shrink:0;"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;flex-shrink:0;"></span> 24/7 Live Cloud</span>
+            <span style="font-size:0.62rem; color:#86efac; display:inline-flex; align-items:center; gap:4px; background:rgba(74,222,128,0.12); padding:2px 6px; border-radius:4px; border:1px solid rgba(74,222,128,0.28); white-space:nowrap; flex-shrink:0;"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;flex-shrink:0;"></span> ${cloudBadgeText}</span>
           </div>
           <div class="activity-content-box box-moisture" style="padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
             
@@ -387,7 +391,7 @@ class SoilMoistureService {
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; width:100%; box-sizing:border-box;">
               <div style="display:flex; flex-direction:column; min-width:0;">
                 <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">${s.name || 'Sensor 1'}</span>
-                ${timeFormatted ? `<span class="sensor-sync-label" style="font-size:0.65rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px; color:#94a3b8;"><i data-lucide="radio" style="width:9px;height:9px;display:inline;"></i> RF Broadcast: ${timeFormatted}</span>` : ''}
+                ${timeFormatted ? `<span class="sensor-sync-label" style="font-size:0.65rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px; color:#94a3b8;"><i data-lucide="radio" style="width:9px;height:9px;display:inline;color:#38bdf8;"></i> RF Broadcast: ${timeFormatted}${rfAgo ? ` <span style="color:#64748b;">(${rfAgo})</span>` : ''}</span>` : ''}
               </div>
               <span class="sensor-pill ${st.badgeClass}" style="font-size:0.75rem; padding:0.12rem 0.5rem; font-weight:700; border-radius:4px; flex-shrink:0;">${mVal}%</span>
             </div>
@@ -439,13 +443,14 @@ class SoilMoistureService {
       <div class="activity-section">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem; width:100%; box-sizing:border-box;">
           <span class="activity-label" style="color: #6ebc48; margin-bottom:0; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:0.3rem;"><i data-lucide="sprout"></i> Soil Moisture</span>
-          <span style="font-size:0.6rem; color:#86efac; display:inline-flex; align-items:center; gap:3px; background:rgba(74,222,128,0.1); padding:1px 5px; border-radius:4px; border:1px solid rgba(74,222,128,0.25); white-space:nowrap; flex-shrink:0;"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;flex-shrink:0;"></span> 24/7 Live Cloud</span>
+          <span style="font-size:0.62rem; color:#86efac; display:inline-flex; align-items:center; gap:4px; background:rgba(74,222,128,0.12); padding:2px 6px; border-radius:4px; border:1px solid rgba(74,222,128,0.28); white-space:nowrap; flex-shrink:0;"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;flex-shrink:0;"></span> ${cloudBadgeText}</span>
         </div>
         <div class="activity-content-box box-moisture" style="padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
           
           ${data.sensors.map((s, idx) => {
             const sSt = this.getMoistureStatus(s.moisture);
             const sTimeFormatted = this.formatSyncTime(s.syncTime);
+            const sRfAgo = this.getTimeAgo(s.syncTime);
             return `
               ${idx > 0 ? `<div style="height: 1px; background: rgba(81, 141, 54, 0.28); margin: 0.75rem 0; width: 100%;"></div>` : ''}
               <div style="width: 100%; box-sizing: border-box;">
@@ -454,7 +459,7 @@ class SoilMoistureService {
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; width:100%; box-sizing:border-box;">
                   <div style="display:flex; flex-direction:column; min-width:0;">
                     <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">${(s.name || '').replace(/\s*\((Top|Bottom)\)/i, '') || ('Sensor ' + (idx + 1))}</span>
-                    ${sTimeFormatted ? `<span class="sensor-sync-label" style="font-size:0.65rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px; color:#94a3b8;"><i data-lucide="radio" style="width:9px;height:9px;display:inline;"></i> RF Broadcast: ${sTimeFormatted}</span>` : ''}
+                    ${sTimeFormatted ? `<span class="sensor-sync-label" style="font-size:0.65rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px; color:#94a3b8;"><i data-lucide="radio" style="width:9px;height:9px;display:inline;color:#38bdf8;"></i> RF Broadcast: ${sTimeFormatted}${sRfAgo ? ` <span style="color:#64748b;">(${sRfAgo})</span>` : ''}</span>` : ''}
                   </div>
                   <span class="sensor-pill ${sSt.badgeClass}" style="font-size:0.75rem; padding:0.12rem 0.5rem; font-weight:700; border-radius:4px; flex-shrink:0;">${s.moisture}%</span>
                 </div>
