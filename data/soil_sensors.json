@@ -8,17 +8,17 @@
                                                      "slot":  "D01",
                                                      "name":  "Sensor 1",
                                                      "model":  "HCS021FRF",
-                                                     "moisture":  61,
-                                                     "temperature":  27.3,
-                                                     "lux":  2060,
+                                                     "moisture":  63,
+                                                     "temperature":  43.2,
+                                                     "lux":  9186,
                                                      "battery":  100,
                                                      "status":  "optimal",
                                                      "statusLabel":  "Optimal for Chili",
-                                                     "syncTime":  "2026-08-22 08:34:37"
+                                                     "syncTime":  "2026-08-22 12:40:37"
                                                  }
                                              ],
-                                 "avgTemperature":  27.3,
-                                 "avgMoisture":  61
+                                 "avgTemperature":  43.2,
+                                 "avgMoisture":  63
                              },
                   "plot-2":  {
                                  "overallStatus":  "moderate",
@@ -28,32 +28,32 @@
                                                      "slot":  "D02",
                                                      "name":  "Sensor 1",
                                                      "model":  "HCS021FRF",
-                                                     "moisture":  54,
-                                                     "temperature":  28.1,
+                                                     "moisture":  52,
+                                                     "temperature":  39.8,
                                                      "lux":  6783,
                                                      "battery":  100,
                                                      "status":  "moderate",
                                                      "statusLabel":  "Moderate",
-                                                     "syncTime":  "2026-08-22 08:38:07"
+                                                     "syncTime":  "2026-08-22 12:42:07"
                                                  },
                                                  {
                                                      "slot":  "D03",
                                                      "name":  "Sensor 2",
                                                      "model":  "HCS021FRF",
-                                                     "moisture":  59,
-                                                     "temperature":  25.9,
-                                                     "lux":  10364,
+                                                     "moisture":  56,
+                                                     "temperature":  42.5,
+                                                     "lux":  9186,
                                                      "battery":  100,
                                                      "status":  "moderate",
                                                      "statusLabel":  "Moderate",
-                                                     "syncTime":  "2026-08-22 08:35:44"
+                                                     "syncTime":  "2026-08-22 12:41:44"
                                                  }
                                              ],
-                                 "avgTemperature":  27,
-                                 "avgMoisture":  56
+                                 "avgTemperature":  41.2,
+                                 "avgMoisture":  54
                              }
               },
-    "lastUpdated":  "2026-08-22T12:08:50.1235099+08:00",
+    "lastUpdated":  "2026-08-22T12:43:05.2641078+08:00",
     "gateway":  {
                     "name":  "MAC-30C922CEA038",
                     "mac":  "30:C9:22:CE:A0:38",
