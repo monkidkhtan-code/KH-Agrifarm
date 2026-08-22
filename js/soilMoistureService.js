@@ -283,24 +283,26 @@ class SoilMoistureService {
 
     console.log('⚡ [1-Tap Wake] Triggering RainPoint mobile bridge & cloud sync...');
 
-    // 1. Mobile Deep Link Wake-Up: Open RainPoint / HomGar App in background
+    // 1. Mobile Intent & URL Scheme Wake-Up (Supports RainPoint Home & HomGar)
     if (typeof navigator !== 'undefined') {
       const isAndroid = /Android/i.test(navigator.userAgent);
       const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
       if (isAndroid) {
-        // Try Homgar / RainPoint Android Intents
-        const hiddenLink = document.createElement('a');
-        hiddenLink.href = 'intent://#Intent;package=com.baldr.homgar;scheme=homgar;end';
-        hiddenLink.style.display = 'none';
-        document.body.appendChild(hiddenLink);
-        hiddenLink.click();
-        setTimeout(() => {
-          try { document.body.removeChild(hiddenLink); } catch(e) {}
-        }, 1000);
+        // Direct intent launch for RainPoint Home & HomGar on Android
+        try {
+          window.location.href = 'intent:#Intent;package=com.baldr.rainpointHome;end';
+        } catch(e) {
+          try {
+            window.location.href = 'intent:#Intent;package=com.baldr.homgar;end';
+          } catch(e2) {}
+        }
       } else if (isIOS) {
-        // iOS URL scheme
-        window.location.href = 'homgar://';
+        // iOS custom schemes
+        window.location.href = 'rainpoint://';
+        setTimeout(() => {
+          try { window.location.href = 'homgar://'; } catch(e) {}
+        }, 500);
       }
     }
 
