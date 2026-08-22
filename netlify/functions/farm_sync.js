@@ -6,7 +6,7 @@ const PASSWORD = process.env.RAINPOINT_PASSWORD || '789789tan';
 const AREA_CODE = '60';
 const BASE_URL = 'https://region3.homgarus.com';
 const FIREBASE_URL = process.env.FIREBASE_URL || 'https://kh-agrifarm-default-rtdb.asia-southeast1.firebasedatabase.app/telemetry.json';
-const SMARTTHINGS_TOKEN = process.env.SMARTTHINGS_TOKEN || 'fac9a070-a924-4674-ab22-6ed46a8ef66c';
+const SMARTTHINGS_TOKEN = process.env.SMARTTHINGS_TOKEN || '5ef0b11a-0c8a-4222-ba78-31243cc89124';
 
 function getMd5(str) {
   return crypto.createHash('md5').update(str, 'utf8').digest('hex');

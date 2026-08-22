@@ -364,7 +364,7 @@ def sync_cycle(firebase_url, is_first=True):
     soil_data, hist_entry = sync_rainpoint()
     
     # 2. Sync Tapo via SmartThings Cloud (24/7 Cloud Bridge)
-    st_token = get_env_var("SMARTTHINGS_TOKEN", "fac9a070-a924-4674-ab22-6ed46a8ef66c")
+    st_token = get_env_var("SMARTTHINGS_TOKEN", "5ef0b11a-0c8a-4222-ba78-31243cc89124")
     tapo_data = sync_smartthings_tapo(st_token)
     
     # 3. Sync Google Sheets (on first pass)
