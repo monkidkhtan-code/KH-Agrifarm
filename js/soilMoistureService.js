@@ -273,6 +273,58 @@ class SoilMoistureService {
     }
   }
 
+  async wakeHubAndSync(btnEl) {
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.style.opacity = '0.7';
+      btnEl.innerHTML = `<i data-lucide="loader-2" style="width:10px;height:10px;animation:spin 1s linear infinite;display:inline-block;"></i> Waking...`;
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    console.log('⚡ [1-Tap Wake] Triggering RainPoint mobile bridge & cloud sync...');
+
+    // 1. Mobile Deep Link Wake-Up: Open RainPoint / HomGar App in background
+    if (typeof navigator !== 'undefined') {
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (isAndroid) {
+        // Try Homgar / RainPoint Android Intents
+        const hiddenLink = document.createElement('a');
+        hiddenLink.href = 'intent://#Intent;package=com.baldr.homgar;scheme=homgar;end';
+        hiddenLink.style.display = 'none';
+        document.body.appendChild(hiddenLink);
+        hiddenLink.click();
+        setTimeout(() => {
+          try { document.body.removeChild(hiddenLink); } catch(e) {}
+        }, 1000);
+      } else if (isIOS) {
+        // iOS URL scheme
+        window.location.href = 'homgar://';
+      }
+    }
+
+    // 2. Execute instant serverless & cloud sync
+    try {
+      await this.refresh(true);
+    } catch(e) {
+      console.warn('Wake sync error:', e);
+    }
+
+    if (window.khApp && window.khApp.activeView === 'daily') {
+      window.khApp.renderDailyCards();
+    }
+
+    setTimeout(() => {
+      if (btnEl) {
+        btnEl.disabled = false;
+        btnEl.style.opacity = '1';
+        btnEl.innerHTML = `<i data-lucide="zap" style="width:10px;height:10px;color:#38bdf8;"></i> Wake &amp; Sync`;
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }, 3000);
+  }
+
   getPlotSensors(plotId) {
     if (!this.sensorData || !this.sensorData.plots) {
       return this.defaultData.plots[plotId] || null;
@@ -381,9 +433,14 @@ class SoilMoistureService {
 
       return `
         <div class="activity-section">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem; width:100%; box-sizing:border-box;">
-            <span class="activity-label" style="color: #6ebc48; margin-bottom:0; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:0.3rem;"><i data-lucide="sprout"></i> Soil Moisture</span>
-            <span style="font-size:0.62rem; color:#86efac; display:inline-flex; align-items:center; gap:4px; background:rgba(74,222,128,0.12); padding:2px 6px; border-radius:4px; border:1px solid rgba(74,222,128,0.28); white-space:nowrap; flex-shrink:0;"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;flex-shrink:0;"></span> ${cloudBadgeText}</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.28rem; width:100%; box-sizing:border-box;">
+            <span class="activity-label" style="color: #6ebc48; margin-bottom:0; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:0.2rem;"><i data-lucide="sprout"></i> Soil Moisture</span>
+            <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;">
+              <button onclick="window.khSoilMoisture?.wakeHubAndSync(this)" title="Wake RainPoint Hub &amp; Fetch Live Telemetry" class="btn-wake-hub" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; cursor: pointer; transition: all 0.2s ease;">
+                <i data-lucide="zap" style="width: 10px; height: 10px; color: #38bdf8;"></i> Wake &amp; Sync
+              </button>
+              <span style="font-size:0.6rem; color:#86efac; display:inline-flex; align-items:center; gap:3px; background:rgba(74,222,128,0.1); padding:2px 5px; border-radius:4px; border:1px solid rgba(74,222,128,0.22); white-space:nowrap;"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;flex-shrink:0;"></span> ${cloudBadgeText}</span>
+            </div>
           </div>
           <div class="activity-content-box box-moisture" style="padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
             
@@ -441,9 +498,14 @@ class SoilMoistureService {
 
     return `
       <div class="activity-section">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem; width:100%; box-sizing:border-box;">
-          <span class="activity-label" style="color: #6ebc48; margin-bottom:0; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:0.3rem;"><i data-lucide="sprout"></i> Soil Moisture</span>
-          <span style="font-size:0.62rem; color:#86efac; display:inline-flex; align-items:center; gap:4px; background:rgba(74,222,128,0.12); padding:2px 6px; border-radius:4px; border:1px solid rgba(74,222,128,0.28); white-space:nowrap; flex-shrink:0;"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;flex-shrink:0;"></span> ${cloudBadgeText}</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.28rem; width:100%; box-sizing:border-box;">
+          <span class="activity-label" style="color: #6ebc48; margin-bottom:0; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:0.2rem;"><i data-lucide="sprout"></i> Soil Moisture</span>
+          <div style="display:flex; align-items:center; gap:5px; flex-shrink:0;">
+            <button onclick="window.khSoilMoisture?.wakeHubAndSync(this)" title="Wake RainPoint Hub &amp; Fetch Live Telemetry" class="btn-wake-hub" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; font-size: 0.62rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 3px; cursor: pointer; transition: all 0.2s ease;">
+              <i data-lucide="zap" style="width: 10px; height: 10px; color: #38bdf8;"></i> Wake &amp; Sync
+            </button>
+            <span style="font-size:0.6rem; color:#86efac; display:inline-flex; align-items:center; gap:3px; background:rgba(74,222,128,0.1); padding:2px 5px; border-radius:4px; border:1px solid rgba(74,222,128,0.22); white-space:nowrap;"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#4ade80;box-shadow:0 0 5px #4ade80;flex-shrink:0;"></span> ${cloudBadgeText}</span>
+          </div>
         </div>
         <div class="activity-content-box box-moisture" style="padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
           
