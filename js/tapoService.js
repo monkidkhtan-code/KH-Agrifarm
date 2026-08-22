@@ -455,22 +455,20 @@ class TapoService {
       if (temp === null) {
         const hVal = slotTime.getHours() + slotTime.getMinutes() / 60.0;
         const targetPeakT = curSensor ? curSensor.temperature : 38.0;
-        const targetMinH = curSensor ? curSensor.humidity : 57.0;
+        const targetMinH = curSensor ? curSensor.humidity : 50.0;
 
-        if (hVal >= 6.5 && hVal <= 14.0) {
-          // Linear morning heating ramp from 25.5°C to peak, humidity declining from 88% to min
-          const progress = (hVal - 6.5) / 7.5;
-          temp = Math.round((25.5 + progress * (targetPeakT - 25.5)) * 10) / 10;
-          hum = Math.round(88.0 - progress * (88.0 - targetMinH));
-        } else if (hVal > 14.0 && hVal <= 19.5) {
-          // Linear afternoon cooling ramp
-          const progress = (hVal - 14.0) / 5.5;
-          temp = Math.round((targetPeakT - progress * (targetPeakT - 26.5)) * 10) / 10;
-          hum = Math.round(targetMinH + progress * (84.0 - targetMinH));
+        if (hVal < 6.0 || hVal > 21.0) {
+          // Smooth night natural cooling curve (26.2°C down to 24.5°C before sunrise)
+          const nightHours = hVal < 6.0 ? (hVal + 3.0) : (hVal - 21.0);
+          const nightProgress = Math.min(1, Math.max(0, nightHours / 9.0));
+          temp = Math.round((26.2 - nightProgress * 1.7) * 10) / 10;
+          hum = Math.round(82.0 + nightProgress * 7.5);
         } else {
-          // Constant steady night greenhouse climate
-          temp = 25.5;
-          hum = 88;
+          // Daytime solar thermal heating & transpiration cycle
+          const sunFactor = Math.max(0, Math.sin(((hVal - 6.0) / 15.0) * Math.PI));
+          const shapedFactor = Math.pow(sunFactor, 0.9);
+          temp = Math.round((24.5 + shapedFactor * (targetPeakT - 24.5)) * 10) / 10;
+          hum = Math.round(89.5 - shapedFactor * (89.5 - targetMinH));
         }
       }
 
@@ -539,10 +537,10 @@ class TapoService {
               label: 'Nursery Temp (°C)',
               data: tempData,
               borderColor: '#fbbf24',
-              backgroundColor: 'rgba(251, 191, 36, 0.15)',
+              backgroundColor: 'rgba(251, 191, 36, 0.12)',
               borderWidth: 2,
               fill: false,
-              tension: 0,
+              tension: 0.35,
               pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5.5 : (ctx.dataIndex % 2 === 0 ? 2 : 0)),
               pointBackgroundColor: (ctx) => (ctx.dataIndex === totalPoints - 1 ? '#ffffff' : '#fbbf24'),
               pointBorderColor: '#fbbf24',
@@ -553,10 +551,10 @@ class TapoService {
               label: 'Humidity (% RH)',
               data: humData,
               borderColor: '#38bdf8',
-              backgroundColor: 'rgba(56, 189, 248, 0.15)',
+              backgroundColor: 'rgba(56, 189, 248, 0.12)',
               borderWidth: 2,
               fill: true,
-              tension: 0,
+              tension: 0.35,
               pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5.5 : (ctx.dataIndex % 2 === 0 ? 2 : 0)),
               pointBackgroundColor: (ctx) => (ctx.dataIndex === totalPoints - 1 ? '#ffffff' : '#38bdf8'),
               pointBorderColor: '#0284c7',

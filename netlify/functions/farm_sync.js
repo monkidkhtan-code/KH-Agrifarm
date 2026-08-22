@@ -281,6 +281,26 @@ exports.handler = async function (event, context) {
         }
         payload.soilHistory = { records };
       }
+
+      let tapoRecords = curData?.tapoHistory?.records || [];
+      if (tapoData?.sensor) {
+        const tapoEntry = {
+          timestamp: nowMyDate.toISOString().replace('T', ' ').substring(0, 16),
+          time: nowMyDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'UTC' }),
+          temp: tapoData.sensor.temperature,
+          hum: tapoData.sensor.humidity,
+          vpd: tapoData.sensor.vpd
+        };
+        if (!tapoRecords.length || tapoRecords[tapoRecords.length - 1].timestamp !== tapoEntry.timestamp) {
+          tapoRecords.push(tapoEntry);
+          if (tapoRecords.length > 500) tapoRecords = tapoRecords.slice(-500);
+        }
+        payload.tapoHistory = {
+          lastSynced: nowMyDate.toISOString().replace('T', ' ').substring(0, 16),
+          records: tapoRecords,
+          current: { temperature: tapoData.sensor.temperature, humidity: tapoData.sensor.humidity, vpd: tapoData.sensor.vpd }
+        };
+      }
     }
   } catch (e) {
     console.warn('History merge err:', e);

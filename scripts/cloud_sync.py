@@ -378,8 +378,9 @@ def sync_cycle(firebase_url, is_first=True):
     if soil_data:
         payload["soilSensors"] = soil_data
 
-    # Fetch and preserve rolling 500-record history in Firebase
+    # Fetch and preserve rolling 500-record history for both Soil and Tapo in Firebase
     existing_history = []
+    existing_tapo_history = []
     if firebase_url:
         try:
             cur_resp = requests.get(firebase_url, timeout=10)
@@ -390,6 +391,12 @@ def sync_cycle(firebase_url, is_first=True):
                     existing_history = hist_obj.get("records", []) or []
                 elif isinstance(hist_obj, list):
                     existing_history = hist_obj
+
+                tapo_hist_obj = cur_data.get("tapoHistory", {})
+                if isinstance(tapo_hist_obj, dict):
+                    existing_tapo_history = tapo_hist_obj.get("records", []) or []
+                elif isinstance(tapo_hist_obj, list):
+                    existing_tapo_history = tapo_hist_obj
         except Exception as e:
             print(f"   ℹ️ History fetch: {e}")
 
@@ -403,12 +410,26 @@ def sync_cycle(firebase_url, is_first=True):
 
     if tapo_data:
         payload["tapoSensors"] = tapo_data
+        tapo_sens = tapo_data.get("sensor", {})
+        tapo_entry = {
+            "timestamp": now_dt.strftime("%Y-%m-%d %H:%M"),
+            "time": now_dt.strftime("%I:%M %p"),
+            "temp": tapo_sens.get("temperature", 28.0),
+            "hum": tapo_sens.get("humidity", 70),
+            "vpd": tapo_sens.get("vpd", 1.5)
+        }
+        if not existing_tapo_history or existing_tapo_history[-1].get("timestamp") != tapo_entry.get("timestamp"):
+            existing_tapo_history.append(tapo_entry)
+            if len(existing_tapo_history) > 500:
+                existing_tapo_history = existing_tapo_history[-500:]
+
         payload["tapoHistory"] = {
             "lastSynced": now_dt.strftime("%Y-%m-%d %H:%M"),
+            "records": existing_tapo_history,
             "current": {
-                "temperature": tapo_data["sensor"]["temperature"],
-                "humidity": tapo_data["sensor"]["humidity"],
-                "vpd": tapo_data["sensor"]["vpd"]
+                "temperature": tapo_sens.get("temperature"),
+                "humidity": tapo_sens.get("humidity"),
+                "vpd": tapo_sens.get("vpd")
             }
         }
     if sheets_data:
