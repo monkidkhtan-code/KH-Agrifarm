@@ -164,17 +164,39 @@ def sync_rainpoint():
             print("   ⚠️ RainPoint Login Failed: No token returned!")
             return None, None
 
-        # Emulate Active Mobile App Session via Alibaba Cloud IoT MQTT Handshake
-        # This notifies the RainPoint Cloud & Hub that an active client is viewing,
-        # prompting the hub to publish fresh RF telemetry without opening the mobile app!
-        user_info = login_data.get("user", {})
-        product_key = user_info.get("productKey")
-        device_name = user_info.get("deviceName")
-        device_secret = user_info.get("deviceSecret")
-        mqtt_host_url = login_data.get("mqttHostUrl")
+        auth_headers = {"auth": token, "lang": "en", "appCode": "2", "version": "1.16.1065", "sceneType": "1", "User-Agent": "okhttp/4.9.2"}
 
-        if product_key and device_name and device_secret and mqtt_host_url:
-            try:
+        # 1. Call /app/device/subscribeStatus to register live observer session with Hub HWG023WRF
+        # 2. Connect to Alibaba Cloud IoT MQTT Broker with dynamic observer credentials
+        # This tells the RainPoint Cloud & physical Hub that an active screen is viewing right now!
+        user_info = login_data.get("user", {})
+        default_dev_name = user_info.get("deviceName", "Xown0h0VEAodGnch18fC")
+        default_pk = user_info.get("productKey", "a3iCXW3C5CP")
+
+        sub_payload = {
+            "hid": "64378",
+            "hidList": ["64378"],
+            "subscribe": [{"deviceName": "MAC-30C922CEA038", "mid": 67783, "productKey": "a3QrDxYPTM2"}],
+            "unsubscribe": [],
+            "userInfo": {
+                "deviceName": default_dev_name,
+                "deviceType": 1,
+                "notice": 0,
+                "productKey": default_pk,
+                "pushId": "1234567890abcdef1234567890abcdef"
+            }
+        }
+
+        try:
+            sub_resp = http_req(f"{BASE_URL}/app/device/subscribeStatus", method="POST", json_data=sub_payload, headers=auth_headers, timeout=10)
+            sub_data = (sub_resp.json() or {}).get("data", {}) if sub_resp.ok else {}
+            
+            product_key = sub_data.get("productKey") or default_pk
+            device_name = sub_data.get("deviceName") or default_dev_name
+            device_secret = sub_data.get("deviceSecret") or user_info.get("deviceSecret")
+            mqtt_host_url = sub_data.get("mqttHostUrl") or login_data.get("mqttHostUrl")
+
+            if product_key and device_name and device_secret and mqtt_host_url:
                 import paho.mqtt.client as mqtt
                 import hmac
                 mqtt_host = mqtt_host_url.split(":")[0]
@@ -190,13 +212,12 @@ def sync_rainpoint():
                 mqtt_c.loop_start()
                 mqtt_c.subscribe(f"/{product_key}/{device_name}/#")
                 mqtt_c.subscribe(f"/sys/{product_key}/{device_name}/#")
-                time.sleep(2.5) # Allow 2.5s for session registration and hub flush
+                mqtt_c.subscribe(f"/sys/a3QrDxYPTM2/MAC-30C922CEA038/#")
+                time.sleep(3.5) # Wait for hub to wake up and post latest buffer
                 mqtt_c.loop_stop()
                 mqtt_c.disconnect()
-            except Exception as e:
-                print(f"   ℹ️ MQTT session handshake: {e}")
-
-        auth_headers = {"auth": token, "lang": "en", "appCode": "2", "version": "1.16.1065", "sceneType": "1", "User-Agent": "okhttp/4.9.2"}
+        except Exception as e:
+            print(f"   ℹ️ Live observer subscription notice: {e}")
         try:
             dev_resp = http_req(f"{BASE_URL}/app/device/getDeviceByHid?hid=64378", headers=auth_headers, timeout=15).json() or {}
         except Exception:
@@ -219,14 +240,19 @@ def sync_rainpoint():
 
         p1_sensors = []
         p2_sensors = []
+        defined_subs = [
+            {"addr": 1, "model": "HCS021FRF", "name": "Sensor 1", "slot": "D01", "plot": "plot-1"},
+            {"addr": 2, "model": "HCS021FRF", "name": "Sensor 1", "slot": "D02", "plot": "plot-2"},
+            {"addr": 3, "model": "HCS021FRF", "name": "Sensor 2", "slot": "D03", "plot": "plot-2"}
+        ]
 
-        for sub in hub.get("subDevices", []):
-            slot_id = f"D0{sub.get('addr')}"
+        for sub in defined_subs:
+            slot_id = sub["slot"]
             st_entry = sub_statuses.get(slot_id)
             raw_payload = st_entry.get("value") if st_entry else None
             decoded = decode_tlv(raw_payload) if raw_payload else None
 
-            display_name = "Sensor 1" if slot_id in ["D01", "D02"] else ("Sensor 2" if slot_id == "D03" else sub.get("name"))
+            display_name = sub["name"]
 
             if st_entry and decoded:
                 ts_sec = st_entry.get("time", 0) / 1000.0
@@ -252,7 +278,7 @@ def sync_rainpoint():
                     "syncTime": sync_dt
                 }
 
-                if slot_id == "D01":
+                if sub["plot"] == "plot-1":
                     p1_sensors.append(sensor_obj)
                 else:
                     p2_sensors.append(sensor_obj)
