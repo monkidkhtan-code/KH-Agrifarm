@@ -144,7 +144,7 @@ const APP_CONFIG = {
   // SmartThings 24/7 Cloud Direct Stream
   smartthings: {
     enabled: true,
-    token: "5ef0b11a-0c8a-4222-ba78-31243cc89124",
+    token: "a882139b-da6a-480c-8923-01734d8d942d",
     deviceId: "fdc3ceb6-8103-487d-aed1-3173859ec17b"
   },
 

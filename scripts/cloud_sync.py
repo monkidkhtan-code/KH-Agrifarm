@@ -4,7 +4,9 @@ import json
 import time
 import math
 import hashlib
-import requests
+import ssl
+import urllib.request
+import urllib.error
 from datetime import datetime, timezone, timedelta
 
 # Ensure UTF-8 stdout encoding
@@ -16,6 +18,39 @@ if hasattr(sys.stdout, 'reconfigure'):
 
 # Explicit Malaysia Farm Timezone (UTC+8)
 MY_TZ = timezone(timedelta(hours=8))
+
+# SSL Context
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+
+class ResponseWrapper:
+    def __init__(self, status, text):
+        self.status_code = status
+        self.ok = (200 <= status < 300)
+        self.text = text
+    def json(self):
+        try:
+            return json.loads(self.text) if self.text else {}
+        except Exception:
+            return {}
+
+def http_req(url, method="GET", headers=None, json_data=None, timeout=15):
+    headers = headers or {}
+    data = None
+    if json_data is not None:
+        data = json.dumps(json_data).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:
+            text = resp.read().decode("utf-8", errors="ignore")
+            return ResponseWrapper(resp.status, text)
+    except urllib.error.HTTPError as e:
+        text = e.read().decode("utf-8", errors="ignore") if hasattr(e, "read") else ""
+        return ResponseWrapper(e.code, text)
+    except Exception as e:
+        return ResponseWrapper(0, str(e))
 
 def get_env_var(name, default):
     val = os.environ.get(name)
@@ -118,19 +153,52 @@ def sync_rainpoint():
         body = {"areaCode": AREA_CODE, "phoneOrEmail": EMAIL, "password": p_hash, "deviceId": d_hash}
         headers = {"Content-Type": "application/json", "lang": "en", "appCode": "2", "User-Agent": "okhttp/4.9.2"}
 
-        resp = requests.post(f"{BASE_URL}/auth/basic/app/login", json=body, headers=headers, timeout=15)
+        resp = http_req(f"{BASE_URL}/auth/basic/app/login", method="POST", json_data=body, headers=headers, timeout=15)
         if not resp.ok:
             print(f"   ⚠️ RainPoint Login HTTP Error: {resp.status_code}")
             return None, None
 
-        token = (resp.json() or {}).get("data", {}).get("token")
+        login_data = (resp.json() or {}).get("data", {})
+        token = login_data.get("token")
         if not token:
             print("   ⚠️ RainPoint Login Failed: No token returned!")
             return None, None
 
+        # Emulate Active Mobile App Session via Alibaba Cloud IoT MQTT Handshake
+        # This notifies the RainPoint Cloud & Hub that an active client is viewing,
+        # prompting the hub to publish fresh RF telemetry without opening the mobile app!
+        user_info = login_data.get("user", {})
+        product_key = user_info.get("productKey")
+        device_name = user_info.get("deviceName")
+        device_secret = user_info.get("deviceSecret")
+        mqtt_host_url = login_data.get("mqttHostUrl")
+
+        if product_key and device_name and device_secret and mqtt_host_url:
+            try:
+                import paho.mqtt.client as mqtt
+                import hmac
+                mqtt_host = mqtt_host_url.split(":")[0]
+                timestamp_str = str(int(time.time() * 1000))
+                client_id = f"{device_name}|securemode=3,signmethod=hmacsha1,timestamp={timestamp_str}|"
+                username = f"{device_name}&{product_key}"
+                sign_content = f"clientId{device_name}deviceName{device_name}productKey{product_key}timestamp{timestamp_str}"
+                password_str = hmac.new(device_secret.encode('utf-8'), sign_content.encode('utf-8'), hashlib.sha1).hexdigest()
+
+                mqtt_c = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=client_id)
+                mqtt_c.username_pw_set(username, password_str)
+                mqtt_c.connect(mqtt_host, 1883, 30)
+                mqtt_c.loop_start()
+                mqtt_c.subscribe(f"/{product_key}/{device_name}/#")
+                mqtt_c.subscribe(f"/sys/{product_key}/{device_name}/#")
+                time.sleep(2.5) # Allow 2.5s for session registration and hub flush
+                mqtt_c.loop_stop()
+                mqtt_c.disconnect()
+            except Exception as e:
+                print(f"   ℹ️ MQTT session handshake: {e}")
+
         auth_headers = {"auth": token, "lang": "en", "appCode": "2", "version": "1.16.1065", "sceneType": "1", "User-Agent": "okhttp/4.9.2"}
         try:
-            dev_resp = requests.get(f"{BASE_URL}/app/device/getDeviceByHid?hid=64378", headers=auth_headers, timeout=15).json() or {}
+            dev_resp = http_req(f"{BASE_URL}/app/device/getDeviceByHid?hid=64378", headers=auth_headers, timeout=15).json() or {}
         except Exception:
             dev_resp = {}
             
@@ -144,7 +212,7 @@ def sync_rainpoint():
         
         mid = hub.get("mid", 67783)
 
-        st_resp = requests.get(f"{BASE_URL}/app/device/getDeviceStatus?mid={mid}", headers=auth_headers, timeout=15).json() or {}
+        st_resp = http_req(f"{BASE_URL}/app/device/getDeviceStatus?mid={mid}", headers=auth_headers, timeout=15).json() or {}
         st_data = st_resp.get("data") or {}
         sub_list = st_data.get("subDeviceStatus") or []
         sub_statuses = {s.get("id"): s for s in sub_list if isinstance(s, dict)}
@@ -236,7 +304,7 @@ def sync_smartthings_tapo(st_token):
     
     try:
         url = f"https://api.smartthings.com/v1/devices/{sensor_dev_id}/status"
-        resp = requests.get(url, headers=headers, timeout=15)
+        resp = http_req(url, headers=headers, timeout=15)
         if not resp.ok:
             print(f"   ⚠️ SmartThings status error: {resp.status_code}")
             return None
@@ -310,7 +378,7 @@ def sync_google_sheets():
     for p in plots:
         try:
             url = f"{base_url}?gid={p['gid']}&single=true&output=csv&_t={ts}"
-            resp = requests.get(url, timeout=15, headers={"Cache-Control": "no-cache", "Pragma": "no-cache"})
+            resp = http_req(url, timeout=15, headers={"Cache-Control": "no-cache", "Pragma": "no-cache"})
             if resp.ok:
                 reader = csv.reader(io.StringIO(resp.text))
                 rows = list(reader)
@@ -343,28 +411,12 @@ def sync_google_sheets():
             
     return sheets_data if len(sheets_data) >= 2 else None
 
-def main():
-    print("==========================================================================")
-    print("   🌱 KH AGRIFARM - 24/7 CLOUD TELEMETRY SYNC (GITHUB ACTIONS RUNNER)     ")
-    print("==========================================================================")
-    
-    firebase_url = FIREBASE_URL
-    if not firebase_url:
-        config_path = os.path.join(os.path.dirname(__file__), "..", "js", "config.js")
-        if os.path.exists(config_path):
-            with open(config_path, "r", encoding="utf-8") as f:
-                content = f.read()
-                import re
-                m = re.search(r'endpointUrl:\s*"([^"]+)"', content)
-                if m:
-                    firebase_url = m.group(1).strip()
-
 def sync_cycle(firebase_url, is_first=True):
     # 1. Sync RainPoint Probes
     soil_data, hist_entry = sync_rainpoint()
     
     # 2. Sync Tapo via SmartThings Cloud (24/7 Cloud Bridge)
-    st_token = get_env_var("SMARTTHINGS_TOKEN", "5ef0b11a-0c8a-4222-ba78-31243cc89124")
+    st_token = get_env_var("SMARTTHINGS_TOKEN", "a882139b-da6a-480c-8923-01734d8d942d")
     tapo_data = sync_smartthings_tapo(st_token)
     
     # 3. Sync Google Sheets (on first pass)
@@ -383,7 +435,7 @@ def sync_cycle(firebase_url, is_first=True):
     existing_tapo_history = []
     if firebase_url:
         try:
-            cur_resp = requests.get(firebase_url, timeout=10)
+            cur_resp = http_req(firebase_url, timeout=10)
             if cur_resp.ok:
                 cur_data = cur_resp.json() or {}
                 hist_obj = cur_data.get("soilHistory", {})
@@ -438,7 +490,7 @@ def sync_cycle(firebase_url, is_first=True):
     if firebase_url:
         print(f"\n[4/4] Pushing Full Farm Telemetry & Sheets to Firebase ({firebase_url})...")
         try:
-            r = requests.patch(firebase_url, json=payload, timeout=15)
+            r = http_req(firebase_url, method="PATCH", json_data=payload, timeout=15)
             if r.ok:
                 print("   ✅ SUCCESS! All Soil, Tapo, and Google Sheets updated in Cloud!")
             else:

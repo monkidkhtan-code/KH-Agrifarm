@@ -199,7 +199,7 @@ class TapoService {
               const syncDate = new Date(rawSync.replace(' ', 'T') + (rawSync.length === 16 ? ':00+08:00' : '+08:00'));
               if (!isNaN(syncDate.getTime())) {
                 const ageHours = (Date.now() - syncDate.getTime()) / (3600 * 1000);
-                if (ageHours < 2.0) isFresh = true; // Must be fresh
+                if (ageHours < 0.4) isFresh = true; // Must be fresh within 24 mins
               }
             }
 
@@ -320,20 +320,24 @@ class TapoService {
     // Nursery status determination (2-line compact badge to prevent text overlap)
     let statusClass = 'pill-safe';
     let statusText = 'Optimal<br>Climate';
-    let tipText = '🟢 Seedling transpiration and humidity are in the optimal root-establishment zone (VPD: 0.6–1.4 kPa).';
+    let tipText = `🟢 Seedling transpiration and humidity are in the optimal root-establishment zone (VPD: 0.6–1.4 kPa).`;
 
-    if (temp > 34) {
+    if (temp > 35 || vpd > 2.2) {
       statusClass = 'pill-danger';
       statusText = 'Heat<br>Stress';
-      tipText = '🔴 Nursery temp exceeds 34°C — activate greenhouse misting or shade netting.';
-    } else if (hum > 90) {
+      tipText = `🔴 Nursery temp or transpiration strain is severe (${temp}°C, VPD: ${vpd} kPa) — activate misting or shade netting.`;
+    } else if (temp > 32.5 || vpd > 1.4) {
+      statusClass = 'pill-caution';
+      statusText = 'Elevated<br>Climate';
+      tipText = `🟡 Temp / VPD elevated (${temp}°C, VPD: ${vpd} kPa) — maintain substrate moisture & airflow.`;
+    } else if (hum > 90 || vpd < 0.4) {
       statusClass = 'pill-caution';
       statusText = 'High<br>Humidity';
-      tipText = '🟡 Relative humidity is above 90% — ensure greenhouse ventilation to prevent fungal damping-off.';
+      tipText = `🟡 Relative humidity is high (${hum}% RH, VPD: ${vpd} kPa) — ensure greenhouse ventilation to prevent fungal damping-off.`;
     } else if (hum < 60) {
       statusClass = 'pill-caution';
       statusText = 'Low<br>Humidity';
-      tipText = '🟡 Substrate air is dry (<60% RH) — increase nursery humidity to prevent seedling leaf wilting.';
+      tipText = `🟡 Substrate air is dry (${hum}% RH) — increase nursery humidity to prevent seedling leaf wilting.`;
     }
 
     return `
@@ -348,7 +352,7 @@ class TapoService {
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; width:100%; box-sizing:border-box;">
             <div style="display:flex; flex-direction:column; min-width:0; padding-right:0.35rem;">
               <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">Sensor 1</span>
-              ${syncTimeFormatted ? `<span class="sensor-sync-label" style="color:#fbbf24; font-size:0.65rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px;"><i data-lucide="radio" style="width:9px;height:9px;display:inline;"></i> Synced: ${syncTimeFormatted}</span>` : ''}
+              ${syncTimeFormatted ? `<span class="sensor-sync-label" style="color:#fbbf24; font-size:0.72rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px;"><i data-lucide="radio" style="width:10px;height:10px;display:inline;color:#fbbf24;"></i> Synced: ${syncTimeFormatted}</span>` : ''}
             </div>
             <span class="sensor-pill ${statusClass}" style="font-size:0.62rem; padding:0.18rem 0.45rem; font-weight:700; line-height:1.15; text-align:center; border-radius:4px; flex-shrink:0;">${statusText}</span>
           </div>
@@ -472,19 +476,33 @@ class TapoService {
       if (temp === null) {
         const hVal = slotTime.getHours() + slotTime.getMinutes() / 60.0;
 
+        let baseTemp, baseHum;
         if (hVal < 6.5 || hVal > 19.5) {
           // Nighttime natural cooling curve (26.5°C down to 24.2°C, 82% to 92% RH)
           const nightHours = hVal < 6.5 ? (hVal + 4.5) : (hVal - 19.5);
           const nightProgress = Math.min(1, Math.max(0, nightHours / 11.0));
-          temp = Math.round((26.5 - nightProgress * 2.3) * 10) / 10;
-          hum = Math.round(82.0 + nightProgress * 9.0);
+          baseTemp = 26.5 - nightProgress * 2.3;
+          baseHum = 82.0 + nightProgress * 9.0;
         } else {
           // Daytime solar thermal heating & transpiration cycle (Peak at ~14:00 - 15:00 at 38.2°C, 50% RH)
           const sunProgress = (hVal - 6.5) / 13.0;
           const sunFactor = Math.max(0, Math.sin(sunProgress * Math.PI));
           const shapedFactor = Math.pow(sunFactor, 0.88);
-          temp = Math.round((24.8 + shapedFactor * (38.2 - 24.8)) * 10) / 10;
-          hum = Math.round(88.0 - shapedFactor * (88.0 - 50.0));
+          baseTemp = 24.8 + shapedFactor * (38.2 - 24.8);
+          baseHum = 88.0 - shapedFactor * (88.0 - 50.0);
+        }
+
+        // If curSensor exists, blend smoothly into live point over the last 4 hours
+        if (curSensor && i <= 4) {
+          const blendWeight = (4 - i) / 4.0;
+          const easedWeight = Math.sin((blendWeight * Math.PI) / 2);
+          const targetTempOffset = (curSensor.temperature !== undefined ? curSensor.temperature : baseTemp) - baseTemp;
+          const targetHumOffset = (curSensor.humidity !== undefined ? curSensor.humidity : baseHum) - baseHum;
+          temp = Math.round((baseTemp + targetTempOffset * easedWeight) * 10) / 10;
+          hum = Math.round(baseHum + targetHumOffset * easedWeight);
+        } else {
+          temp = Math.round(baseTemp * 10) / 10;
+          hum = Math.round(baseHum);
         }
       }
 

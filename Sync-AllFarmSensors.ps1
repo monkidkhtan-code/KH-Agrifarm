@@ -29,18 +29,15 @@ Write-Host "====================================================================
 Write-Host "   🌱 KH AGRIFARM - ALL SENSORS TELEMETRY SYNC                           "
 Write-Host "=========================================================================="
 
-# 1. Sync RainPoint Probes
-$rainpointScript = Join-Path $scriptRoot "Get-LiveSoilSensors.ps1"
-if (Test-Path $rainpointScript) {
-    Write-Host "`n[1/3] Syncing RainPoint Soil Moisture Probes (Plot 1 & 2)..."
-    try { . $rainpointScript } catch { Write-Warning "Soil sync error: $_" }
-}
-
-# 2. Sync Tapo T315 Nursery Greenhouse
-$tapoScript = Join-Path $scriptRoot "Get-LiveTapoSensors.ps1"
-if (Test-Path $tapoScript) {
-    Write-Host "`n[2/3] Syncing Tapo T315 Nursery Greenhouse Sensor (Backup 1 & 2)..."
-    try { . $tapoScript } catch { Write-Warning "Tapo sync error: $_" }
+# Run unified Python Cloud Sync (RainPoint MQTT handshake + SmartThings Tapo + Google Sheets + Firebase)
+$pyScript = Join-Path $scriptRoot "scripts\cloud_sync.py"
+if (Test-Path $pyScript) {
+    Write-Host "`n[1/2] Executing Unified Python Telemetry Engine with Alibaba IoT MQTT Handshake..." -ForegroundColor Cyan
+    try {
+        & python $pyScript --once
+    } catch {
+        Write-Warning "Python sync warning: $_"
+    }
 }
 
 # 3. Upload to Cloud Bridge (For Netlify & Mobile)

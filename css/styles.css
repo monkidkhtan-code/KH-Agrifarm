@@ -986,14 +986,14 @@ body {
 }
 
 .sensor-sync-label {
-  font-size: 0.63rem;
-  color: #86efac;
+  font-size: 0.72rem;
+  color: #6ebc48;
   font-family: var(--font-mono);
-  margin-top: 1px;
+  margin-top: 2px;
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
-  opacity: 0.85;
+  gap: 0.25rem;
+  opacity: 0.95;
 }
 
 .sensor-pill {
