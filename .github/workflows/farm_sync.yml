@@ -1,35 +1,40 @@
-name: KH Agrifarm 24/7 Cloud Sync
+name: 24/7 Farm Telemetry Cloud Sync
 
 on:
   schedule:
-    # Runs automatically every 5 minutes 24/7 in the cloud
-    - cron: '*/5 * * * *'
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+    # Run every 10 minutes automatically in GitHub Cloud (24/7)
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI anytime
+
+concurrency:
+  group: farm-cloud-sync
+  cancel-in-progress: true
 
 jobs:
   sync:
+    name: Sync RainPoint, Tapo & Google Sheets to Firebase
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-      - name: Checkout Repository
+      - name: Check out repository code
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
-          pip install requests
+          python -m pip install --upgrade pip
+          pip install paho-mqtt requests
 
-      - name: Run 24/7 Cloud Telemetry Sync
+      - name: Run 24/7 Cloud Sync Engine
         env:
-          RAINPOINT_EMAIL: ${{ secrets.RAINPOINT_EMAIL || 'monkid_khtan@yahoo.com' }}
-          RAINPOINT_PASSWORD: ${{ secrets.RAINPOINT_PASSWORD || '789789tan' }}
-          SMARTTHINGS_TOKEN: ${{ secrets.SMARTTHINGS_TOKEN || 'fac9a070-a924-4674-ab22-6ed46a8ef66c' }}
-          FIREBASE_URL: ${{ secrets.FIREBASE_URL || 'https://kh-agrifarm-default-rtdb.asia-southeast1.firebasedatabase.app/telemetry.json' }}
+          RAINPOINT_EMAIL: monkid_khtan@yahoo.com
+          RAINPOINT_PASSWORD: ${{ secrets.RAINPOINT_PASSWORD }}
+          SMARTTHINGS_TOKEN: ${{ secrets.SMARTTHINGS_TOKEN }}
+          FIREBASE_URL: https://kh-agrifarm-default-rtdb.asia-southeast1.firebasedatabase.app/telemetry.json
         run: |
-          python scripts/cloud_sync.py
+          python scripts/cloud_sync.py --once

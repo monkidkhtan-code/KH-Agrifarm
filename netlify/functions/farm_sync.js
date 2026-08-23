@@ -112,7 +112,28 @@ async function syncRainPoint() {
     const token = loginJson?.data?.token;
     if (!token) return null;
 
-    const authHeaders = { auth: token, lang: 'en', appCode: '2', version: '1.16.1065', sceneType: '1', 'User-Agent': 'okhttp/4.9.2' };
+    const authHeaders = { auth: token, lang: 'en', appCode: '2', version: '1.16.1065', sceneType: '1', 'Content-Type': 'application/json', 'User-Agent': 'okhttp/4.9.2' };
+    
+    // Register active observer session with Hub HWG023WRF
+    try {
+      const subPayload = JSON.stringify({
+        hid: "64378",
+        hidList: ["64378"],
+        subscribe: [{ deviceName: "MAC-30C922CEA038", mid: 67783, productKey: "a3QrDxYPTM2" }],
+        unsubscribe: [],
+        userInfo: {
+          deviceName: loginJson?.data?.user?.deviceName || "Xown0h0VEAodGnch18fC",
+          deviceType: 1,
+          notice: 0,
+          productKey: loginJson?.data?.user?.productKey || "a3iCXW3C5CP",
+          pushId: "1234567890abcdef1234567890abcdef"
+        }
+      });
+      await fetch(`${BASE_URL}/app/device/subscribeStatus`, { method: 'POST', headers: authHeaders, body: subPayload });
+    } catch (e) {
+      console.warn("subscribeStatus notice:", e);
+    }
+
     const devRes = await fetch(`${BASE_URL}/app/device/getDeviceByHid?hid=64378`, { headers: authHeaders });
     const devJson = await devRes.json();
     const rawData = devJson?.data;
@@ -130,12 +151,18 @@ async function syncRainPoint() {
 
     const nowMyDate = new Date(Date.now() + MY_TZ_OFFSET);
 
-    (hub.subDevices || []).forEach(sub => {
-      const slotId = `D0${sub.addr}`;
+    const definedSubs = [
+      { addr: 1, model: 'HCS021FRF', name: 'Sensor 1', slot: 'D01', plot: 'plot-1' },
+      { addr: 2, model: 'HCS021FRF', name: 'Sensor 1', slot: 'D02', plot: 'plot-2' },
+      { addr: 3, model: 'HCS021FRF', name: 'Sensor 2', slot: 'D03', plot: 'plot-2' }
+    ];
+
+    definedSubs.forEach(sub => {
+      const slotId = sub.slot;
       const stEntry = subStatuses[slotId];
       const rawPayload = stEntry?.value;
       const decoded = decodeTLV(rawPayload);
-      const displayName = slotId === 'D01' || slotId === 'D02' ? 'Sensor 1' : (slotId === 'D03' ? 'Sensor 2' : sub.name);
+      const displayName = sub.name;
 
       if (stEntry && decoded) {
         const syncDate = new Date((stEntry.time || Date.now()) + MY_TZ_OFFSET);
@@ -158,7 +185,7 @@ async function syncRainPoint() {
           syncTime: syncTimeStr
         };
 
-        if (slotId === 'D01') {
+        if (sub.plot === 'plot-1') {
           p1Sensors.push(sObj);
         } else {
           p2Sensors.push(sObj);
