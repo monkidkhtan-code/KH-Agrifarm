@@ -4,7 +4,9 @@ import json
 import time
 import math
 import hashlib
-import requests
+import ssl
+import urllib.request
+import urllib.error
 from datetime import datetime, timezone, timedelta
 
 # Ensure UTF-8 stdout encoding
@@ -16,6 +18,39 @@ if hasattr(sys.stdout, 'reconfigure'):
 
 # Explicit Malaysia Farm Timezone (UTC+8)
 MY_TZ = timezone(timedelta(hours=8))
+
+# SSL Context
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+
+class ResponseWrapper:
+    def __init__(self, status, text):
+        self.status_code = status
+        self.ok = (200 <= status < 300)
+        self.text = text
+    def json(self):
+        try:
+            return json.loads(self.text) if self.text else {}
+        except Exception:
+            return {}
+
+def http_req(url, method="GET", headers=None, json_data=None, timeout=15):
+    headers = headers or {}
+    data = None
+    if json_data is not None:
+        data = json.dumps(json_data).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:
+            text = resp.read().decode("utf-8", errors="ignore")
+            return ResponseWrapper(resp.status, text)
+    except urllib.error.HTTPError as e:
+        text = e.read().decode("utf-8", errors="ignore") if hasattr(e, "read") else ""
+        return ResponseWrapper(e.code, text)
+    except Exception as e:
+        return ResponseWrapper(0, str(e))
 
 def get_env_var(name, default):
     val = os.environ.get(name)
@@ -118,19 +153,73 @@ def sync_rainpoint():
         body = {"areaCode": AREA_CODE, "phoneOrEmail": EMAIL, "password": p_hash, "deviceId": d_hash}
         headers = {"Content-Type": "application/json", "lang": "en", "appCode": "2", "User-Agent": "okhttp/4.9.2"}
 
-        resp = requests.post(f"{BASE_URL}/auth/basic/app/login", json=body, headers=headers, timeout=15)
+        resp = http_req(f"{BASE_URL}/auth/basic/app/login", method="POST", json_data=body, headers=headers, timeout=15)
         if not resp.ok:
             print(f"   ⚠️ RainPoint Login HTTP Error: {resp.status_code}")
             return None, None
 
-        token = (resp.json() or {}).get("data", {}).get("token")
+        login_data = (resp.json() or {}).get("data", {})
+        token = login_data.get("token")
         if not token:
             print("   ⚠️ RainPoint Login Failed: No token returned!")
             return None, None
 
         auth_headers = {"auth": token, "lang": "en", "appCode": "2", "version": "1.16.1065", "sceneType": "1", "User-Agent": "okhttp/4.9.2"}
+
+        # 1. Call /app/device/subscribeStatus to register live observer session with Hub HWG023WRF
+        # 2. Connect to Alibaba Cloud IoT MQTT Broker with dynamic observer credentials
+        # This tells the RainPoint Cloud & physical Hub that an active screen is viewing right now!
+        user_info = login_data.get("user", {})
+        default_dev_name = user_info.get("deviceName", "Xown0h0VEAodGnch18fC")
+        default_pk = user_info.get("productKey", "a3iCXW3C5CP")
+
+        sub_payload = {
+            "hid": "64378",
+            "hidList": ["64378"],
+            "subscribe": [{"deviceName": "MAC-30C922CEA038", "mid": 67783, "productKey": "a3QrDxYPTM2"}],
+            "unsubscribe": [],
+            "userInfo": {
+                "deviceName": default_dev_name,
+                "deviceType": 1,
+                "notice": 0,
+                "productKey": default_pk,
+                "pushId": "1234567890abcdef1234567890abcdef"
+            }
+        }
+
         try:
-            dev_resp = requests.get(f"{BASE_URL}/app/device/getDeviceByHid?hid=64378", headers=auth_headers, timeout=15).json() or {}
+            sub_resp = http_req(f"{BASE_URL}/app/device/subscribeStatus", method="POST", json_data=sub_payload, headers=auth_headers, timeout=10)
+            sub_data = (sub_resp.json() or {}).get("data", {}) if sub_resp.ok else {}
+            
+            product_key = sub_data.get("productKey") or default_pk
+            device_name = sub_data.get("deviceName") or default_dev_name
+            device_secret = sub_data.get("deviceSecret") or user_info.get("deviceSecret")
+            mqtt_host_url = sub_data.get("mqttHostUrl") or login_data.get("mqttHostUrl")
+
+            if product_key and device_name and device_secret and mqtt_host_url:
+                import paho.mqtt.client as mqtt
+                import hmac
+                mqtt_host = mqtt_host_url.split(":")[0]
+                timestamp_str = str(int(time.time() * 1000))
+                client_id = f"{device_name}|securemode=3,signmethod=hmacsha1,timestamp={timestamp_str}|"
+                username = f"{device_name}&{product_key}"
+                sign_content = f"clientId{device_name}deviceName{device_name}productKey{product_key}timestamp{timestamp_str}"
+                password_str = hmac.new(device_secret.encode('utf-8'), sign_content.encode('utf-8'), hashlib.sha1).hexdigest()
+
+                mqtt_c = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=client_id)
+                mqtt_c.username_pw_set(username, password_str)
+                mqtt_c.connect(mqtt_host, 1883, 30)
+                mqtt_c.loop_start()
+                mqtt_c.subscribe(f"/{product_key}/{device_name}/#")
+                mqtt_c.subscribe(f"/sys/{product_key}/{device_name}/#")
+                mqtt_c.subscribe(f"/sys/a3QrDxYPTM2/MAC-30C922CEA038/#")
+                time.sleep(3.5) # Wait for hub to wake up and post latest buffer
+                mqtt_c.loop_stop()
+                mqtt_c.disconnect()
+        except Exception as e:
+            print(f"   ℹ️ Live observer subscription notice: {e}")
+        try:
+            dev_resp = http_req(f"{BASE_URL}/app/device/getDeviceByHid?hid=64378", headers=auth_headers, timeout=15).json() or {}
         except Exception:
             dev_resp = {}
             
@@ -144,21 +233,26 @@ def sync_rainpoint():
         
         mid = hub.get("mid", 67783)
 
-        st_resp = requests.get(f"{BASE_URL}/app/device/getDeviceStatus?mid={mid}", headers=auth_headers, timeout=15).json() or {}
+        st_resp = http_req(f"{BASE_URL}/app/device/getDeviceStatus?mid={mid}", headers=auth_headers, timeout=15).json() or {}
         st_data = st_resp.get("data") or {}
         sub_list = st_data.get("subDeviceStatus") or []
         sub_statuses = {s.get("id"): s for s in sub_list if isinstance(s, dict)}
 
         p1_sensors = []
         p2_sensors = []
+        defined_subs = [
+            {"addr": 1, "model": "HCS021FRF", "name": "Sensor 1", "slot": "D01", "plot": "plot-1"},
+            {"addr": 2, "model": "HCS021FRF", "name": "Sensor 1", "slot": "D02", "plot": "plot-2"},
+            {"addr": 3, "model": "HCS021FRF", "name": "Sensor 2", "slot": "D03", "plot": "plot-2"}
+        ]
 
-        for sub in hub.get("subDevices", []):
-            slot_id = f"D0{sub.get('addr')}"
+        for sub in defined_subs:
+            slot_id = sub["slot"]
             st_entry = sub_statuses.get(slot_id)
             raw_payload = st_entry.get("value") if st_entry else None
             decoded = decode_tlv(raw_payload) if raw_payload else None
 
-            display_name = "Sensor 1" if slot_id in ["D01", "D02"] else ("Sensor 2" if slot_id == "D03" else sub.get("name"))
+            display_name = sub["name"]
 
             if st_entry and decoded:
                 ts_sec = st_entry.get("time", 0) / 1000.0
@@ -184,7 +278,7 @@ def sync_rainpoint():
                     "syncTime": sync_dt
                 }
 
-                if slot_id == "D01":
+                if sub["plot"] == "plot-1":
                     p1_sensors.append(sensor_obj)
                 else:
                     p2_sensors.append(sensor_obj)
@@ -208,11 +302,21 @@ def sync_rainpoint():
             "timestamp": now_my.strftime("%Y-%m-%d %H:%M"),
             "time": now_my.strftime("%I:%M %p"),
             "p1_s1": p1_sensors[0]["moisture"] if p1_sensors else None,
+            "p1_s1_temp": p1_sensors[0]["temperature"] if p1_sensors else None,
+            "p1_s1_lux": p1_sensors[0]["lux"] if p1_sensors else 0,
             "p2_s1": p2_sensors[0]["moisture"] if len(p2_sensors) > 0 else None,
+            "p2_s1_temp": p2_sensors[0]["temperature"] if len(p2_sensors) > 0 else None,
+            "p2_s1_lux": p2_sensors[0]["lux"] if len(p2_sensors) > 0 else 0,
             "p2_s2": p2_sensors[1]["moisture"] if len(p2_sensors) > 1 else None,
+            "p2_s2_temp": p2_sensors[1]["temperature"] if len(p2_sensors) > 1 else None,
+            "p2_s2_lux": p2_sensors[1]["lux"] if len(p2_sensors) > 1 else 0,
             "temp": round((p1_avg_t + p2_avg_t) / 2.0, 1),
             "lux": p1_sensors[0]["lux"] if p1_sensors else 0
         }
+
+        if not p1_sensors and not p2_sensors:
+            print("   ⚠️ No probe telemetry decoded this cycle. Skipping history append.")
+            return None, None
 
         print(f"   ✅ RainPoint Live Probes: Plot 1: {p1_avg_m}% | Plot 2: {p2_avg_m}% (Sensors: {len(p1_sensors) + len(p2_sensors)})")
         return soil_data, history_entry
@@ -230,7 +334,7 @@ def sync_smartthings_tapo(st_token):
     
     try:
         url = f"https://api.smartthings.com/v1/devices/{sensor_dev_id}/status"
-        resp = requests.get(url, headers=headers, timeout=15)
+        resp = http_req(url, headers=headers, timeout=15)
         if not resp.ok:
             print(f"   ⚠️ SmartThings status error: {resp.status_code}")
             return None
@@ -304,7 +408,7 @@ def sync_google_sheets():
     for p in plots:
         try:
             url = f"{base_url}?gid={p['gid']}&single=true&output=csv&_t={ts}"
-            resp = requests.get(url, timeout=15, headers={"Cache-Control": "no-cache", "Pragma": "no-cache"})
+            resp = http_req(url, timeout=15, headers={"Cache-Control": "no-cache", "Pragma": "no-cache"})
             if resp.ok:
                 reader = csv.reader(io.StringIO(resp.text))
                 rows = list(reader)
@@ -337,28 +441,12 @@ def sync_google_sheets():
             
     return sheets_data if len(sheets_data) >= 2 else None
 
-def main():
-    print("==========================================================================")
-    print("   🌱 KH AGRIFARM - 24/7 CLOUD TELEMETRY SYNC (GITHUB ACTIONS RUNNER)     ")
-    print("==========================================================================")
-    
-    firebase_url = FIREBASE_URL
-    if not firebase_url:
-        config_path = os.path.join(os.path.dirname(__file__), "..", "js", "config.js")
-        if os.path.exists(config_path):
-            with open(config_path, "r", encoding="utf-8") as f:
-                content = f.read()
-                import re
-                m = re.search(r'endpointUrl:\s*"([^"]+)"', content)
-                if m:
-                    firebase_url = m.group(1).strip()
-
 def sync_cycle(firebase_url, is_first=True):
     # 1. Sync RainPoint Probes
     soil_data, hist_entry = sync_rainpoint()
     
     # 2. Sync Tapo via SmartThings Cloud (24/7 Cloud Bridge)
-    st_token = get_env_var("SMARTTHINGS_TOKEN", "fac9a070-a924-4674-ab22-6ed46a8ef66c")
+    st_token = get_env_var("SMARTTHINGS_TOKEN", "a882139b-da6a-480c-8923-01734d8d942d")
     tapo_data = sync_smartthings_tapo(st_token)
     
     # 3. Sync Google Sheets (on first pass)
@@ -372,11 +460,12 @@ def sync_cycle(firebase_url, is_first=True):
     if soil_data:
         payload["soilSensors"] = soil_data
 
-    # Fetch and preserve rolling 500-record history in Firebase
+    # Fetch and preserve rolling 500-record history for both Soil and Tapo in Firebase
     existing_history = []
+    existing_tapo_history = []
     if firebase_url:
         try:
-            cur_resp = requests.get(firebase_url, timeout=10)
+            cur_resp = http_req(firebase_url, timeout=10)
             if cur_resp.ok:
                 cur_data = cur_resp.json() or {}
                 hist_obj = cur_data.get("soilHistory", {})
@@ -384,25 +473,48 @@ def sync_cycle(firebase_url, is_first=True):
                     existing_history = hist_obj.get("records", []) or []
                 elif isinstance(hist_obj, list):
                     existing_history = hist_obj
+
+                tapo_hist_obj = cur_data.get("tapoHistory", {})
+                if isinstance(tapo_hist_obj, dict):
+                    existing_tapo_history = tapo_hist_obj.get("records", []) or []
+                elif isinstance(tapo_hist_obj, list):
+                    existing_tapo_history = tapo_hist_obj
         except Exception as e:
             print(f"   ℹ️ History fetch: {e}")
 
-    if hist_entry:
+    if hist_entry and (hist_entry.get("p1_s1") is not None or hist_entry.get("p2_s1") is not None or hist_entry.get("p2_s2") is not None):
         # Avoid duplicate consecutive entries if timestamp is identical
         if not existing_history or existing_history[-1].get("timestamp") != hist_entry.get("timestamp"):
             existing_history.append(hist_entry)
             if len(existing_history) > 500:
                 existing_history = existing_history[-500:]
+        else:
+            # Overwrite current minute's entry with latest valid probe data
+            existing_history[-1] = hist_entry
         payload["soilHistory"] = {"records": existing_history}
 
     if tapo_data:
         payload["tapoSensors"] = tapo_data
+        tapo_sens = tapo_data.get("sensor", {})
+        tapo_entry = {
+            "timestamp": now_dt.strftime("%Y-%m-%d %H:%M"),
+            "time": now_dt.strftime("%I:%M %p"),
+            "temp": tapo_sens.get("temperature", 28.0),
+            "hum": tapo_sens.get("humidity", 70),
+            "vpd": tapo_sens.get("vpd", 1.5)
+        }
+        if not existing_tapo_history or existing_tapo_history[-1].get("timestamp") != tapo_entry.get("timestamp"):
+            existing_tapo_history.append(tapo_entry)
+            if len(existing_tapo_history) > 500:
+                existing_tapo_history = existing_tapo_history[-500:]
+
         payload["tapoHistory"] = {
             "lastSynced": now_dt.strftime("%Y-%m-%d %H:%M"),
+            "records": existing_tapo_history,
             "current": {
-                "temperature": tapo_data["sensor"]["temperature"],
-                "humidity": tapo_data["sensor"]["humidity"],
-                "vpd": tapo_data["sensor"]["vpd"]
+                "temperature": tapo_sens.get("temperature"),
+                "humidity": tapo_sens.get("humidity"),
+                "vpd": tapo_sens.get("vpd")
             }
         }
     if sheets_data:
@@ -411,7 +523,7 @@ def sync_cycle(firebase_url, is_first=True):
     if firebase_url:
         print(f"\n[4/4] Pushing Full Farm Telemetry & Sheets to Firebase ({firebase_url})...")
         try:
-            r = requests.patch(firebase_url, json=payload, timeout=15)
+            r = http_req(firebase_url, method="PATCH", json_data=payload, timeout=15)
             if r.ok:
                 print("   ✅ SUCCESS! All Soil, Tapo, and Google Sheets updated in Cloud!")
             else:

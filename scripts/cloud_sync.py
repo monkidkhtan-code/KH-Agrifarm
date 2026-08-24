@@ -314,6 +314,10 @@ def sync_rainpoint():
             "lux": p1_sensors[0]["lux"] if p1_sensors else 0
         }
 
+        if not p1_sensors and not p2_sensors:
+            print("   ⚠️ No probe telemetry decoded this cycle. Skipping history append.")
+            return None, None
+
         print(f"   ✅ RainPoint Live Probes: Plot 1: {p1_avg_m}% | Plot 2: {p2_avg_m}% (Sensors: {len(p1_sensors) + len(p2_sensors)})")
         return soil_data, history_entry
     except Exception as e:
@@ -478,12 +482,15 @@ def sync_cycle(firebase_url, is_first=True):
         except Exception as e:
             print(f"   ℹ️ History fetch: {e}")
 
-    if hist_entry:
+    if hist_entry and (hist_entry.get("p1_s1") is not None or hist_entry.get("p2_s1") is not None or hist_entry.get("p2_s2") is not None):
         # Avoid duplicate consecutive entries if timestamp is identical
         if not existing_history or existing_history[-1].get("timestamp") != hist_entry.get("timestamp"):
             existing_history.append(hist_entry)
             if len(existing_history) > 500:
                 existing_history = existing_history[-500:]
+        else:
+            # Overwrite current minute's entry with latest valid probe data
+            existing_history[-1] = hist_entry
         payload["soilHistory"] = {"records": existing_history}
 
     if tapo_data:

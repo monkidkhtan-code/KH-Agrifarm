@@ -293,7 +293,24 @@ class SoilMoistureService {
     if (val <= 75) {
       return { status: 'optimal', label: 'Optimal for Chili', badgeClass: 'pill-safe', color: '#6ebc48' };
     }
-    return { status: 'high', label: 'Waterlogged (>80%)', badgeClass: 'pill-info', color: '#60a5fa' };
+    return { status: 'high', label: 'Saturated (>75%)', badgeClass: 'pill-info', color: '#60a5fa' };
+  }
+
+  getMoistureTip(val, sensorName = '') {
+    if (val === null || val === undefined || isNaN(val)) {
+      return '⚪ No moisture reading available.';
+    }
+    const prefix = sensorName ? `${sensorName}: ` : '';
+    if (val > 75) {
+      return `💧 ${prefix}Moisture is high (${val}%). Substrate is fully saturated — pause or reduce drip irrigation.`;
+    }
+    if (val >= 60) {
+      return `🟢 ${prefix}Moisture is optimal (${val}%). Target 60–75% zone for healthy root aeration and nutrient uptake.`;
+    }
+    if (val >= 40) {
+      return `🟡 ${prefix}Moisture is moderate (${val}%). Adequate level — keep standard drip timer.`;
+    }
+    return `🔴 ${prefix}Moisture is low (${val}%). Root zone is below 40% — recommend immediate 10–15 min drip cycle.`;
   }
 
   getTimeAgo(syncTimeStr) {
@@ -424,11 +441,7 @@ class SoilMoistureService {
 
             <!-- Tip text -->
             <div class="moisture-tip-text" style="margin-top: 0.45rem; font-size:0.72rem; line-height:1.35;">
-              ${mVal >= 60 && mVal <= 75 
-                ? '🟢 Moisture is in the target 60–75% zone for vigorous root respiration and nutrient uptake.' 
-                : (mVal < 40 
-                    ? '🔴 Root zone is below 40% — recommend immediate 10–15 min drip cycle.' 
-                    : '🟡 Moisture is adequate. Monitor before afternoon heat.')}
+              ${this.getMoistureTip(mVal)}
             </div>
           </div>
         </div>
@@ -436,8 +449,6 @@ class SoilMoistureService {
     }
 
     // Dual Probes Layout (Plot 2: Single Outer Box with Clean Line Divider)
-    const avgVal = data.avgMoisture;
-
     return `
       <div class="activity-section">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem; width:100%; box-sizing:border-box;">
@@ -449,6 +460,7 @@ class SoilMoistureService {
           ${data.sensors.map((s, idx) => {
             const sSt = this.getMoistureStatus(s.moisture);
             const sTimeFormatted = this.formatSyncTime(s.syncTime);
+            const sensorLabel = (s.name || '').replace(/\s*\((Top|Bottom)\)/i, '') || ('Sensor ' + (idx + 1));
             return `
               ${idx > 0 ? `<div style="height: 1px; background: rgba(81, 141, 54, 0.28); margin: 0.75rem 0; width: 100%;"></div>` : ''}
               <div style="width: 100%; box-sizing: border-box;">
@@ -456,7 +468,7 @@ class SoilMoistureService {
                 <!-- Probe Header -->
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; width:100%; box-sizing:border-box;">
                   <div style="display:flex; flex-direction:column; min-width:0;">
-                    <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">${(s.name || '').replace(/\s*\((Top|Bottom)\)/i, '') || ('Sensor ' + (idx + 1))}</span>
+                    <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">${sensorLabel}</span>
                     ${sTimeFormatted ? `<span class="sensor-sync-label" style="font-size:0.72rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px; color:#6ebc48;"><i data-lucide="radio" style="width:10px;height:10px;display:inline;color:#6ebc48;"></i> RF Broadcast: ${sTimeFormatted}</span>` : ''}
                   </div>
                   <span class="sensor-pill ${sSt.badgeClass}" style="font-size:0.85rem; padding:0.16rem 0.55rem; font-weight:700; border-radius:4px; flex-shrink:0;">${s.moisture}%</span>
@@ -488,18 +500,14 @@ class SoilMoistureService {
                   <span><i data-lucide="sun" style="width:11px;height:11px;display:inline;"></i> ${s.lux} Lux</span>
                   <span><i data-lucide="battery" style="width:11px;height:11px;display:inline;"></i> ${s.battery}%</span>
                 </div>
+
+                <!-- Probe Tip text -->
+                <div class="moisture-tip-text" style="margin-top: 0.45rem; font-size:0.72rem; line-height:1.35;">
+                  ${this.getMoistureTip(s.moisture, sensorLabel)}
+                </div>
               </div>
             `;
           }).join('')}
-
-          <!-- Plot 2 Summary Tip -->
-          <div class="moisture-tip-text" style="margin-top: 0.6rem; font-size:0.72rem; line-height:1.35;">
-            ${avgVal >= 60 && avgVal <= 75 
-              ? '🟢 Plot 2 root zone average is optimal (60–75%). Drip moisture is well distributed across both probe zones.' 
-              : (avgVal < 40 
-                  ? '🔴 Plot 2 moisture is below 40% — recommend fertigation run.' 
-                  : '🟡 Plot 2 moisture is moderate. Keep standard drip timer.')}
-          </div>
         </div>
       </div>
     `;
