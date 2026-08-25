@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-25T15:44:10.351429+08:00",
+  "lastUpdated": "2026-08-25T16:33:35.867581+08:00",
   "hub": {
     "name": "KH Agrifarm Smart Hub",
     "model": "H100(UK)",
@@ -9,13 +9,13 @@
   "sensor": {
     "name": "Greenhouse Temperature and Humidity Sensor",
     "model": "T315",
-    "temperature": 35.9,
-    "humidity": 59,
-    "vpd": 2.42,
+    "temperature": 33.6,
+    "humidity": 65,
+    "vpd": 1.82,
     "battery": 100,
     "signal": "3/3",
-    "status": "danger",
-    "statusLabel": "Extreme Heat Stress",
-    "syncTime": "2026-08-25 15:44:10"
+    "status": "moderate",
+    "statusLabel": "Warm / Moderate Climate",
+    "syncTime": "2026-08-25 16:33:35"
   }
 }

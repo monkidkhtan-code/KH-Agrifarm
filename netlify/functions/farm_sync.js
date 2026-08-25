@@ -272,6 +272,27 @@ async function syncSmartThings() {
 }
 
 exports.handler = async function (event, context) {
+  // 1. Handle SmartThings WebHook Confirmation Lifecycle
+  if (event.httpMethod === 'POST' && event.body) {
+    try {
+      const parsedBody = JSON.parse(event.body);
+      if (parsedBody.lifecycle === 'CONFIRMATION' && parsedBody.confirmationData?.confirmationUrl) {
+        console.log('⚡ Received SmartThings CONFIRMATION Lifecycle. Confirming via URL:', parsedBody.confirmationData.confirmationUrl);
+        const confirmRes = await fetch(parsedBody.confirmationData.confirmationUrl);
+        console.log('✅ SmartThings Confirmation Result:', confirmRes.status);
+        return {
+          statusCode: 200,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            targetUrl: parsedBody.confirmationData.confirmationUrl
+          })
+        };
+      }
+    } catch (e) {
+      console.warn('SmartThings body parse:', e);
+    }
+  }
+
   console.log('⚡ KH Agrifarm Cloud Sync Triggered...');
 
   const [rainPointRes, tapoData] = await Promise.all([

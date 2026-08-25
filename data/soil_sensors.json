@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-25T15:44:10.236823+08:00",
+  "lastUpdated": "2026-08-25T16:33:35.727121+08:00",
   "gateway": {
     "name": "MAC-30C922CEA038",
     "mac": "30:C9:22:CE:A0:38",
@@ -14,16 +14,16 @@
           "name": "Sensor 1",
           "model": "HCS021FRF",
           "moisture": 59,
-          "temperature": 34.5,
-          "lux": 2663,
+          "temperature": 32.3,
+          "lux": 1714,
           "battery": 100,
           "status": "moderate",
           "statusLabel": "Moderate",
-          "syncTime": "2026-08-25 15:40:53"
+          "syncTime": "2026-08-25 16:32:53"
         }
       ],
       "avgMoisture": 59,
-      "avgTemperature": 34.5,
+      "avgTemperature": 32.3,
       "overallStatus": "moderate"
     },
     "plot-2": {
@@ -34,28 +34,28 @@
           "name": "Sensor 1",
           "model": "HCS021FRF",
           "moisture": 54,
-          "temperature": 33.9,
-          "lux": 4530,
+          "temperature": 31.9,
+          "lux": 2942,
           "battery": 100,
           "status": "moderate",
           "statusLabel": "Moderate",
-          "syncTime": "2026-08-25 15:41:18"
+          "syncTime": "2026-08-25 16:33:18"
         },
         {
           "slot": "D03",
           "name": "Sensor 2",
           "model": "HCS021FRF",
           "moisture": 58,
-          "temperature": 34.9,
-          "lux": 5656,
+          "temperature": 32.6,
+          "lux": 3418,
           "battery": 100,
           "status": "moderate",
           "statusLabel": "Moderate",
-          "syncTime": "2026-08-25 15:42:57"
+          "syncTime": "2026-08-25 16:30:57"
         }
       ],
       "avgMoisture": 56,
-      "avgTemperature": 34.4,
+      "avgTemperature": 32.2,
       "overallStatus": "moderate"
     }
   }
