@@ -348,7 +348,7 @@ def sync_tapo_sensor(st_token):
                 return {
                     "nickname": c.nickname,
                     "model": c.model,
-                    "temperature": float(c.current_temperature),
+                    "temperature": round(float(c.current_temperature), 1),
                     "humidity": int(c.current_humidity),
                     "battery": 100 if not c.at_low_battery else 20,
                     "signal": f"{c.signal_level}/3"
