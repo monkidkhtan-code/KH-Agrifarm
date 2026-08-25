@@ -36,23 +36,55 @@ class TapoService {
 
   generate3MinDynamicData() {
     const slot = this.getCurrent3MinSlot();
-    const h = slot.slotDate.getHours() + slot.slotDate.getMinutes() / 60.0;
+    const slotDate = slot.slotDate;
 
-    let temp, hum;
+    // 1. Try to use real-world atmospheric microclimate data from Open-Meteo for Tanjong Karang
+    const rawHourly = window.weatherService?.rawHourlyData;
+    let temp = 28.0;
+    let hum = 75.0;
+    let foundWeather = false;
 
-    if (h >= 6.5 && h <= 19.5) {
-      // Daytime Solar Heat Cycle (Peak ~14:00 - 15:00 at 38.2°C, 50% RH)
-      const sunProgress = (h - 6.5) / 13.0; // 0 to 1
-      const sunFactor = Math.sin(sunProgress * Math.PI);
-      const shapedFactor = Math.pow(sunFactor, 0.88);
-      temp = Math.round((24.8 + shapedFactor * (38.2 - 24.8)) * 10) / 10;
-      hum = Math.round(88.0 - shapedFactor * (88.0 - 50.0));
-    } else {
-      // Nighttime Cool & High Humidity Respiration (26.5°C down to 24.2°C, 82% to 92% RH)
-      const nightHours = h < 6.5 ? (h + 4.5) : (h - 19.5);
-      const nightProgress = Math.min(1, Math.max(0, nightHours / 11.0));
-      temp = Math.round((26.5 - nightProgress * 2.3) * 10) / 10;
-      hum = Math.round(82.0 + nightProgress * 9.0);
+    if (rawHourly && rawHourly.time && rawHourly.time.length > 0) {
+      const yr = slotDate.getFullYear();
+      const mo = String(slotDate.getMonth() + 1).padStart(2, '0');
+      const dy = String(slotDate.getDate()).padStart(2, '0');
+      const hr = String(slotDate.getHours()).padStart(2, '0');
+      const targetIso = `${yr}-${mo}-${dy}T${hr}:00`;
+
+      const idx = rawHourly.time.indexOf(targetIso);
+      if (idx >= 0) {
+        const outT = parseFloat(rawHourly.temperature_2m?.[idx] ?? 28.0);
+        const outH = parseFloat(rawHourly.relative_humidity_2m?.[idx] ?? 75.0);
+        const sol = parseFloat((rawHourly.direct_radiation?.[idx] ?? 0) + (rawHourly.diffuse_radiation?.[idx] ?? 0));
+
+        let deltaT = 0.4;
+        if (sol > 5) {
+          deltaT = Math.min(8.2, (sol / 100.0) * 1.32);
+        }
+        temp = Math.round((outT + deltaT) * 10) / 10;
+
+        const esatOut = 0.61078 * Math.exp((17.27 * outT) / (outT + 237.3));
+        const eact = esatOut * (outH / 100.0);
+        const esatGh = 0.61078 * Math.exp((17.27 * temp) / (temp + 237.3));
+        hum = Math.min(95, Math.max(38, Math.round((eact / esatGh) * 100 + 4)));
+        foundWeather = true;
+      }
+    }
+
+    if (!foundWeather) {
+      const h = slotDate.getHours() + slotDate.getMinutes() / 60.0;
+      if (h >= 6.5 && h <= 19.5) {
+        const sunProgress = (h - 6.5) / 13.0;
+        const sunFactor = Math.sin(sunProgress * Math.PI);
+        const shapedFactor = Math.pow(sunFactor, 0.88);
+        temp = Math.round((25.5 + shapedFactor * (38.2 - 25.5)) * 10) / 10;
+        hum = Math.round(85.0 - shapedFactor * (85.0 - 48.0));
+      } else {
+        const nightHours = h < 6.5 ? (h + 4.5) : (h - 19.5);
+        const nightProgress = Math.min(1, Math.max(0, nightHours / 11.0));
+        temp = Math.round((27.2 - nightProgress * 2.0) * 10) / 10;
+        hum = Math.round(75.0 + nightProgress * 15.0);
+      }
     }
 
     const vpd = this.calculateVPD(temp, hum);
@@ -474,27 +506,58 @@ class TapoService {
       }
 
       if (temp === null) {
-        const hVal = slotTime.getHours() + slotTime.getMinutes() / 60.0;
+        // 1. Try to use real-world atmospheric microclimate data from Open-Meteo for Tanjong Karang
+        const rawHourly = window.weatherService?.rawHourlyData;
+        let foundWeather = false;
+        let baseTemp = 28.0;
+        let baseHum = 75.0;
 
-        let baseTemp, baseHum;
-        if (hVal < 6.5 || hVal > 19.5) {
-          // Nighttime natural cooling curve (26.5°C down to 24.2°C, 82% to 92% RH)
-          const nightHours = hVal < 6.5 ? (hVal + 4.5) : (hVal - 19.5);
-          const nightProgress = Math.min(1, Math.max(0, nightHours / 11.0));
-          baseTemp = 26.5 - nightProgress * 2.3;
-          baseHum = 82.0 + nightProgress * 9.0;
-        } else {
-          // Daytime solar thermal heating & transpiration cycle (Peak at ~14:00 - 15:00 at 38.2°C, 50% RH)
-          const sunProgress = (hVal - 6.5) / 13.0;
-          const sunFactor = Math.max(0, Math.sin(sunProgress * Math.PI));
-          const shapedFactor = Math.pow(sunFactor, 0.88);
-          baseTemp = 24.8 + shapedFactor * (38.2 - 24.8);
-          baseHum = 88.0 - shapedFactor * (88.0 - 50.0);
+        if (rawHourly && rawHourly.time && rawHourly.time.length > 0) {
+          const yr = slotTime.getFullYear();
+          const mo = String(slotTime.getMonth() + 1).padStart(2, '0');
+          const dy = String(slotTime.getDate()).padStart(2, '0');
+          const hr = String(slotTime.getHours()).padStart(2, '0');
+          const targetIso = `${yr}-${mo}-${dy}T${hr}:00`;
+
+          const idx = rawHourly.time.indexOf(targetIso);
+          if (idx >= 0) {
+            const outT = parseFloat(rawHourly.temperature_2m?.[idx] ?? 28.0);
+            const outH = parseFloat(rawHourly.relative_humidity_2m?.[idx] ?? 75.0);
+            const sol = parseFloat((rawHourly.direct_radiation?.[idx] ?? 0) + (rawHourly.diffuse_radiation?.[idx] ?? 0));
+
+            let deltaT = 0.4;
+            if (sol > 5) {
+              deltaT = Math.min(8.2, (sol / 100.0) * 1.32);
+            }
+            baseTemp = outT + deltaT;
+
+            const esatOut = 0.61078 * Math.exp((17.27 * outT) / (outT + 237.3));
+            const eact = esatOut * (outH / 100.0);
+            const esatGh = 0.61078 * Math.exp((17.27 * baseTemp) / (baseTemp + 237.3));
+            baseHum = Math.min(95, Math.max(38, Math.round((eact / esatGh) * 100 + 4)));
+            foundWeather = true;
+          }
         }
 
-        // If curSensor exists, blend smoothly into live point over the last 4 hours
-        if (curSensor && i <= 4) {
-          const blendWeight = (4 - i) / 4.0;
+        if (!foundWeather) {
+          const hVal = slotTime.getHours() + slotTime.getMinutes() / 60.0;
+          if (hVal < 6.5 || hVal > 19.5) {
+            const nightHours = hVal < 6.5 ? (hVal + 4.5) : (hVal - 19.5);
+            const nightProgress = Math.min(1, Math.max(0, nightHours / 11.0));
+            baseTemp = 27.2 - nightProgress * 2.0;
+            baseHum = 75.0 + nightProgress * 15.0;
+          } else {
+            const sunProgress = (hVal - 6.5) / 13.0;
+            const sunFactor = Math.max(0, Math.sin(sunProgress * Math.PI));
+            const shapedFactor = Math.pow(sunFactor, 0.88);
+            baseTemp = 25.5 + shapedFactor * (38.2 - 25.5);
+            baseHum = 85.0 - shapedFactor * (85.0 - 48.0);
+          }
+        }
+
+        // If curSensor exists, blend smoothly into live point over the last 3 hours
+        if (curSensor && i <= 3) {
+          const blendWeight = (3 - i) / 3.0;
           const easedWeight = Math.sin((blendWeight * Math.PI) / 2);
           const targetTempOffset = (curSensor.temperature !== undefined ? curSensor.temperature : baseTemp) - baseTemp;
           const targetHumOffset = (curSensor.humidity !== undefined ? curSensor.humidity : baseHum) - baseHum;

@@ -71,7 +71,7 @@ class WeatherService {
       modelParam = `&models=${activeModel.id}`;
     }
 
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${this.lat}&longitude=${this.lon}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=Asia%2FKuala_Lumpur&forecast_days=4${modelParam}&_t=${Date.now()}`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${this.lat}&longitude=${this.lon}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,direct_radiation,diffuse_radiation&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max&timezone=Asia%2FKuala_Lumpur&past_days=1&forecast_days=4${modelParam}&_t=${Date.now()}`;
 
     let metMalaysiaData = null;
     if (activeModel.id === 'met_malaysia') {
@@ -90,6 +90,9 @@ class WeatherService {
       if (!resp.ok) throw new Error(`Weather HTTP ${resp.status}`);
       const data = await resp.json();
       this.lastFetchTime = new Date();
+      if (data && data.hourly) {
+        this.rawHourlyData = data.hourly;
+      }
       return this.formatWeatherData(data, metMalaysiaData);
     } catch (err) {
       console.warn('[Weather] Online fetch failed, generating realistic Tanjong Karang agricultural forecast', err);
