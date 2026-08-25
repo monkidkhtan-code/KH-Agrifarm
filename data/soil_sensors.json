@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-25T16:33:35.727121+08:00",
+  "lastUpdated": "2026-08-25T17:43:40.695235+08:00",
   "gateway": {
     "name": "MAC-30C922CEA038",
     "mac": "30:C9:22:CE:A0:38",
@@ -13,17 +13,17 @@
           "slot": "D01",
           "name": "Sensor 1",
           "model": "HCS021FRF",
-          "moisture": 59,
-          "temperature": 32.3,
-          "lux": 1714,
+          "moisture": 57,
+          "temperature": 30.4,
+          "lux": 566,
           "battery": 100,
           "status": "moderate",
           "statusLabel": "Moderate",
-          "syncTime": "2026-08-25 16:32:53"
+          "syncTime": "2026-08-25 17:42:52"
         }
       ],
-      "avgMoisture": 59,
-      "avgTemperature": 32.3,
+      "avgMoisture": 57,
+      "avgTemperature": 30.4,
       "overallStatus": "moderate"
     },
     "plot-2": {
@@ -33,29 +33,29 @@
           "slot": "D02",
           "name": "Sensor 1",
           "model": "HCS021FRF",
-          "moisture": 54,
-          "temperature": 31.9,
-          "lux": 2942,
+          "moisture": 55,
+          "temperature": 30.3,
+          "lux": 1152,
           "battery": 100,
           "status": "moderate",
           "statusLabel": "Moderate",
-          "syncTime": "2026-08-25 16:33:18"
+          "syncTime": "2026-08-25 17:43:18"
         },
         {
           "slot": "D03",
           "name": "Sensor 2",
           "model": "HCS021FRF",
-          "moisture": 58,
-          "temperature": 32.6,
-          "lux": 3418,
+          "moisture": 60,
+          "temperature": 30.9,
+          "lux": 1559,
           "battery": 100,
-          "status": "moderate",
-          "statusLabel": "Moderate",
-          "syncTime": "2026-08-25 16:30:57"
+          "status": "optimal",
+          "statusLabel": "Optimal for Chili",
+          "syncTime": "2026-08-25 17:42:57"
         }
       ],
-      "avgMoisture": 56,
-      "avgTemperature": 32.2,
+      "avgMoisture": 58,
+      "avgTemperature": 30.6,
       "overallStatus": "moderate"
     }
   }
