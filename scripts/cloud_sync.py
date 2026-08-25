@@ -35,22 +35,27 @@ class ResponseWrapper:
         except Exception:
             return {}
 
+import requests
+
 def http_req(url, method="GET", headers=None, json_data=None, timeout=15):
     headers = headers or {}
-    data = None
-    if json_data is not None:
-        data = json.dumps(json_data).encode("utf-8")
-        headers["Content-Type"] = "application/json"
-    req = urllib.request.Request(url, data=data, headers=headers, method=method)
     try:
-        with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:
-            text = resp.read().decode("utf-8", errors="ignore")
-            return ResponseWrapper(resp.status, text)
-    except urllib.error.HTTPError as e:
-        text = e.read().decode("utf-8", errors="ignore") if hasattr(e, "read") else ""
-        return ResponseWrapper(e.code, text)
+        if method.upper() == "POST":
+            r = requests.post(url, json=json_data, headers=headers, timeout=timeout)
+        elif method.upper() == "PUT":
+            r = requests.put(url, json=json_data, headers=headers, timeout=timeout)
+        elif method.upper() == "PATCH":
+            r = requests.patch(url, json=json_data, headers=headers, timeout=timeout)
+        else:
+            r = requests.get(url, headers=headers, timeout=timeout)
+        return r
     except Exception as e:
-        return ResponseWrapper(0, str(e))
+        class FakeResp:
+            ok = False
+            status_code = 0
+            text = str(e)
+            def json(self): return {}
+        return FakeResp()
 
 def get_env_var(name, default):
     val = os.environ.get(name)
@@ -197,27 +202,29 @@ def sync_rainpoint():
             mqtt_host_url = sub_data.get("mqttHostUrl") or login_data.get("mqttHostUrl")
 
             if product_key and device_name and device_secret and mqtt_host_url:
-                import paho.mqtt.client as mqtt
-                import hmac
-                mqtt_host = mqtt_host_url.split(":")[0]
-                timestamp_str = str(int(time.time() * 1000))
-                client_id = f"{device_name}|securemode=3,signmethod=hmacsha1,timestamp={timestamp_str}|"
-                username = f"{device_name}&{product_key}"
-                sign_content = f"clientId{device_name}deviceName{device_name}productKey{product_key}timestamp{timestamp_str}"
-                password_str = hmac.new(device_secret.encode('utf-8'), sign_content.encode('utf-8'), hashlib.sha1).hexdigest()
+                try:
+                    import paho.mqtt.client as mqtt
+                    import hmac
+                    mqtt_host = mqtt_host_url.split(":")[0]
+                    timestamp_str = str(int(time.time() * 1000))
+                    client_id = f"{device_name}|securemode=3,signmethod=hmacsha1,timestamp={timestamp_str}|"
+                    username = f"{device_name}&{product_key}"
+                    sign_content = f"clientId{device_name}deviceName{device_name}productKey{product_key}timestamp{timestamp_str}"
+                    password_str = hmac.new(device_secret.encode('utf-8'), sign_content.encode('utf-8'), hashlib.sha1).hexdigest()
 
-                mqtt_c = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=client_id)
-                mqtt_c.username_pw_set(username, password_str)
-                mqtt_c.connect(mqtt_host, 1883, 30)
-                mqtt_c.loop_start()
-                mqtt_c.subscribe(f"/{product_key}/{device_name}/#")
-                mqtt_c.subscribe(f"/sys/{product_key}/{device_name}/#")
-                mqtt_c.subscribe(f"/sys/a3QrDxYPTM2/MAC-30C922CEA038/#")
-                time.sleep(3.5) # Wait for hub to wake up and post latest buffer
-                mqtt_c.loop_stop()
-                mqtt_c.disconnect()
+                    mqtt_c = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=client_id)
+                    mqtt_c.username_pw_set(username, password_str)
+                    mqtt_c.connect(mqtt_host, 1883, 2)
+                    mqtt_c.loop_start()
+                    mqtt_c.subscribe(f"/{product_key}/{device_name}/#")
+                    mqtt_c.subscribe(f"/sys/{product_key}/{device_name}/#")
+                    time.sleep(1.0)
+                    mqtt_c.loop_stop()
+                    mqtt_c.disconnect()
+                except Exception:
+                    pass
         except Exception as e:
-            print(f"   ℹ️ Live observer subscription notice: {e}")
+            pass
         try:
             dev_resp = http_req(f"{BASE_URL}/app/device/getDeviceByHid?hid=64378", headers=auth_headers, timeout=15).json() or {}
         except Exception:

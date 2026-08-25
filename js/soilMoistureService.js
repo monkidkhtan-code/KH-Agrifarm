@@ -618,52 +618,74 @@ class SoilMoistureService {
         }
       }
 
-      // If no valid historical log exists for this specific hour, calculate time-aligned progressive curve
+      // If no valid historical log exists for this specific hour, calculate realistic fertigation & transpiration dynamics
       if (moisture === null) {
-        const deltaHours = i;
-        const hourOfDay = slotTime.getHours();
-        let diurnalOffset = 0;
-        if (hourOfDay >= 0 && hourOfDay < 7) {
-          diurnalOffset = Math.min(3, deltaHours * 0.15);
-        } else if (hourOfDay >= 7 && hourOfDay <= 11) {
-          diurnalOffset = Math.sin(((hourOfDay - 7) / 4) * Math.PI) * 3 + deltaHours * 0.08;
-        } else if (hourOfDay > 11 && hourOfDay <= 16) {
-          diurnalOffset = (16 - hourOfDay) * 0.35;
+        const hourOfDay = slotTime.getHours() + slotTime.getMinutes() / 60.0;
+        let fertOffset = 0;
+
+        if (hourOfDay >= 8.0 && hourOfDay < 10.5) {
+          // Morning Fertigation Pulse (Spike after morning drip cycle)
+          const prog = (hourOfDay - 8.0) / 2.5;
+          fertOffset = Math.sin(prog * Math.PI) * 11.0 + 3.0;
+        } else if (hourOfDay >= 10.5 && hourOfDay < 15.5) {
+          // Midday Solar Evapotranspiration Dry-down
+          const prog = (hourOfDay - 10.5) / 5.0;
+          fertOffset = (1.0 - prog) * 4.0;
+        } else if (hourOfDay >= 15.5 && hourOfDay < 18.0) {
+          // Afternoon Fertigation Cycle (+6% to +8%)
+          const prog = (hourOfDay - 15.5) / 2.5;
+          fertOffset = Math.sin(prog * Math.PI) * 6.5 + 2.0;
+        } else if (hourOfDay >= 18.0 && hourOfDay < 23.0) {
+          // Evening Gradual Settling
+          const prog = (hourOfDay - 18.0) / 5.0;
+          fertOffset = 2.0 - prog * 3.0;
         } else {
-          diurnalOffset = deltaHours * 0.1;
+          // Overnight Slow Decay (Cool Root Zone, -3% to -5% by 7 AM)
+          const nightH = hourOfDay < 8.0 ? (hourOfDay + 1.0) : (hourOfDay - 23.0);
+          fertOffset = -1.0 - (nightH / 8.0) * 4.5;
         }
-        
-        moisture = Math.round(Math.min(100, Math.max(20, curVal + diurnalOffset)));
+
+        // Blend smoothly towards live anchor point (i <= 3)
+        if (i <= 3) {
+          const blendWeight = (3 - i) / 3.0;
+          const eased = Math.sin((blendWeight * Math.PI) / 2);
+          const rawM = curVal + fertOffset;
+          moisture = Math.round(curVal * eased + rawM * (1.0 - eased));
+        } else {
+          moisture = Math.round(curVal + fertOffset);
+        }
+        moisture = Math.min(95, Math.max(25, moisture));
       }
 
       if (temperature === null) {
         const hourOfDay = slotTime.getHours();
         if (hourOfDay >= 7 && hourOfDay <= 14) {
-          // Linear morning heating ramp from 25°C to curTemp
+          // Morning heating ramp from 25°C to curTemp
           const progress = (hourOfDay - 7) / 7.0;
-          temperature = Math.round((25.0 + progress * Math.max(8.0, (curTemp || 36.0) - 25.0)) * 10) / 10;
+          const shaped = Math.pow(progress, 0.9);
+          temperature = Math.round((25.0 + shaped * Math.max(6.0, (curTemp || 36.0) - 25.0)) * 10) / 10;
         } else if (hourOfDay > 14 && hourOfDay <= 19) {
-          // Linear afternoon cooling ramp
+          // Afternoon cooling ramp
           const progress = (hourOfDay - 14) / 5.0;
-          temperature = Math.round(((curTemp || 36.0) - progress * ((curTemp || 36.0) - 26.0)) * 10) / 10;
+          temperature = Math.round(((curTemp || 36.0) - progress * ((curTemp || 36.0) - 26.5)) * 10) / 10;
         } else {
-          // Constant steady night temperature
-          temperature = 25.0;
+          // Stable cool night root temp
+          const nightProg = hourOfDay < 7 ? (hourOfDay + 5) / 12.0 : (hourOfDay - 19) / 12.0;
+          temperature = Math.round((26.5 - nightProg * 1.5) * 10) / 10;
         }
       }
 
       if (lux === null) {
         const hourOfDay = slotTime.getHours();
         if (hourOfDay >= 7 && hourOfDay <= 13) {
-          // Linear morning solar ramp to peak
           const progress = (hourOfDay - 7) / 6.0;
-          lux = Math.round(progress * Math.max(12000, curLux || 28000));
+          const shaped = Math.sin(progress * (Math.PI / 2));
+          lux = Math.round(shaped * Math.max(10000, curLux || 25000));
         } else if (hourOfDay > 13 && hourOfDay <= 19) {
-          // Linear afternoon solar decline to sunset
           const progress = (19 - hourOfDay) / 6.0;
-          lux = Math.round(progress * Math.max(12000, curLux || 28000));
+          const shaped = Math.sin(progress * (Math.PI / 2));
+          lux = Math.round(shaped * Math.max(10000, curLux || 25000));
         } else {
-          // Zero Lux at night
           lux = 0;
         }
       }
