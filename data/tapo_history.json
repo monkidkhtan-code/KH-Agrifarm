@@ -1,5 +1,5 @@
 {
-  "lastSynced": "2026-08-25 20:33",
+  "lastSynced": "2026-08-25 20:53",
   "records": [
     {
       "hum": 65,
@@ -946,16 +946,58 @@
       "vpd": 0.52
     },
     {
-      "timestamp": "2026-08-25 20:33",
-      "time": "08:33 PM",
-      "temp": 26.9,
       "hum": 86,
+      "temp": 26.9,
+      "time": "08:33 PM",
+      "timestamp": "2026-08-25 20:33",
       "vpd": 0.5
+    },
+    {
+      "hum": 90,
+      "temp": 27.6,
+      "time": "08:36 PM",
+      "timestamp": "2026-08-25 20:36",
+      "vpd": 0.52
+    },
+    {
+      "hum": 90,
+      "temp": 27.6,
+      "time": "08:41 PM",
+      "timestamp": "2026-08-25 20:41",
+      "vpd": 0.52
+    },
+    {
+      "hum": 86,
+      "temp": 26.7,
+      "time": "08:43 PM",
+      "timestamp": "2026-08-25 20:43",
+      "vpd": 0.49
+    },
+    {
+      "hum": 91,
+      "temp": 27.5,
+      "time": "08:46 PM",
+      "timestamp": "2026-08-25 20:46",
+      "vpd": 0.48
+    },
+    {
+      "hum": 91,
+      "temp": 27.5,
+      "time": "08:51 PM",
+      "timestamp": "2026-08-25 20:51",
+      "vpd": 0.48
+    },
+    {
+      "timestamp": "2026-08-25 20:53",
+      "time": "08:53 PM",
+      "temp": 26.7,
+      "hum": 86,
+      "vpd": 0.49
     }
   ],
   "current": {
-    "temperature": 26.9,
+    "temperature": 26.7,
     "humidity": 86,
-    "vpd": 0.5
+    "vpd": 0.49
   }
 }

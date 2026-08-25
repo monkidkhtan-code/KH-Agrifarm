@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-25T20:33:46.710441+08:00",
+  "lastUpdated": "2026-08-25T20:53:36.875322+08:00",
   "gateway": {
     "name": "MAC-30C922CEA038",
     "mac": "30:C9:22:CE:A0:38",
@@ -14,16 +14,16 @@
           "name": "Sensor 1",
           "model": "HCS021FRF",
           "moisture": 62,
-          "temperature": 26.3,
+          "temperature": 26.1,
           "lux": 0,
           "battery": 100,
           "status": "optimal",
           "statusLabel": "Optimal for Chili",
-          "syncTime": "2026-08-25 20:32:52"
+          "syncTime": "2026-08-25 20:48:52"
         }
       ],
       "avgMoisture": 62,
-      "avgTemperature": 26.3,
+      "avgTemperature": 26.1,
       "overallStatus": "optimal"
     },
     "plot-2": {
@@ -34,28 +34,28 @@
           "name": "Sensor 1",
           "model": "HCS021FRF",
           "moisture": 68,
-          "temperature": 26.4,
+          "temperature": 26.2,
           "lux": 0,
           "battery": 100,
           "status": "optimal",
           "statusLabel": "Optimal for Chili",
-          "syncTime": "2026-08-25 20:33:18"
+          "syncTime": "2026-08-25 20:49:18"
         },
         {
           "slot": "D03",
           "name": "Sensor 2",
           "model": "HCS021FRF",
           "moisture": 61,
-          "temperature": 26.6,
+          "temperature": 26.2,
           "lux": 0,
           "battery": 100,
           "status": "optimal",
           "statusLabel": "Optimal for Chili",
-          "syncTime": "2026-08-25 20:20:57"
+          "syncTime": "2026-08-25 20:52:57"
         }
       ],
       "avgMoisture": 64,
-      "avgTemperature": 26.5,
+      "avgTemperature": 26.2,
       "overallStatus": "optimal"
     }
   }
