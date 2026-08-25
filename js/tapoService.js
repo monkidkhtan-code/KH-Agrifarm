@@ -134,92 +134,10 @@ class TapoService {
     this.lastSlotKey = currentSlot.slotKey;
 
     let loadedFromLiveCloud = false;
-    const stConfig = window.APP_CONFIG?.smartthings;
     const cloudUrl = window.APP_CONFIG?.cloudTelemetry?.endpointUrl;
 
-    // 1. Direct SmartThings Cloud Query (Sub-second Instant Hardware Stream)
-    if (stConfig && stConfig.enabled && stConfig.token && stConfig.deviceId) {
-      try {
-        const stUrl = `https://api.smartthings.com/v1/devices/${stConfig.deviceId}/status`;
-        const stResp = await fetch(stUrl, {
-          headers: {
-            "Authorization": `Bearer ${stConfig.token}`
-          },
-          cache: 'no-store'
-        });
-
-        if (stResp.ok) {
-          const stJson = await stResp.json();
-          const main = stJson?.components?.main;
-          if (main && main.temperatureMeasurement && main.relativeHumidityMeasurement) {
-            const temp = parseFloat(main.temperatureMeasurement.temperature?.value ?? 30.0);
-            const hum = parseInt(main.relativeHumidityMeasurement.humidity?.value ?? 60);
-            const bat = parseInt(main.battery?.battery?.value ?? 75);
-            const isOnline = (main.healthCheck?.['DeviceWatch-DeviceStatus']?.value === 'online');
-            
-            const vpd = this.calculateVPD(temp, hum);
-            let status = "optimal";
-            let statusLabel = "Optimal Nursery Climate";
-            if (temp > 35 || vpd > 2.5) {
-              status = "danger";
-              statusLabel = "Extreme Heat Stress";
-            } else if (temp > 32.5) {
-              status = "caution";
-              statusLabel = "Elevated Temp";
-            } else if (hum > 90) {
-              status = "caution";
-              statusLabel = "High Humidity";
-            } else if (hum < 60) {
-              status = "caution";
-              statusLabel = "Low Humidity";
-            }
-
-            this.tapoData = {
-              lastUpdated: currentSlot.slotDate.toISOString(),
-              lastSlotKey: currentSlot.slotKey,
-              hub: {
-                name: "KH Agrifarm Smart Hub",
-                model: "H100(UK)",
-                ip: "192.168.0.182",
-                mac: "20:23:51:DC:DC:3C",
-                online: isOnline,
-                source: "SmartThings Cloud Direct"
-              },
-              sensor: {
-                name: "Nursery Greenhouse Sensor",
-                model: "Tapo T315",
-                temperature: temp,
-                humidity: hum,
-                vpd: vpd,
-                battery: bat,
-                signal: "3/3",
-                status: status,
-                statusLabel: statusLabel,
-                syncTime: currentSlot.syncTimeStr
-              }
-            };
-            loadedFromLiveCloud = true;
-
-            // Silently mirror to Firebase in background
-            if (cloudUrl) {
-              fetch(cloudUrl, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  lastUpdated: currentSlot.syncTimeStr,
-                  tapoSensors: this.tapoData
-                })
-              }).catch(() => {});
-            }
-          }
-        }
-      } catch (err) {
-        console.warn("Direct SmartThings query failed, falling back to Firebase", err);
-      }
-    }
-
-    // 2. Try Firebase Cloud Bridge Fallback (Only use if fresh within 2 hours)
-    if (!loadedFromLiveCloud && cloudUrl && cloudUrl.trim() !== "") {
+    // 1. Direct Firebase Cloud Telemetry (Holds real hardware stream from Tapo T315 & H100 Hub)
+    if (cloudUrl && cloudUrl.trim() !== "") {
       try {
         const cResp = await fetch(`${cloudUrl}?v=${Date.now()}`, { cache: 'no-store' });
         if (cResp.ok) {
@@ -228,36 +146,38 @@ class TapoService {
             const rawSync = cJson.tapoSensors.sensor.syncTime || cJson.tapoSensors.lastUpdated;
             let isFresh = false;
             if (rawSync) {
-              const syncDate = new Date(rawSync.replace(' ', 'T') + (rawSync.length === 16 ? ':00+08:00' : '+08:00'));
+              const syncDate = new Date(rawSync.replace(' ', 'T') + (rawSync.length === 16 ? ':00+08:00' : (rawSync.includes('+') || rawSync.includes('Z') ? '' : '+08:00')));
               if (!isNaN(syncDate.getTime())) {
                 const ageHours = (Date.now() - syncDate.getTime()) / (3600 * 1000);
-                if (ageHours < 0.4) isFresh = true; // Must be fresh within 24 mins
+                if (ageHours < 24.0) isFresh = true; // Use genuine hardware reading if within 24h
               }
+            } else {
+              isFresh = true;
             }
 
             if (isFresh) {
               this.tapoData = cJson.tapoSensors;
+              // Ensure VPD is accurate
+              const temp = this.tapoData.sensor.temperature;
+              const hum = this.tapoData.sensor.humidity;
+              if (temp !== undefined && hum !== undefined) {
+                this.tapoData.sensor.vpd = this.calculateVPD(temp, hum);
+              }
               loadedFromLiveCloud = true;
-            } else {
-              this.tapoData = this.generate3MinDynamicData();
             }
-            if (cJson.tapoHistory) this.historyData = cJson.tapoHistory;
+          }
+          if (cJson && cJson.tapoHistory) {
+            this.historyData = cJson.tapoHistory;
           }
         }
       } catch (err) {
-        console.warn("Cloud tapo telemetry fetch failed, falling back to local files", err);
+        console.warn("Cloud tapo telemetry fetch failed, falling back to dynamic model", err);
       }
     }
 
-    // 3. Local File Fallback (For Localhost offline testing)
-    if (!loadedFromLiveCloud && !this.tapoData) {
+    // 2. Dynamic Open-Meteo Microclimate Fallback (If cloud has no records)
+    if (!loadedFromLiveCloud || !this.tapoData) {
       this.tapoData = this.generate3MinDynamicData();
-    }
-
-    // 4. Stamp Active 3-Minute Live Slot for continuous real-time sync
-    if (this.tapoData && this.tapoData.sensor) {
-      this.tapoData.sensor.syncTime = currentSlot.syncTimeStr;
-      this.tapoData.lastUpdated = currentSlot.slotDate.toISOString();
     }
   }
 

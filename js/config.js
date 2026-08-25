@@ -2,7 +2,7 @@
  * KH AGRIFARM - CONFIGURATION
  */
 const APP_CONFIG = {
-  version: "v10.96",
+  version: "v10.97",
   buildDate: "2026.08.25",
   farmName: "KH Agrifarm",
   farmAddress: "LOT 20371, Jalan Sgg 6/3, Kampung Sungai Gulang Gulang, 45500 Tanjong Karang, Selangor",
@@ -141,10 +141,10 @@ const APP_CONFIG = {
     fallbackLocal: true
   },
 
-  // SmartThings 24/7 Cloud Direct Stream
+  // SmartThings 24/7 Cloud Direct Stream (Deprecated in favor of direct Tapo stream)
   smartthings: {
-    enabled: true,
-    token: "a882139b-da6a-480c-8923-01734d8d942d",
+    enabled: false,
+    token: "",
     deviceId: "fdc3ceb6-8103-487d-aed1-3173859ec17b"
   },
 
