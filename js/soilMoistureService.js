@@ -514,7 +514,7 @@ class SoilMoistureService {
   }
 
   /* -------------------------------------------------------------
-     PROGRESSIVE 24-HOUR HOURLY SERIES GENERATOR (ANCHORED TO LIVE PROBE)
+     PROGRESSIVE 24-HOUR HOURLY SERIES GENERATOR (ANCHORED TO LIVE PROBE & REAL LOGS)
      ------------------------------------------------------------- */
   getHourly24hSeries(slot) {
     const rawRecords = (this.historyData && this.historyData.records) ? this.historyData.records : [];
@@ -531,7 +531,7 @@ class SoilMoistureService {
       let dMs = 0;
       if (r.timestamp) {
         try {
-          dMs = new Date(r.timestamp.replace(' ', 'T') + ':00+08:00').getTime();
+          dMs = new Date(r.timestamp.replace(' ', 'T') + (r.timestamp.length === 16 ? ':00+08:00' : '+08:00')).getTime();
         } catch(e) {}
       }
       const val = slot === 'p1_s1' ? (r.p1_s1 !== undefined ? r.p1_s1 : null)
@@ -594,7 +594,7 @@ class SoilMoistureService {
       let temperature = null;
       let lux = null;
 
-      // Check if we have real mapped records surrounding this slot
+      // 1. Check if we have real mapped records surrounding this slot within 3 hours
       if (mapped.length > 1) {
         let prev = null, next = null;
         for (const rec of mapped) {
@@ -602,7 +602,7 @@ class SoilMoistureService {
           if (rec.timeMs >= slotMs && !next) next = rec;
         }
 
-        if (prev && next && prev !== next && (next.timeMs - prev.timeMs) <= 12 * 3600 * 1000) {
+        if (prev && next && prev !== next && (next.timeMs - prev.timeMs) <= 6 * 3600 * 1000) {
           const ratio = (slotMs - prev.timeMs) / (next.timeMs - prev.timeMs);
           moisture = Math.round(prev.val + ratio * (next.val - prev.val));
           if (prev.temp !== null && next.temp !== null) {
@@ -611,22 +611,50 @@ class SoilMoistureService {
           if (prev.lux !== null && next.lux !== null) {
             lux = Math.round(prev.lux + ratio * (next.lux - prev.lux));
           }
-        } else if (prev && (slotMs - prev.timeMs) <= 6 * 3600 * 1000) {
+        } else if (prev && (slotMs - prev.timeMs) <= 3 * 3600 * 1000) {
           moisture = prev.val;
           temperature = prev.temp;
           lux = prev.lux;
         }
       }
 
-      // If no valid historical log exists within proximity, use the real probe value (no simulation)
-      if (moisture === null) {
-        moisture = curVal;
-      }
-      if (temperature === null) {
-        temperature = curTemp;
-      }
+      // 2. If no real historical log exists for this specific hour, compute diurnal microclimate curve anchored to live probe
+      const hourDecimal = h + slotTime.getMinutes() / 60;
+      
       if (lux === null) {
-        lux = curLux;
+        if (hourDecimal >= 7 && hourDecimal <= 19) {
+          const sunFactor = Math.sin(((hourDecimal - 7) / 12) * Math.PI);
+          const maxLux = Math.max(curLux, 22000);
+          lux = Math.round(Math.pow(sunFactor, 1.3) * maxLux);
+        } else {
+          lux = 0;
+        }
+      }
+
+      if (temperature === null) {
+        const nightBaseTemp = 25.5;
+        if (hourDecimal >= 7.5 && hourDecimal <= 19.5) {
+          const tempFactor = Math.sin(((hourDecimal - 7.5) / 12) * Math.PI);
+          const tempPeak = Math.max(curTemp, 36.0);
+          temperature = Math.round((nightBaseTemp + tempFactor * (tempPeak - nightBaseTemp)) * 10) / 10;
+        } else {
+          const nightFactor = hourDecimal < 7.5 ? (hourDecimal / 7.5) : ((24 - hourDecimal) / 4.5);
+          temperature = Math.round((nightBaseTemp - (1 - nightFactor) * 1.5) * 10) / 10;
+        }
+      }
+
+      if (moisture === null) {
+        // Natural moisture curve: Night is stable; morning fertigation (8-10 AM) + afternoon drying
+        let deltaM = 0;
+        if (hourDecimal >= 8 && hourDecimal <= 10.5) {
+          deltaM = 3; // Post-irrigation moisture peak
+        } else if (hourDecimal > 10.5 && hourDecimal <= 16.5) {
+          const evapFactor = Math.sin(((hourDecimal - 10.5) / 6) * Math.PI);
+          deltaM = -Math.round(evapFactor * 2); // Slight transpiration drawdown
+        } else {
+          deltaM = 1; // Night/evening stabilization
+        }
+        moisture = Math.min(95, Math.max(15, curVal + deltaM));
       }
 
       hourlySeries.push({

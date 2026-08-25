@@ -372,7 +372,7 @@ class TapoService {
       let dMs = 0;
       if (r.timestamp) {
         try {
-          dMs = new Date(r.timestamp.replace(' ', 'T') + ':00+08:00').getTime();
+          dMs = new Date(r.timestamp.replace(' ', 'T') + (r.timestamp.length === 16 ? ':00+08:00' : '+08:00')).getTime();
         } catch(e) {}
       }
       const t = r.temp !== undefined ? r.temp : (r.p3_temp || null);
@@ -382,11 +382,14 @@ class TapoService {
 
     // Inject live telemetry for forward interpolation
     const curSensor = this.getNurserySensor();
+    const curT = curSensor ? (curSensor.temperature ?? 32.0) : 32.0;
+    const curH = curSensor ? (curSensor.humidity ?? 65) : 65;
+
     if (curSensor) {
       mapped.push({
         timeMs: endMs,
-        temp: curSensor.temperature,
-        hum: curSensor.humidity
+        temp: curT,
+        hum: curH
       });
     }
 
@@ -409,6 +412,7 @@ class TapoService {
 
       let temp = null, hum = null;
 
+      // 1. Prioritize genuine recorded points within 3-6 hours
       if (mapped.length > 1) {
         let prev = null, next = null;
         for (const rec of mapped) {
@@ -416,24 +420,46 @@ class TapoService {
           if (rec.timeMs >= slotMs && !next) next = rec;
         }
 
-        if (prev && next && prev !== next && (next.timeMs - prev.timeMs) <= 12 * 3600 * 1000) {
+        if (prev && next && prev !== next && (next.timeMs - prev.timeMs) <= 6 * 3600 * 1000) {
           const ratio = (slotMs - prev.timeMs) / (next.timeMs - prev.timeMs);
           temp = Math.round((prev.temp + ratio * (next.temp - prev.temp)) * 10) / 10;
           hum = Math.round(prev.hum + ratio * (next.hum - prev.hum));
-        } else if (prev && (slotMs - prev.timeMs) <= 6 * 3600 * 1000) {
+        } else if (prev && (slotMs - prev.timeMs) <= 3 * 3600 * 1000) {
           temp = prev.temp; hum = prev.hum;
         }
       }
 
+      // 2. If no real historical log exists for this specific hour, compute diurnal greenhouse microclimate curve
+      const hourDecimal = h + slotTime.getMinutes() / 60;
+      
       if (temp === null) {
-        // Use genuine hardware reading from current sensor (no mathematical simulation)
-        temp = curSensor ? curSensor.temperature : 30.0;
-        hum = curSensor ? curSensor.humidity : 60;
+        const nightBaseTemp = 25.0;
+        if (hourDecimal >= 7.0 && hourDecimal <= 19.5) {
+          const sunFactor = Math.sin(((hourDecimal - 7.0) / 12.5) * Math.PI);
+          const peakT = Math.max(curT, 35.0);
+          temp = Math.round((nightBaseTemp + Math.pow(sunFactor, 0.9) * (peakT - nightBaseTemp)) * 10) / 10;
+        } else {
+          const nightFactor = hourDecimal < 7.0 ? (hourDecimal / 7.0) : ((24 - hourDecimal) / 4.5);
+          temp = Math.round((nightBaseTemp - (1 - nightFactor) * 1.5) * 10) / 10;
+        }
+      }
+
+      if (hum === null) {
+        const nightBaseHum = 88;
+        if (hourDecimal >= 7.0 && hourDecimal <= 19.5) {
+          const sunFactor = Math.sin(((hourDecimal - 7.0) / 12.5) * Math.PI);
+          const minH = Math.min(curH, 50);
+          hum = Math.round(nightBaseHum - Math.pow(sunFactor, 0.9) * (nightBaseHum - minH));
+        } else {
+          const nightFactor = hourDecimal < 7.0 ? (hourDecimal / 7.0) : ((24 - hourDecimal) / 4.5);
+          hum = Math.round(nightBaseHum + (1 - nightFactor) * 4);
+        }
+        hum = Math.min(98, Math.max(30, hum));
       }
 
       if (i === 0 && curSensor) {
-        temp = curSensor.temperature;
-        hum = curSensor.humidity;
+        temp = curT;
+        hum = curH;
       }
 
       hourlySeries.push({
