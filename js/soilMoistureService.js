@@ -633,13 +633,21 @@ class SoilMoistureService {
 
       if (temperature === null) {
         const nightBaseTemp = 25.5;
-        if (hourDecimal >= 7.5 && hourDecimal <= 19.5) {
-          const tempFactor = Math.sin(((hourDecimal - 7.5) / 12) * Math.PI);
-          const tempPeak = Math.max(curTemp, 36.0);
-          temperature = Math.round((nightBaseTemp + tempFactor * (tempPeak - nightBaseTemp)) * 10) / 10;
+        const tempPeak = Math.max(curTemp, 36.0);
+        let sunFactor = 0;
+        if (hourDecimal >= 7.5 && hourDecimal <= 15.0) {
+          sunFactor = Math.sin(((hourDecimal - 7.5) / 7.5) * (Math.PI / 2));
+        } else if (hourDecimal > 15.0 && hourDecimal <= 20.0) {
+          sunFactor = Math.cos(((hourDecimal - 15.0) / 5.0) * (Math.PI / 2));
         } else {
-          const nightFactor = hourDecimal < 7.5 ? (hourDecimal / 7.5) : ((24 - hourDecimal) / 4.5);
-          temperature = Math.round((nightBaseTemp - (1 - nightFactor) * 1.5) * 10) / 10;
+          sunFactor = 0;
+        }
+
+        if (sunFactor > 0) {
+          temperature = Math.round((nightBaseTemp + Math.pow(sunFactor, 0.95) * (tempPeak - nightBaseTemp)) * 10) / 10;
+        } else {
+          const nightFactor = hourDecimal < 7.5 ? (hourDecimal / 7.5) : ((24.0 - hourDecimal) / 4.0);
+          temperature = Math.round((nightBaseTemp - (1.0 - nightFactor) * 1.5) * 10) / 10;
         }
       }
 

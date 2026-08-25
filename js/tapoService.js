@@ -432,27 +432,35 @@ class TapoService {
       // 2. If no real historical log exists for this specific hour, compute diurnal greenhouse microclimate curve
       const hourDecimal = h + slotTime.getMinutes() / 60;
       
+      // Solar thermal curve: peaks at 3:00 PM (15:00) matching tropical greenhouse thermal inertia
+      let sunFactor = 0;
+      if (hourDecimal >= 7.0 && hourDecimal <= 15.0) {
+        sunFactor = Math.sin(((hourDecimal - 7.0) / 8.0) * (Math.PI / 2));
+      } else if (hourDecimal > 15.0 && hourDecimal <= 20.0) {
+        sunFactor = Math.cos(((hourDecimal - 15.0) / 5.0) * (Math.PI / 2));
+      } else {
+        sunFactor = 0;
+      }
+
       if (temp === null) {
-        const nightBaseTemp = 25.0;
-        if (hourDecimal >= 7.0 && hourDecimal <= 19.5) {
-          const sunFactor = Math.sin(((hourDecimal - 7.0) / 12.5) * Math.PI);
-          const peakT = Math.max(curT, 35.0);
-          temp = Math.round((nightBaseTemp + Math.pow(sunFactor, 0.9) * (peakT - nightBaseTemp)) * 10) / 10;
+        const nightBaseTemp = 24.8;
+        const peakT = Math.max(curT, 36.0);
+        if (sunFactor > 0) {
+          temp = Math.round((nightBaseTemp + Math.pow(sunFactor, 0.95) * (peakT - nightBaseTemp)) * 10) / 10;
         } else {
-          const nightFactor = hourDecimal < 7.0 ? (hourDecimal / 7.0) : ((24 - hourDecimal) / 4.5);
-          temp = Math.round((nightBaseTemp - (1 - nightFactor) * 1.5) * 10) / 10;
+          const nightProgress = hourDecimal < 7.0 ? (hourDecimal / 7.0) : ((24.0 - hourDecimal) / 4.0);
+          temp = Math.round((nightBaseTemp - (1.0 - nightProgress) * 1.2) * 10) / 10;
         }
       }
 
       if (hum === null) {
         const nightBaseHum = 88;
-        if (hourDecimal >= 7.0 && hourDecimal <= 19.5) {
-          const sunFactor = Math.sin(((hourDecimal - 7.0) / 12.5) * Math.PI);
-          const minH = Math.min(curH, 50);
-          hum = Math.round(nightBaseHum - Math.pow(sunFactor, 0.9) * (nightBaseHum - minH));
+        const minH = Math.min(curH, 52);
+        if (sunFactor > 0) {
+          hum = Math.round(nightBaseHum - Math.pow(sunFactor, 0.95) * (nightBaseHum - minH));
         } else {
-          const nightFactor = hourDecimal < 7.0 ? (hourDecimal / 7.0) : ((24 - hourDecimal) / 4.5);
-          hum = Math.round(nightBaseHum + (1 - nightFactor) * 4);
+          const nightProgress = hourDecimal < 7.0 ? (hourDecimal / 7.0) : ((24.0 - hourDecimal) / 4.0);
+          hum = Math.round(nightBaseHum + (1.0 - nightProgress) * 4);
         }
         hum = Math.min(98, Math.max(30, hum));
       }

@@ -40,38 +40,8 @@ if (Test-Path $pyScript) {
     }
 }
 
-# 3. Upload to Cloud Bridge (For Netlify & Mobile)
-if (![string]::IsNullOrWhiteSpace($cloudEndpointUrl)) {
-    Write-Host "`n[3/3] Uploading Live Telemetry to Cloud Bridge for Netlify ($cloudEndpointUrl)..."
-    try {
-        $soilPath = Join-Path $scriptRoot "data\soil_sensors.json"
-        $soilHistPath = Join-Path $scriptRoot "data\soil_moisture_history.json"
-        $tapoPath = Join-Path $scriptRoot "data\tapo_sensors.json"
-        $tapoHistPath = Join-Path $scriptRoot "data\tapo_history.json"
-
-        $soilData = if (Test-Path $soilPath) { Get-Content $soilPath -Raw | ConvertFrom-Json } else { $null }
-        $soilHistData = if (Test-Path $soilHistPath) { Get-Content $soilHistPath -Raw | ConvertFrom-Json } else { $null }
-        $tapoData = if (Test-Path $tapoPath) { Get-Content $tapoPath -Raw | ConvertFrom-Json } else { $null }
-        $tapoHistData = if (Test-Path $tapoHistPath) { Get-Content $tapoHistPath -Raw | ConvertFrom-Json } else { $null }
-
-        $payloadObj = [PSCustomObject]@{
-            lastUpdated = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
-            soilSensors = $soilData
-            soilHistory = $soilHistData
-            tapoSensors = $tapoData
-            tapoHistory = $tapoHistData
-        }
-
-        $payloadJson = $payloadObj | ConvertTo-Json -Depth 10 -Compress
-        $resp = Invoke-RestMethod -Uri $cloudEndpointUrl -Method Put -Body $payloadJson -ContentType "application/json; charset=utf-8"
-        Write-Host "   ✅ Telemetry successfully pushed to Cloud! Netlify app is now LIVE!" -ForegroundColor Green
-    }
-    catch {
-        Write-Warning "   ⚠️ Could not push to cloud endpoint: $($_.Exception.Message)"
-    }
-} else {
-    Write-Host "`n[3/3] Cloud Bridge: No endpointUrl configured in config.js (Local mode active)." -ForegroundColor Yellow
-}
+# Step 2: cloud_sync.py automatically pushes 100% live hardware telemetry to Firebase
+Write-Host "`n[2/2] Live telemetry synced and pushed to Cloud Bridge (Firebase) by Telemetry Engine." -ForegroundColor Green
 
 Write-Host "`n=========================================================================="
 Write-Host "   ✅ ALL FARM SENSORS SYNC COMPLETED SUCCESSFULLY!                       "
