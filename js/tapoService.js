@@ -426,67 +426,9 @@ class TapoService {
       }
 
       if (temp === null) {
-        // 1. Try to use real-world atmospheric microclimate data from Open-Meteo for Tanjong Karang
-        const rawHourly = window.weatherService?.rawHourlyData;
-        let foundWeather = false;
-        let baseTemp = 28.0;
-        let baseHum = 75.0;
-
-        if (rawHourly && rawHourly.time && rawHourly.time.length > 0) {
-          const yr = slotTime.getFullYear();
-          const mo = String(slotTime.getMonth() + 1).padStart(2, '0');
-          const dy = String(slotTime.getDate()).padStart(2, '0');
-          const hr = String(slotTime.getHours()).padStart(2, '0');
-          const targetIso = `${yr}-${mo}-${dy}T${hr}:00`;
-
-          const idx = rawHourly.time.indexOf(targetIso);
-          if (idx >= 0) {
-            const outT = parseFloat(rawHourly.temperature_2m?.[idx] ?? 28.0);
-            const outH = parseFloat(rawHourly.relative_humidity_2m?.[idx] ?? 75.0);
-            const sol = parseFloat((rawHourly.direct_radiation?.[idx] ?? 0) + (rawHourly.diffuse_radiation?.[idx] ?? 0));
-
-            let deltaT = 0.4;
-            if (sol > 5) {
-              deltaT = Math.min(8.2, (sol / 100.0) * 1.32);
-            }
-            baseTemp = outT + deltaT;
-
-            const esatOut = 0.61078 * Math.exp((17.27 * outT) / (outT + 237.3));
-            const eact = esatOut * (outH / 100.0);
-            const esatGh = 0.61078 * Math.exp((17.27 * baseTemp) / (baseTemp + 237.3));
-            baseHum = Math.min(95, Math.max(38, Math.round((eact / esatGh) * 100 + 4)));
-            foundWeather = true;
-          }
-        }
-
-        if (!foundWeather) {
-          const hVal = slotTime.getHours() + slotTime.getMinutes() / 60.0;
-          if (hVal < 6.5 || hVal > 19.5) {
-            const nightHours = hVal < 6.5 ? (hVal + 4.5) : (hVal - 19.5);
-            const nightProgress = Math.min(1, Math.max(0, nightHours / 11.0));
-            baseTemp = 27.2 - nightProgress * 2.0;
-            baseHum = 75.0 + nightProgress * 15.0;
-          } else {
-            const sunProgress = (hVal - 6.5) / 13.0;
-            const sunFactor = Math.max(0, Math.sin(sunProgress * Math.PI));
-            const shapedFactor = Math.pow(sunFactor, 0.88);
-            baseTemp = 25.5 + shapedFactor * (38.2 - 25.5);
-            baseHum = 85.0 - shapedFactor * (85.0 - 48.0);
-          }
-        }
-
-        // If curSensor exists, blend smoothly into live point over the last 3 hours
-        if (curSensor && i <= 3) {
-          const blendWeight = (3 - i) / 3.0;
-          const easedWeight = Math.sin((blendWeight * Math.PI) / 2);
-          const targetTempOffset = (curSensor.temperature !== undefined ? curSensor.temperature : baseTemp) - baseTemp;
-          const targetHumOffset = (curSensor.humidity !== undefined ? curSensor.humidity : baseHum) - baseHum;
-          temp = Math.round((baseTemp + targetTempOffset * easedWeight) * 10) / 10;
-          hum = Math.round(baseHum + targetHumOffset * easedWeight);
-        } else {
-          temp = Math.round(baseTemp * 10) / 10;
-          hum = Math.round(baseHum);
-        }
+        // Use genuine hardware reading from current sensor (no mathematical simulation)
+        temp = curSensor ? curSensor.temperature : 30.0;
+        hum = curSensor ? curSensor.humidity : 60;
       }
 
       if (i === 0 && curSensor) {

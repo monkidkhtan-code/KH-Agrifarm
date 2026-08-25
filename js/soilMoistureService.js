@@ -618,76 +618,15 @@ class SoilMoistureService {
         }
       }
 
-      // If no valid historical log exists for this specific hour, calculate realistic fertigation & transpiration dynamics
+      // If no valid historical log exists within proximity, use the real probe value (no simulation)
       if (moisture === null) {
-        const hourOfDay = slotTime.getHours() + slotTime.getMinutes() / 60.0;
-        let fertOffset = 0;
-
-        if (hourOfDay >= 8.0 && hourOfDay < 10.5) {
-          // Morning Fertigation Pulse (Spike after morning drip cycle)
-          const prog = (hourOfDay - 8.0) / 2.5;
-          fertOffset = Math.sin(prog * Math.PI) * 11.0 + 3.0;
-        } else if (hourOfDay >= 10.5 && hourOfDay < 15.5) {
-          // Midday Solar Evapotranspiration Dry-down
-          const prog = (hourOfDay - 10.5) / 5.0;
-          fertOffset = (1.0 - prog) * 4.0;
-        } else if (hourOfDay >= 15.5 && hourOfDay < 18.0) {
-          // Afternoon Fertigation Cycle (+6% to +8%)
-          const prog = (hourOfDay - 15.5) / 2.5;
-          fertOffset = Math.sin(prog * Math.PI) * 6.5 + 2.0;
-        } else if (hourOfDay >= 18.0 && hourOfDay < 23.0) {
-          // Evening Gradual Settling
-          const prog = (hourOfDay - 18.0) / 5.0;
-          fertOffset = 2.0 - prog * 3.0;
-        } else {
-          // Overnight Slow Decay (Cool Root Zone, -3% to -5% by 7 AM)
-          const nightH = hourOfDay < 8.0 ? (hourOfDay + 1.0) : (hourOfDay - 23.0);
-          fertOffset = -1.0 - (nightH / 8.0) * 4.5;
-        }
-
-        // Blend smoothly towards live anchor point (i <= 3)
-        if (i <= 3) {
-          const blendWeight = (3 - i) / 3.0;
-          const eased = Math.sin((blendWeight * Math.PI) / 2);
-          const rawM = curVal + fertOffset;
-          moisture = Math.round(curVal * eased + rawM * (1.0 - eased));
-        } else {
-          moisture = Math.round(curVal + fertOffset);
-        }
-        moisture = Math.min(95, Math.max(25, moisture));
+        moisture = curVal;
       }
-
       if (temperature === null) {
-        const hourOfDay = slotTime.getHours();
-        if (hourOfDay >= 7 && hourOfDay <= 14) {
-          // Morning heating ramp from 25°C to curTemp
-          const progress = (hourOfDay - 7) / 7.0;
-          const shaped = Math.pow(progress, 0.9);
-          temperature = Math.round((25.0 + shaped * Math.max(6.0, (curTemp || 36.0) - 25.0)) * 10) / 10;
-        } else if (hourOfDay > 14 && hourOfDay <= 19) {
-          // Afternoon cooling ramp
-          const progress = (hourOfDay - 14) / 5.0;
-          temperature = Math.round(((curTemp || 36.0) - progress * ((curTemp || 36.0) - 26.5)) * 10) / 10;
-        } else {
-          // Stable cool night root temp
-          const nightProg = hourOfDay < 7 ? (hourOfDay + 5) / 12.0 : (hourOfDay - 19) / 12.0;
-          temperature = Math.round((26.5 - nightProg * 1.5) * 10) / 10;
-        }
+        temperature = curTemp;
       }
-
       if (lux === null) {
-        const hourOfDay = slotTime.getHours();
-        if (hourOfDay >= 7 && hourOfDay <= 13) {
-          const progress = (hourOfDay - 7) / 6.0;
-          const shaped = Math.sin(progress * (Math.PI / 2));
-          lux = Math.round(shaped * Math.max(10000, curLux || 25000));
-        } else if (hourOfDay > 13 && hourOfDay <= 19) {
-          const progress = (19 - hourOfDay) / 6.0;
-          const shaped = Math.sin(progress * (Math.PI / 2));
-          lux = Math.round(shaped * Math.max(10000, curLux || 25000));
-        } else {
-          lux = 0;
-        }
+        lux = curLux;
       }
 
       hourlySeries.push({
