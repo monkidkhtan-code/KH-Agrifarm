@@ -394,9 +394,55 @@ def sync_tapo_sensor(st_token):
     except Exception as e_direct:
         print(f"   ℹ️ Tapo direct LAN stream note: {e_direct}")
 
-    # 2. Second attempt: SmartThings Cloud API
-    if st_token:
-        headers = {"Authorization": f"Bearer {st_token}"}
+    # 2. Second attempt: SmartThings Cloud API (with OAuth Auto-Refresh)
+    st_client_id = get_env_var("ST_CLIENT_ID", "85af3d16-c79d-4b93-b7cc-5f683ada0026")
+    st_client_secret = get_env_var("ST_CLIENT_SECRET", "1da002b9-cf6b-4cff-a594-585475959548")
+    active_token = st_token
+
+    # Check for OAuth refresh token stored in Firebase
+    try:
+        oauth_fb_url = "https://kh-agrifarm-default-rtdb.asia-southeast1.firebasedatabase.app/smartthings_oauth.json"
+        fb_oauth_resp = http_req(oauth_fb_url, timeout=10)
+        if fb_oauth_resp.ok:
+            oauth_data = fb_oauth_resp.json() or {}
+            ref_token = oauth_data.get("refresh_token")
+            if ref_token:
+                # Refresh token via SmartThings OAuth
+                import base64
+                auth_hdr = base64.b64encode(f"{st_client_id}:{st_client_secret}".encode("utf-8")).decode("utf-8")
+                token_post = {
+                    "grant_type": "refresh_token",
+                    "refresh_token": ref_token,
+                    "client_id": st_client_id,
+                    "client_secret": st_client_secret
+                }
+                token_resp = requests.post(
+                    "https://api.smartthings.com/oauth/token",
+                    headers={"Authorization": f"Basic {auth_hdr}", "Content-Type": "application/x-www-form-urlencoded"},
+                    data=token_post,
+                    timeout=10
+                )
+                if token_resp.ok:
+                    fresh = token_resp.json() or {}
+                    if fresh.get("access_token"):
+                        active_token = fresh.get("access_token")
+                        # Update rotated token in Firebase
+                        http_req(
+                            oauth_fb_url,
+                            method="PUT",
+                            json_data={
+                                "access_token": active_token,
+                                "refresh_token": fresh.get("refresh_token") or ref_token,
+                                "updated_at": datetime.now(MY_TZ).isoformat()
+                            },
+                            timeout=10
+                        )
+                        print("   ⚡ SmartThings OAuth Token Auto-Refreshed Successfully!")
+    except Exception as e_oauth:
+        print(f"   ℹ️ SmartThings OAuth check: {e_oauth}")
+
+    if active_token:
+        headers = {"Authorization": f"Bearer {active_token}"}
         sensor_dev_id = "fdc3ceb6-8103-487d-aed1-3173859ec17b"
         try:
             url = f"https://api.smartthings.com/v1/devices/{sensor_dev_id}/status"

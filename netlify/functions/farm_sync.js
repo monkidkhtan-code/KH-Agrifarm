@@ -230,12 +230,67 @@ async function syncRainPoint() {
   }
 }
 
+const ST_CLIENT_ID = process.env.ST_CLIENT_ID || '85af3d16-c79d-4b93-b7cc-5f683ada0026';
+const ST_CLIENT_SECRET = process.env.ST_CLIENT_SECRET || '1da002b9-cf6b-4cff-a594-585475959548';
+const ST_REDIRECT_URI = 'https://kh-agrifarm.netlify.app/.netlify/functions/farm_sync';
+const FIREBASE_OAUTH_URL = 'https://kh-agrifarm-default-rtdb.asia-southeast1.firebasedatabase.app/smartthings_oauth.json';
+
+async function getValidSmartThingsToken() {
+  // 1. Try OAuth auto-refresh from Firebase
+  try {
+    const fbRes = await fetch(FIREBASE_OAUTH_URL);
+    if (fbRes.ok) {
+      const oauthData = await fbRes.json();
+      if (oauthData && oauthData.refresh_token) {
+        // Refresh token to get fresh access token
+        const authHeader = Buffer.from(`${ST_CLIENT_ID}:${ST_CLIENT_SECRET}`).toString('base64');
+        const tokenRes = await fetch('https://api.smartthings.com/oauth/token', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${authHeader}`,
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            grant_type: 'refresh_token',
+            refresh_token: oauthData.refresh_token,
+            client_id: ST_CLIENT_ID,
+            client_secret: ST_CLIENT_SECRET
+          })
+        });
+        if (tokenRes.ok) {
+          const freshTokens = await tokenRes.json();
+          if (freshTokens?.access_token) {
+            // Update rotated refresh token in Firebase
+            await fetch(FIREBASE_OAUTH_URL, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                access_token: freshTokens.access_token,
+                refresh_token: freshTokens.refresh_token || oauthData.refresh_token,
+                updated_at: new Date().toISOString()
+              })
+            });
+            return freshTokens.access_token;
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('OAuth refresh token flow:', e);
+  }
+
+  // 2. Fallback to static env token
+  return SMARTTHINGS_TOKEN || null;
+}
+
 async function syncSmartThings() {
-  if (!SMARTTHINGS_TOKEN) return null;
+  const token = await getValidSmartThingsToken();
+  if (!token) return null;
+
   try {
     const devId = 'fdc3ceb6-8103-487d-aed1-3173859ec17b';
     const resp = await fetch(`https://api.smartthings.com/v1/devices/${devId}/status`, {
-      headers: { Authorization: `Bearer ${SMARTTHINGS_TOKEN}` }
+      headers: { Authorization: `Bearer ${token}` }
     });
     if (!resp.ok) return null;
     const json = await resp.json();
@@ -272,7 +327,55 @@ async function syncSmartThings() {
 }
 
 exports.handler = async function (event, context) {
-  // 1. Handle SmartThings WebHook Confirmation Lifecycle
+  // 1. Handle OAuth2 Authorization Code Callback (When user clicks Authorize in browser)
+  if (event.queryStringParameters && event.queryStringParameters.code) {
+    const authCode = event.queryStringParameters.code;
+    console.log('⚡ Received SmartThings OAuth authorization code. Exchanging for permanent tokens...');
+    try {
+      const authHeader = Buffer.from(`${ST_CLIENT_ID}:${ST_CLIENT_SECRET}`).toString('base64');
+      const tokenRes = await fetch('https://api.smartthings.com/oauth/token', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${authHeader}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code: authCode,
+          client_id: ST_CLIENT_ID,
+          client_secret: ST_CLIENT_SECRET,
+          redirect_uri: ST_REDIRECT_URI
+        })
+      });
+      const tokenJson = await tokenRes.json();
+      if (tokenJson && tokenJson.access_token) {
+        await fetch(FIREBASE_OAUTH_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            access_token: tokenJson.access_token,
+            refresh_token: tokenJson.refresh_token,
+            installed_at: new Date().toISOString()
+          })
+        });
+        return {
+          statusCode: 200,
+          headers: { 'Content-Type': 'text/html; charset=utf-8' },
+          body: `
+            <div style="font-family: sans-serif; text-align: center; padding: 50px; background: #0a1a0e; color: #f1f5f9; min-height: 100vh;">
+              <h1 style="color: #4ade80;">✅ SmartThings 24/7 Cloud Linked Successfully!</h1>
+              <p style="font-size: 1.1rem; color: #94a3b8; margin: 20px 0;">Your Tapo T315 sensor is now permanently connected via SmartThings OAuth. It will auto-refresh 24/7 in the cloud with zero laptop needed.</p>
+              <a href="/" style="display: inline-block; background: #518d36; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 20px;">Return to Farm Dashboard</a>
+            </div>
+          `
+        };
+      }
+    } catch (err) {
+      console.error('OAuth exchange error:', err);
+    }
+  }
+
+  // 2. Handle SmartThings WebHook Confirmation Lifecycle
   if (event.httpMethod === 'POST' && event.body) {
     try {
       const parsedBody = JSON.parse(event.body);
