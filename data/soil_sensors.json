@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-25T17:43:40.695235+08:00",
+  "lastUpdated": "2026-08-25T18:23:35.118011+08:00",
   "gateway": {
     "name": "MAC-30C922CEA038",
     "mac": "30:C9:22:CE:A0:38",
@@ -13,18 +13,18 @@
           "slot": "D01",
           "name": "Sensor 1",
           "model": "HCS021FRF",
-          "moisture": 57,
-          "temperature": 30.4,
-          "lux": 566,
+          "moisture": 61,
+          "temperature": 29.3,
+          "lux": 594,
           "battery": 100,
-          "status": "moderate",
-          "statusLabel": "Moderate",
-          "syncTime": "2026-08-25 17:42:52"
+          "status": "optimal",
+          "statusLabel": "Optimal for Chili",
+          "syncTime": "2026-08-25 18:18:52"
         }
       ],
-      "avgMoisture": 57,
-      "avgTemperature": 30.4,
-      "overallStatus": "moderate"
+      "avgMoisture": 61,
+      "avgTemperature": 29.3,
+      "overallStatus": "optimal"
     },
     "plot-2": {
       "plotName": "Plot 2",
@@ -33,30 +33,30 @@
           "slot": "D02",
           "name": "Sensor 1",
           "model": "HCS021FRF",
-          "moisture": 55,
-          "temperature": 30.3,
-          "lux": 1152,
+          "moisture": 67,
+          "temperature": 29.3,
+          "lux": 995,
           "battery": 100,
-          "status": "moderate",
-          "statusLabel": "Moderate",
-          "syncTime": "2026-08-25 17:43:18"
+          "status": "optimal",
+          "statusLabel": "Optimal for Chili",
+          "syncTime": "2026-08-25 18:23:18"
         },
         {
           "slot": "D03",
           "name": "Sensor 2",
           "model": "HCS021FRF",
-          "moisture": 60,
-          "temperature": 30.9,
-          "lux": 1559,
+          "moisture": 61,
+          "temperature": 29.6,
+          "lux": 1238,
           "battery": 100,
           "status": "optimal",
           "statusLabel": "Optimal for Chili",
-          "syncTime": "2026-08-25 17:42:57"
+          "syncTime": "2026-08-25 18:22:57"
         }
       ],
-      "avgMoisture": 58,
-      "avgTemperature": 30.6,
-      "overallStatus": "moderate"
+      "avgMoisture": 64,
+      "avgTemperature": 29.5,
+      "overallStatus": "optimal"
     }
   }
 }
