@@ -1,0 +1,17 @@
+# Data telemetry cache (stored in Firebase Cloud)
+data/soil_moisture_history.json
+data/soil_sensors.json
+data/tapo_history.json
+data/tapo_sensors.json
+data/*.json
+
+# Python caches
+__pycache__/
+*.pyc
+*/__pycache__/
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

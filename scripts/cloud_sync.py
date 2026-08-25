@@ -675,24 +675,7 @@ def sync_cycle(firebase_url, is_first=True):
     if sheets_data:
         payload["sheetsData"] = sheets_data
 
-    # Also save to local data/ directory for offline/local development
-    try:
-        data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
-        os.makedirs(data_dir, exist_ok=True)
-        if soil_data:
-            with open(os.path.join(data_dir, "soil_sensors.json"), "w", encoding="utf-8") as f:
-                json.dump(soil_data, f, indent=2)
-        if tapo_data:
-            with open(os.path.join(data_dir, "tapo_sensors.json"), "w", encoding="utf-8") as f:
-                json.dump(tapo_data, f, indent=2)
-        if "soilHistory" in payload:
-            with open(os.path.join(data_dir, "soil_moisture_history.json"), "w", encoding="utf-8") as f:
-                json.dump(payload["soilHistory"], f, indent=2)
-        if "tapoHistory" in payload:
-            with open(os.path.join(data_dir, "tapo_history.json"), "w", encoding="utf-8") as f:
-                json.dump(payload["tapoHistory"], f, indent=2)
-    except Exception as e_save:
-        print(f"   ℹ️ Local data save note: {e_save}")
+
 
     if firebase_url:
         print(f"\n[4/4] Pushing Full Farm Telemetry & Sheets to Firebase ({firebase_url})...")
