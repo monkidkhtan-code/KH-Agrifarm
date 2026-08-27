@@ -260,6 +260,90 @@ class TapoService {
     }
   }
 
+  getNurserySourceInfo() {
+    const hub = this.tapoData?.hub || {};
+    const s = this.getNurserySensor();
+    const raw = ((s && s.source) || hub.source || '').toLowerCase();
+
+    if (raw.includes('direct') || raw.includes('hardware') || raw.includes('t315 direct')) {
+      return {
+        type: 'hardware',
+        badgeText: 'Tapo Hardware (Live)',
+        badgeColor: '#4ade80',
+        badgeBg: 'rgba(74, 222, 128, 0.12)',
+        badgeBorder: 'rgba(74, 222, 128, 0.35)',
+        dotColor: '#4ade80',
+        sourceTag: 'Direct Tapo T315',
+        sourceColor: '#86efac',
+        icon: 'check-circle-2',
+        isDirectHardware: true,
+        footerNote: 'Verified genuine broadcast directly from physical Tapo T315 sensor.'
+      };
+    }
+
+    if (raw.includes('smartthings')) {
+      return {
+        type: 'smartthings',
+        badgeText: 'SmartThings Cloud',
+        badgeColor: '#38bdf8',
+        badgeBg: 'rgba(56, 189, 248, 0.12)',
+        badgeBorder: 'rgba(56, 189, 248, 0.35)',
+        dotColor: '#38bdf8',
+        sourceTag: 'SmartThings Bridge',
+        sourceColor: '#7dd3fc',
+        icon: 'cloud',
+        isDirectHardware: true,
+        footerNote: 'Hardware telemetry delivered via Samsung SmartThings Cloud API.'
+      };
+    }
+
+    if (raw.includes('open-meteo') || raw.includes('meteo') || raw.includes('microclimate')) {
+      return {
+        type: 'microclimate',
+        badgeText: 'Weather Microclimate (No HW)',
+        badgeColor: '#fbbf24',
+        badgeBg: 'rgba(251, 191, 36, 0.14)',
+        badgeBorder: 'rgba(251, 191, 36, 0.35)',
+        dotColor: '#fbbf24',
+        sourceTag: 'Open-Meteo Weather Model',
+        sourceColor: '#fde68a',
+        icon: 'cloud-sun',
+        isDirectHardware: false,
+        footerNote: 'Atmospheric microclimate calculated from local weather station (physical Tapo sensor offline in cloud).'
+      };
+    }
+
+    if (raw.includes('simulat') || this.isSimulated) {
+      return {
+        type: 'simulation',
+        badgeText: 'Simulation',
+        badgeColor: '#f87171',
+        badgeBg: 'rgba(248, 113, 113, 0.14)',
+        badgeBorder: 'rgba(248, 113, 113, 0.35)',
+        dotColor: '#f87171',
+        sourceTag: 'Estimated Simulation',
+        sourceColor: '#fca5a5',
+        icon: 'alert-triangle',
+        isDirectHardware: false,
+        footerNote: 'Simulated baseline curve.'
+      };
+    }
+
+    return {
+      type: 'cloud',
+      badgeText: hub.source || '24/7 Live Cloud',
+      badgeColor: '#fbbf24',
+      badgeBg: 'rgba(251, 191, 36, 0.1)',
+      badgeBorder: 'rgba(251, 191, 36, 0.25)',
+      dotColor: '#fbbf24',
+      sourceTag: 'Cloud Stream',
+      sourceColor: '#cbd5e1',
+      icon: 'cloud',
+      isDirectHardware: false,
+      footerNote: 'Cloud stream.'
+    };
+  }
+
   renderPlotNurseryCard(plotId) {
     const s = this.getNurserySensor();
     if (!s) return '';
@@ -268,6 +352,7 @@ class TapoService {
     const hum = s.humidity !== undefined ? s.humidity : 70;
     const vpd = this.calculateVPD(temp, hum);
     const syncTimeFormatted = this.formatSyncTime(s.syncTime);
+    const src = this.getNurserySourceInfo();
 
     // Nursery status determination (2-line compact badge to prevent text overlap)
     let statusClass = 'pill-safe';
@@ -296,15 +381,23 @@ class TapoService {
       <div class="activity-section">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem; width:100%; box-sizing:border-box;">
           <span class="activity-label" style="color: #fbbf24; margin-bottom:0; font-size:0.75rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:0.3rem;"><i data-lucide="thermometer-sun"></i> Greenhouse Climate</span>
-          <span style="font-size:0.6rem; color:#fbbf24; display:inline-flex; align-items:center; gap:3px; background:rgba(251,191,36,0.1); padding:1px 5px; border-radius:4px; border:1px solid rgba(251,191,36,0.25); white-space:nowrap; flex-shrink:0;"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#fbbf24;box-shadow:0 0 5px #fbbf24;flex-shrink:0;"></span> 24/7 Live Cloud</span>
+          <span style="font-size:0.62rem; color:${src.badgeColor}; display:inline-flex; align-items:center; gap:4px; background:${src.badgeBg}; padding:2px 6px; border-radius:4px; border:1px solid ${src.badgeBorder}; white-space:nowrap; flex-shrink:0;">
+            <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${src.dotColor};box-shadow:0 0 5px ${src.dotColor};flex-shrink:0;"></span>
+            ${src.badgeText}
+          </span>
         </div>
         <div class="activity-content-box box-moisture" style="background: rgba(120, 53, 15, 0.12); border-color: rgba(251, 191, 36, 0.3); padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
           
-          <!-- Top Row: Sensor 1 + Synced Time + 2-Line Status Pill -->
+          <!-- Top Row: Sensor 1 + Source Tag + Synced Time + 2-Line Status Pill -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; width:100%; box-sizing:border-box;">
             <div style="display:flex; flex-direction:column; min-width:0; padding-right:0.35rem;">
-              <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">Sensor 1</span>
-              ${syncTimeFormatted ? `<span class="sensor-sync-label" style="color:#fbbf24; font-size:0.72rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px;"><i data-lucide="radio" style="width:10px;height:10px;display:inline;color:#fbbf24;"></i> Synced: ${syncTimeFormatted}</span>` : ''}
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">Sensor 1</span>
+                <span style="font-size:0.62rem; font-weight:700; color:${src.sourceColor}; background:${src.badgeBg}; border:1px solid ${src.badgeBorder}; padding:1px 5px; border-radius:3px; display:inline-flex; align-items:center; gap:3px;">
+                  <i data-lucide="${src.icon}" style="width:9px;height:9px;display:inline;"></i> ${src.sourceTag}
+                </span>
+              </div>
+              ${syncTimeFormatted ? `<span class="sensor-sync-label" style="color:#cbd5e1; font-size:0.7rem; font-family:var(--font-mono); margin-top:3px;"><i data-lucide="radio" style="width:10px;height:10px;display:inline;color:${src.dotColor};"></i> Synced: ${syncTimeFormatted}</span>` : ''}
             </div>
             <span class="sensor-pill ${statusClass}" style="font-size:0.62rem; padding:0.18rem 0.45rem; font-weight:700; line-height:1.15; text-align:center; border-radius:4px; flex-shrink:0;">${statusText}</span>
           </div>
@@ -353,8 +446,13 @@ class TapoService {
           <div class="moisture-tip-text" style="margin-top: 0.45rem; font-size:0.72rem; line-height:1.35;">
             ${tipText}
           </div>
+
+          <!-- Provenance / Source Authenticity Banner -->
+          <div style="margin-top: 0.45rem; padding: 0.35rem 0.55rem; background: rgba(0, 0, 0, 0.28); border-radius: 4px; border-left: 2px solid ${src.badgeColor}; font-size: 0.68rem; color: #cbd5e1; line-height: 1.35; display: flex; align-items: center; gap: 6px;">
+            <i data-lucide="${src.icon}" style="width: 12px; height: 12px; color: ${src.badgeColor}; flex-shrink: 0;"></i>
+            <span><strong>Source:</strong> ${src.footerNote}</span>
+          </div>
         </div>
-      </div>
     `;
   }
 
