@@ -230,8 +230,8 @@ async function syncRainPoint() {
   }
 }
 
-const ST_CLIENT_ID = process.env.ST_CLIENT_ID || '85af3d16-c79d-4b93-b7cc-5f683ada0026';
-const ST_CLIENT_SECRET = process.env.ST_CLIENT_SECRET || '1da002b9-cf6b-4cff-a594-585475959548';
+const ST_CLIENT_ID = process.env.ST_CLIENT_ID || 'c5fe8583-ac42-43d5-99cc-8a7291033a2c';
+const ST_CLIENT_SECRET = process.env.ST_CLIENT_SECRET || '81f046d1-5edc-46da-8503-2c6c464f3af9';
 const ST_REDIRECT_URI = 'https://kh-agrifarm.netlify.app/.netlify/functions/farm_sync';
 const FIREBASE_OAUTH_URL = 'https://kh-agrifarm-default-rtdb.asia-southeast1.firebasedatabase.app/smartthings_oauth.json';
 

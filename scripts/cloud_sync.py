@@ -395,8 +395,8 @@ def sync_tapo_sensor(st_token):
         print(f"   ℹ️ Tapo direct LAN stream note: {e_direct}")
 
     # 2. Second attempt: SmartThings Cloud API (with OAuth Auto-Refresh)
-    st_client_id = get_env_var("ST_CLIENT_ID", "85af3d16-c79d-4b93-b7cc-5f683ada0026")
-    st_client_secret = get_env_var("ST_CLIENT_SECRET", "1da002b9-cf6b-4cff-a594-585475959548")
+    st_client_id = get_env_var("ST_CLIENT_ID", "c5fe8583-ac42-43d5-99cc-8a7291033a2c")
+    st_client_secret = get_env_var("ST_CLIENT_SECRET", "81f046d1-5edc-46da-8503-2c6c464f3af9")
     active_token = st_token
 
     # Check for OAuth refresh token stored in Firebase
