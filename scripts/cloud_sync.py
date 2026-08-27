@@ -394,103 +394,120 @@ def sync_tapo_sensor(st_token):
     except Exception as e_direct:
         print(f"   ℹ️ Tapo direct LAN stream note: {e_direct}")
 
-    # 2. Second attempt: SmartThings Cloud API (with OAuth Auto-Refresh)
+    # 2. Second attempt: SmartThings Cloud API (with Smart OAuth Token Caching & Auto-Refresh)
     st_client_id = get_env_var("ST_CLIENT_ID", "c5fe8583-ac42-43d5-99cc-8a7291033a2c")
     st_client_secret = get_env_var("ST_CLIENT_SECRET", "81f046d1-5edc-46da-8503-2c6c464f3af9")
     active_token = st_token
+    oauth_fb_url = "https://kh-agrifarm-default-rtdb.asia-southeast1.firebasedatabase.app/smartthings_oauth.json"
+    oauth_data = {}
 
-    # Check for OAuth refresh token stored in Firebase
     try:
-        oauth_fb_url = "https://kh-agrifarm-default-rtdb.asia-southeast1.firebasedatabase.app/smartthings_oauth.json"
         fb_oauth_resp = http_req(oauth_fb_url, timeout=10)
         if fb_oauth_resp.ok:
             oauth_data = fb_oauth_resp.json() or {}
-            ref_token = oauth_data.get("refresh_token")
-            if ref_token:
-                # Refresh token via SmartThings OAuth
-                import base64
-                auth_hdr = base64.b64encode(f"{st_client_id}:{st_client_secret}".encode("utf-8")).decode("utf-8")
-                token_post = {
-                    "grant_type": "refresh_token",
-                    "refresh_token": ref_token,
-                    "client_id": st_client_id,
-                    "client_secret": st_client_secret
-                }
-                token_resp = requests.post(
-                    "https://api.smartthings.com/oauth/token",
-                    headers={"Authorization": f"Basic {auth_hdr}", "Content-Type": "application/x-www-form-urlencoded"},
-                    data=token_post,
-                    timeout=10
-                )
-                if token_resp.ok:
-                    fresh = token_resp.json() or {}
-                    if fresh.get("access_token"):
-                        active_token = fresh.get("access_token")
-                        # Update rotated token in Firebase
-                        http_req(
-                            oauth_fb_url,
-                            method="PUT",
-                            json_data={
-                                "access_token": active_token,
-                                "refresh_token": fresh.get("refresh_token") or ref_token,
-                                "updated_at": datetime.now(MY_TZ).isoformat()
-                            },
-                            timeout=10
-                        )
-                        print("   ⚡ SmartThings OAuth Token Auto-Refreshed Successfully!")
+            if oauth_data.get("client_id"):
+                st_client_id = oauth_data.get("client_id")
+            if oauth_data.get("client_secret"):
+                st_client_secret = oauth_data.get("client_secret")
+            if oauth_data.get("access_token"):
+                active_token = oauth_data.get("access_token")
     except Exception as e_oauth:
-        print(f"   ℹ️ SmartThings OAuth check: {e_oauth}")
+        print(f"   ℹ️ SmartThings OAuth read check: {e_oauth}")
 
-    if active_token:
-        headers = {"Authorization": f"Bearer {active_token}"}
-        sensor_dev_id = "fdc3ceb6-8103-487d-aed1-3173859ec17b"
+    sensor_dev_id = "fdc3ceb6-8103-487d-aed1-3173859ec17b"
+
+    def fetch_smartthings(tok):
+        if not tok:
+            return None
+        headers = {"Authorization": f"Bearer {tok}"}
+        url = f"https://api.smartthings.com/v1/devices/{sensor_dev_id}/status"
+        return http_req(url, headers=headers, timeout=10)
+
+    # First attempt: Try active_token from Firebase or environment
+    resp = fetch_smartthings(active_token)
+
+    # If token is invalid or expired (401), auto-refresh via refresh_token
+    if (not resp or resp.status_code == 401) and oauth_data.get("refresh_token"):
+        ref_token = oauth_data.get("refresh_token")
         try:
-            url = f"https://api.smartthings.com/v1/devices/{sensor_dev_id}/status"
-            resp = http_req(url, headers=headers, timeout=10)
-            if resp.ok:
-                data = resp.json() or {}
-                main_comp = data.get("components", {}).get("main", {})
-                temp_obj = main_comp.get("temperatureMeasurement", {}).get("temperature", {})
-                hum_obj = main_comp.get("relativeHumidityMeasurement", {}).get("humidity", {})
-                bat_obj = main_comp.get("battery", {}).get("battery", {})
-                status_obj = main_comp.get("healthCheck", {}).get("DeviceWatch-DeviceStatus", {})
-                
-                temp_val = float(temp_obj.get("value", 30.0))
-                hum_val = int(hum_obj.get("value", 60))
-                bat_val = int(bat_obj.get("value", 75))
-                is_online = (status_obj.get("value") == "online")
-                
-                es = 0.61078 * math.exp(17.27 * temp_val / (temp_val + 237.3))
-                vpd_val = round(es * (1.0 - hum_val / 100.0), 2)
-                status_key = "danger" if (temp_val > 35 or vpd_val > 2.5) else ("optimal" if (24 <= temp_val <= 32 and 0.8 <= vpd_val <= 1.6) else "moderate")
-                status_badge = "Extreme Heat Stress" if temp_val > 35 else ("Optimal Nursery Climate" if status_key == "optimal" else "Warm / Moderate Climate")
-                now_dt = datetime.now(MY_TZ)
-                
-                tapo_obj = {
-                    "lastUpdated": now_dt.isoformat(),
-                    "hub": {
-                        "name": "KH Agrifarm Smart Hub",
-                        "model": "H100(UK)",
-                        "source": "SmartThings Cloud Bridge (24/7)",
-                        "online": is_online
-                    },
-                    "sensor": {
-                        "name": "Nursery Greenhouse Sensor",
-                        "model": "Tapo T315",
-                        "temperature": temp_val,
-                        "humidity": hum_val,
-                        "vpd": vpd_val,
-                        "battery": bat_val,
-                        "signal": "3/3",
-                        "status": status_key,
-                        "statusLabel": status_badge,
-                        "syncTime": now_dt.strftime("%Y-%m-%d %H:%M:%S")
-                    }
-                }
-                print(f"   ✅ SmartThings Live Reading: {temp_val}°C | {hum_val}% RH | {vpd_val} kPa VPD (Online: {is_online})")
-                return tapo_obj
-        except Exception as e:
-            print(f"   ℹ️ SmartThings sync note: {e}")
+            import base64
+            auth_hdr = base64.b64encode(f"{st_client_id}:{st_client_secret}".encode("utf-8")).decode("utf-8")
+            token_post = {
+                "grant_type": "refresh_token",
+                "refresh_token": ref_token,
+                "client_id": st_client_id,
+                "client_secret": st_client_secret
+            }
+            token_resp = requests.post(
+                "https://api.smartthings.com/oauth/token",
+                headers={"Authorization": f"Basic {auth_hdr}", "Content-Type": "application/x-www-form-urlencoded"},
+                data=token_post,
+                timeout=10
+            )
+            if token_resp.ok:
+                fresh = token_resp.json() or {}
+                if fresh.get("access_token"):
+                    active_token = fresh.get("access_token")
+                    new_ref = fresh.get("refresh_token") or ref_token
+                    http_req(
+                        oauth_fb_url,
+                        method="PUT",
+                        json_data={
+                            "access_token": active_token,
+                            "refresh_token": new_ref,
+                            "client_id": st_client_id,
+                            "client_secret": st_client_secret,
+                            "updated_at": datetime.now(MY_TZ).isoformat()
+                        },
+                        timeout=10
+                    )
+                    print("   ⚡ SmartThings OAuth Token Auto-Refreshed Successfully!")
+                    resp = fetch_smartthings(active_token)
+        except Exception as e_refresh:
+            print(f"   ⚠️ SmartThings token refresh error: {e_refresh}")
+
+    if resp and resp.ok:
+        data = resp.json() or {}
+        main_comp = data.get("components", {}).get("main", {})
+        temp_obj = main_comp.get("temperatureMeasurement", {}).get("temperature", {})
+        hum_obj = main_comp.get("relativeHumidityMeasurement", {}).get("humidity", {})
+        bat_obj = main_comp.get("battery", {}).get("battery", {})
+        status_obj = main_comp.get("healthCheck", {}).get("DeviceWatch-DeviceStatus", {})
+        
+        temp_val = float(temp_obj.get("value", 30.0))
+        hum_val = int(hum_obj.get("value", 60))
+        bat_val = int(bat_obj.get("value", 75))
+        is_online = (status_obj.get("value") == "online")
+        
+        es = 0.61078 * math.exp(17.27 * temp_val / (temp_val + 237.3))
+        vpd_val = round(es * (1.0 - hum_val / 100.0), 2)
+        status_key = "danger" if (temp_val > 35 or vpd_val > 2.5) else ("optimal" if (24 <= temp_val <= 32 and 0.8 <= vpd_val <= 1.6) else "moderate")
+        status_badge = "Extreme Heat Stress" if temp_val > 35 else ("Optimal Nursery Climate" if status_key == "optimal" else "Warm / Moderate Climate")
+        now_dt = datetime.now(MY_TZ)
+        
+        tapo_obj = {
+            "lastUpdated": now_dt.isoformat(),
+            "hub": {
+                "name": "KH Agrifarm Smart Hub",
+                "model": "H100(UK)",
+                "source": "SmartThings Cloud Bridge (24/7)",
+                "online": is_online
+            },
+            "sensor": {
+                "name": "Nursery Greenhouse Sensor",
+                "model": "Tapo T315",
+                "temperature": temp_val,
+                "humidity": hum_val,
+                "vpd": vpd_val,
+                "battery": bat_val,
+                "signal": "3/3",
+                "status": status_key,
+                "statusLabel": status_badge,
+                "syncTime": now_dt.strftime("%Y-%m-%d %H:%M:%S")
+            }
+        }
+        print(f"   ✅ SmartThings Live Reading: {temp_val}°C | {hum_val}% RH | {vpd_val} kPa VPD (Online: {is_online})")
+        return tapo_obj
 
     # 3. Third attempt: Real Open-Meteo atmospheric microclimate physics
     try:
