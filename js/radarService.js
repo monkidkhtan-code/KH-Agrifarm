@@ -38,10 +38,17 @@ class RadarService {
         attributionControl: false
       });
 
-      // Dark Basemap Tiles (CartoDB Dark Matter)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 18,
-        subdomains: 'abcd'
+      // High-Contrast Dark Canvas Tiles (Esri Dark Gray - No API Key Required, No Watermarks)
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 16,
+        attribution: false
+      }).addTo(this.map);
+
+      // Boundary & Road Reference Labels (Layered above radar for clear town names)
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 16,
+        zIndex: 150,
+        attribution: false
       }).addTo(this.map);
 
       // Custom Glowing Green Farm Location Pin
