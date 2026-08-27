@@ -388,15 +388,10 @@ class TapoService {
         </div>
         <div class="activity-content-box box-moisture" style="background: rgba(120, 53, 15, 0.12); border-color: rgba(251, 191, 36, 0.3); padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
           
-          <!-- Top Row: Sensor 1 + Source Tag + Synced Time + 2-Line Status Pill -->
+          <!-- Top Row: Sensor 1 + Synced Time + 2-Line Status Pill -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; width:100%; box-sizing:border-box;">
             <div style="display:flex; flex-direction:column; min-width:0; padding-right:0.35rem;">
-              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">Sensor 1</span>
-                <span style="font-size:0.62rem; font-weight:700; color:${src.sourceColor}; background:${src.badgeBg}; border:1px solid ${src.badgeBorder}; padding:1px 5px; border-radius:3px; display:inline-flex; align-items:center; gap:3px;">
-                  <i data-lucide="${src.icon}" style="width:9px;height:9px;display:inline;"></i> ${src.sourceTag}
-                </span>
-              </div>
+              <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">Sensor 1</span>
               ${syncTimeFormatted ? `<span class="sensor-sync-label" style="color:#cbd5e1; font-size:0.7rem; font-family:var(--font-mono); margin-top:3px;"><i data-lucide="radio" style="width:10px;height:10px;display:inline;color:${src.dotColor};"></i> Synced: ${syncTimeFormatted}</span>` : ''}
             </div>
             <span class="sensor-pill ${statusClass}" style="font-size:0.62rem; padding:0.18rem 0.45rem; font-weight:700; line-height:1.15; text-align:center; border-radius:4px; flex-shrink:0;">${statusText}</span>
@@ -445,12 +440,6 @@ class TapoService {
           <!-- Tip Text -->
           <div class="moisture-tip-text" style="margin-top: 0.45rem; font-size:0.72rem; line-height:1.35;">
             ${tipText}
-          </div>
-
-          <!-- Provenance / Source Authenticity Banner -->
-          <div style="margin-top: 0.45rem; padding: 0.35rem 0.55rem; background: rgba(0, 0, 0, 0.28); border-radius: 4px; border-left: 2px solid ${src.badgeColor}; font-size: 0.68rem; color: #cbd5e1; line-height: 1.35; display: flex; align-items: center; gap: 6px;">
-            <i data-lucide="${src.icon}" style="width: 12px; height: 12px; color: ${src.badgeColor}; flex-shrink: 0;"></i>
-            <span><strong>Source:</strong> ${src.footerNote}</span>
           </div>
         </div>
     `;
