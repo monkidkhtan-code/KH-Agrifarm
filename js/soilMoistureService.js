@@ -772,7 +772,8 @@ class SoilMoistureService {
               borderWidth: 2.5,
               fill: true,
               tension: 0.35,
-              pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5.5 : (ctx.dataIndex % 2 === 0 ? 2 : 0)),
+              clip: false,
+              pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 6 : (ctx.dataIndex % 2 === 0 ? 2.5 : 0)),
               pointBackgroundColor: (ctx) => (ctx.dataIndex === totalPoints - 1 ? '#ffffff' : '#4ade80'),
               pointBorderColor: '#22c55e',
               pointBorderWidth: 1.5,
@@ -787,6 +788,14 @@ class SoilMoistureService {
           interaction: {
             mode: 'index',
             intersect: false
+          },
+          layout: {
+            padding: {
+              top: 8,
+              bottom: 2,
+              left: 2,
+              right: 2
+            }
           },
           plugins: {
             legend: { display: false },
@@ -832,25 +841,28 @@ class SoilMoistureService {
               }
             },
             y: {
-              // Primary Moisture Axis (%)
+              // Primary Moisture Axis (%) - Extended to 105% to cleanly accommodate 100% saturation
               display: true,
               position: 'left',
-              min: 15,
-              max: 98,
+              min: 10,
+              max: 105,
               grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
               ticks: {
                 color: '#86efac',
                 font: { size: 8, weight: '600' },
                 stepSize: 20,
-                callback(v) { return v + '%'; }
+                callback(v) {
+                  if (v > 100) return '';
+                  return v + '%';
+                }
               }
             },
             yTemp: {
               // Secondary Temperature Axis (°C) - Right side
               display: true,
               position: 'right',
-              min: 12,
-              max: 48,
+              min: 10,
+              max: 50,
               grid: { drawOnChartArea: false, drawBorder: false },
               ticks: {
                 color: '#fb923c',

@@ -592,6 +592,14 @@ class TapoService {
               }
             }
           },
+          layout: {
+            padding: {
+              top: 8,
+              bottom: 2,
+              left: 2,
+              right: 2
+            }
+          },
           scales: {
             x: {
               display: true,
@@ -619,9 +627,16 @@ class TapoService {
               display: true,
               position: 'right',
               min: yHumMin,
-              max: 100,
+              max: 105,
               grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
-              ticks: { color: '#38bdf8', font: { size: 8 }, callback(v) { return v + '%'; } }
+              ticks: {
+                color: '#38bdf8',
+                font: { size: 8 },
+                callback(v) {
+                  if (v > 100) return '';
+                  return v + '%';
+                }
+              }
             }
           }
         }
