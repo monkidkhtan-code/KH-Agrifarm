@@ -1029,7 +1029,7 @@ body {
 .sensor-sparkline-canvas-box {
   position: relative;
   width: 100%;
-  height: 150px; /* Taller height (up from 115px) for clear dynamics up to 100% */
+  height: 115px; /* Compact height for 4-column overview grid and mobile */
 }
 
 .sensor-sparkline-canvas {
@@ -1040,20 +1040,20 @@ body {
 /* Individual card mode (container query when a single card is wide > 600px) */
 @container (min-width: 600px) {
   .sensor-sparkline-canvas-box {
-    height: 185px;
+    height: 180px;
   }
 }
 
 @container (min-width: 1000px) {
   .sensor-sparkline-canvas-box {
-    height: 205px;
+    height: 195px;
   }
 }
 
 /* Direct class-based selector for individual card view */
 .single-plot-view .sensor-sparkline-canvas-box,
 .single-plot-card .sensor-sparkline-canvas-box {
-  height: 185px;
+  height: 180px;
 }
 
 .sensor-sub-footer {

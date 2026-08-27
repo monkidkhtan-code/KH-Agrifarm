@@ -386,7 +386,7 @@ class SoilMoistureService {
     }
 
     const cloudTimeAgo = this.getTimeAgo(this.sensorData?.lastUpdated);
-    const cloudBadgeText = cloudTimeAgo ? `RainPoint Hardware (${cloudTimeAgo})` : 'RainPoint Hardware (Live)';
+    const cloudBadgeText = cloudTimeAgo ? `Cloud: ${cloudTimeAgo}` : '24/7 Live Cloud';
 
     // Single Probe Layout (Plot 1: Sensor 1) - Single Box, No Nested Card
     if (data.sensors.length === 1) {
@@ -403,16 +403,11 @@ class SoilMoistureService {
           </div>
           <div class="activity-content-box box-moisture" style="padding: 0.55rem 0.65rem; width: 100%; box-sizing: border-box; overflow: hidden;">
             
-            <!-- Top Row: Sensor 1 + Source Tag + Synced Time + Status Pill -->
+            <!-- Top Row: Sensor 1 + Synced Time + Status Pill -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; width:100%; box-sizing:border-box;">
-              <div style="display:flex; flex-direction:column; min-width:0; padding-right:0.35rem;">
-                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                  <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">${s.name || 'Sensor 1'}</span>
-                  <span style="font-size:0.62rem; font-weight:700; color:#86efac; background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.28); padding:1px 5px; border-radius:3px; display:inline-flex; align-items:center; gap:3px;">
-                    <i data-lucide="check-circle-2" style="width:9px;height:9px;display:inline;"></i> RainPoint RF Probe
-                  </span>
-                </div>
-                ${timeFormatted ? `<span class="sensor-sync-label" style="font-size:0.7rem; white-space:nowrap; font-family:var(--font-mono); margin-top:3px; color:#6ebc48;"><i data-lucide="radio" style="width:10px;height:10px;display:inline;color:#6ebc48;"></i> RF Broadcast: ${timeFormatted}</span>` : ''}
+              <div style="display:flex; flex-direction:column; min-width:0;">
+                <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">${s.name || 'Sensor 1'}</span>
+                ${timeFormatted ? `<span class="sensor-sync-label" style="font-size:0.72rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px; color:#6ebc48;"><i data-lucide="radio" style="width:10px;height:10px;display:inline;color:#6ebc48;"></i> RF Broadcast: ${timeFormatted}</span>` : ''}
               </div>
               <span class="sensor-pill ${st.badgeClass}" style="font-size:0.85rem; padding:0.16rem 0.55rem; font-weight:700; border-radius:4px; flex-shrink:0;">${mVal}%</span>
             </div>
@@ -448,12 +443,6 @@ class SoilMoistureService {
             <div class="moisture-tip-text" style="margin-top: 0.45rem; font-size:0.72rem; line-height:1.35;">
               ${this.getMoistureTip(mVal)}
             </div>
-
-            <!-- Provenance Banner -->
-            <div style="margin-top: 0.45rem; padding: 0.35rem 0.55rem; background: rgba(0, 0, 0, 0.28); border-radius: 4px; border-left: 2px solid #4ade80; font-size: 0.68rem; color: #cbd5e1; line-height: 1.35; display: flex; align-items: center; gap: 6px;">
-              <i data-lucide="check-circle-2" style="width: 12px; height: 12px; color: #4ade80; flex-shrink: 0;"></i>
-              <span><strong>Source:</strong> Verified Direct RF broadcast from physical RainPoint Soil Probe.</span>
-            </div>
           </div>
         </div>
       `;
@@ -478,14 +467,9 @@ class SoilMoistureService {
                 
                 <!-- Probe Header -->
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; width:100%; box-sizing:border-box;">
-                  <div style="display:flex; flex-direction:column; min-width:0; padding-right:0.35rem;">
-                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                      <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">${sensorLabel}</span>
-                      <span style="font-size:0.62rem; font-weight:700; color:#86efac; background:rgba(74,222,128,0.12); border:1px solid rgba(74,222,128,0.28); padding:1px 5px; border-radius:3px; display:inline-flex; align-items:center; gap:3px;">
-                        <i data-lucide="check-circle-2" style="width:9px;height:9px;display:inline;"></i> RainPoint RF Probe
-                      </span>
-                    </div>
-                    ${sTimeFormatted ? `<span class="sensor-sync-label" style="font-size:0.7rem; white-space:nowrap; font-family:var(--font-mono); margin-top:3px; color:#6ebc48;"><i data-lucide="radio" style="width:10px;height:10px;display:inline;color:#6ebc48;"></i> RF Broadcast: ${sTimeFormatted}</span>` : ''}
+                  <div style="display:flex; flex-direction:column; min-width:0;">
+                    <span style="font-size:0.92rem; color:#f1f5f9; font-weight:700; line-height:1.2;">${sensorLabel}</span>
+                    ${sTimeFormatted ? `<span class="sensor-sync-label" style="font-size:0.72rem; white-space:nowrap; font-family:var(--font-mono); margin-top:2px; color:#6ebc48;"><i data-lucide="radio" style="width:10px;height:10px;display:inline;color:#6ebc48;"></i> RF Broadcast: ${sTimeFormatted}</span>` : ''}
                   </div>
                   <span class="sensor-pill ${sSt.badgeClass}" style="font-size:0.85rem; padding:0.16rem 0.55rem; font-weight:700; border-radius:4px; flex-shrink:0;">${s.moisture}%</span>
                 </div>
@@ -520,12 +504,6 @@ class SoilMoistureService {
                 <!-- Probe Tip text -->
                 <div class="moisture-tip-text" style="margin-top: 0.45rem; font-size:0.72rem; line-height:1.35;">
                   ${this.getMoistureTip(s.moisture, sensorLabel)}
-                </div>
-
-                <!-- Provenance Banner -->
-                <div style="margin-top: 0.45rem; padding: 0.35rem 0.55rem; background: rgba(0, 0, 0, 0.28); border-radius: 4px; border-left: 2px solid #4ade80; font-size: 0.68rem; color: #cbd5e1; line-height: 1.35; display: flex; align-items: center; gap: 6px;">
-                  <i data-lucide="check-circle-2" style="width: 12px; height: 12px; color: #4ade80; flex-shrink: 0;"></i>
-                  <span><strong>Source:</strong> Verified Direct RF broadcast from physical RainPoint Soil Probe.</span>
                 </div>
               </div>
             `;
@@ -794,8 +772,7 @@ class SoilMoistureService {
               borderWidth: 2.5,
               fill: true,
               tension: 0.35,
-              clip: false,
-              pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 6 : (ctx.dataIndex % 2 === 0 ? 2.5 : 0)),
+              pointRadius: (ctx) => (ctx.dataIndex === totalPoints - 1 ? 5.5 : (ctx.dataIndex % 2 === 0 ? 2 : 0)),
               pointBackgroundColor: (ctx) => (ctx.dataIndex === totalPoints - 1 ? '#ffffff' : '#4ade80'),
               pointBorderColor: '#22c55e',
               pointBorderWidth: 1.5,
@@ -810,14 +787,6 @@ class SoilMoistureService {
           interaction: {
             mode: 'index',
             intersect: false
-          },
-          layout: {
-            padding: {
-              top: 8,
-              bottom: 2,
-              left: 2,
-              right: 2
-            }
           },
           plugins: {
             legend: { display: false },
@@ -863,28 +832,25 @@ class SoilMoistureService {
               }
             },
             y: {
-              // Primary Moisture Axis (%) - Extended to 105% to cleanly accommodate 100% saturation
+              // Primary Moisture Axis (%)
               display: true,
               position: 'left',
-              min: 10,
-              max: 105,
+              min: 15,
+              max: 98,
               grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
               ticks: {
                 color: '#86efac',
                 font: { size: 8, weight: '600' },
                 stepSize: 20,
-                callback(v) {
-                  if (v > 100) return '';
-                  return v + '%';
-                }
+                callback(v) { return v + '%'; }
               }
             },
             yTemp: {
               // Secondary Temperature Axis (°C) - Right side
               display: true,
               position: 'right',
-              min: 10,
-              max: 50,
+              min: 12,
+              max: 48,
               grid: { drawOnChartArea: false, drawBorder: false },
               ticks: {
                 color: '#fb923c',
