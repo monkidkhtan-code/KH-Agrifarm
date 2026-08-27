@@ -8,6 +8,7 @@ data/*.json
 # Python caches
 __pycache__/
 *.pyc
+bin/
 */__pycache__/
 
 # OS and Editor files
