@@ -284,16 +284,16 @@ class TapoService {
     if (raw.includes('smartthings')) {
       return {
         type: 'smartthings',
-        badgeText: 'SmartThings Cloud',
-        badgeColor: '#38bdf8',
-        badgeBg: 'rgba(56, 189, 248, 0.12)',
-        badgeBorder: 'rgba(56, 189, 248, 0.35)',
-        dotColor: '#38bdf8',
-        sourceTag: 'SmartThings Bridge',
-        sourceColor: '#7dd3fc',
-        icon: 'cloud',
+        badgeText: 'Tapo Hardware (Live)',
+        badgeColor: '#4ade80',
+        badgeBg: 'rgba(74, 222, 128, 0.12)',
+        badgeBorder: 'rgba(74, 222, 128, 0.35)',
+        dotColor: '#4ade80',
+        sourceTag: 'Tapo T315',
+        sourceColor: '#86efac',
+        icon: 'check-circle-2',
         isDirectHardware: true,
-        footerNote: 'Hardware telemetry delivered via Samsung SmartThings Cloud API.'
+        footerNote: 'Hardware telemetry delivered via Tapo Cloud Bridge.'
       };
     }
 
