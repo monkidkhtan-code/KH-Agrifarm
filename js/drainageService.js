@@ -36,6 +36,23 @@ class DrainageService {
     return [
       {
         date: "01/09/2026",
+        dateRaw: "01/09/2026",
+        time: "07:22",
+        timestamp: "01/09/2026 07:22",
+        ecIn: 4.0,
+        phIn: 4.0,
+        stations: {
+          p1_s1: { ec: 4.0, ph: 4.0, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 4.0, ph: 4.0, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 4.0, ph: 4.0, name: "Station 3", plot: "plot-1" },
+          p2_s4: { ec: 4.0, ph: 4.0, name: "Station 4", plot: "plot-2" },
+          p2_s5: { ec: 4.0, ph: 4.0, name: "Station 5", plot: "plot-2" },
+          p2_s6: { ec: 4.0, ph: 4.0, name: "Station 6", plot: "plot-2" },
+          p2_s7: { ec: 4.0, ph: 4.0, name: "Station 7", plot: "plot-2" }
+        }
+      },
+      {
+        date: "01/09/2026",
         dateRaw: "01/09/26",
         time: "12:18 am",
         timestamp: "01/09/2026 12:18 am",
@@ -373,6 +390,12 @@ class DrainageService {
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
         if (!resp.ok) throw new Error(`Proxy 2 HTTP ${resp.status}`);
         return await resp.text();
+      },
+      async () => {
+        const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(directUrl)}`;
+        const resp = await fetch(proxyUrl, { cache: 'no-store' });
+        if (!resp.ok) throw new Error(`Proxy 3 HTTP ${resp.status}`);
+        return await resp.text();
       }
     ];
 
@@ -392,10 +415,15 @@ class DrainageService {
     }
 
     if (fetchedRows && fetchedRows.length > 0) {
-      // Google Sheet is 100% the SOLE Database and Single Source of Truth
-      this.records = fetchedRows.sort((a, b) => this.compareRecordDate(b, a));
+      // Non-destructive merge: Ensure newly submitted entries aren't wiped out by Google CDN propagation lag
+      const prevCount = this.records ? this.records.length : 0;
+      this.records = this.mergeRecords(this.records, fetchedRows);
       this.saveToCache(this.records);
       localStorage.setItem(this.lastSyncKey, new Date().toISOString());
+
+      if (this.records.length !== prevCount && window.khApp && typeof window.khApp.renderAll === 'function') {
+        window.khApp.renderAll();
+      }
       return this.records;
     }
 
@@ -404,13 +432,22 @@ class DrainageService {
 
   mergeRecords(localList, remoteList) {
     const map = new Map();
-    (localList || []).forEach(r => {
-      const key = `${r.date}_${r.time}`;
+    (remoteList || []).forEach(r => {
+      const normD = this.normalizeDate(r.date || r.dateRaw);
+      const cleanT = (r.time || '').trim().toLowerCase().replace(/\s+/g, '');
+      const key = `${normD}_${cleanT}`;
       map.set(key, r);
     });
-    (remoteList || []).forEach(r => {
-      const key = `${r.date}_${r.time}`;
-      map.set(key, r);
+    (localList || []).forEach(r => {
+      const normD = this.normalizeDate(r.date || r.dateRaw);
+      const cleanT = (r.time || '').trim().toLowerCase().replace(/\s+/g, '');
+      const key = `${normD}_${cleanT}`;
+      if (!map.has(key)) {
+        map.set(key, r);
+      } else {
+        const existing = map.get(key);
+        map.set(key, { ...existing, ...r });
+      }
     });
     return Array.from(map.values()).sort((a, b) => this.compareRecordDate(b, a));
   }
