@@ -19,11 +19,15 @@ class DrainageService {
   }
 
   async init() {
-    this.records = this.getCachedRecords();
-    if (!this.records || this.records.length === 0) {
-      this.records = this.getDefaultBaselineRecords();
-    }
+    try {
+      localStorage.removeItem("kh_agrifarm_drainage_cache_v1");
+      localStorage.removeItem("kh_agrifarm_drainage_cache_v2");
+    } catch(e) {}
+
     await this.fetchDrainageData();
+    if (!this.records || this.records.length === 0) {
+      this.records = this.getCachedRecords();
+    }
     this.isInitialized = true;
   }
 
@@ -355,27 +359,8 @@ class DrainageService {
       } catch (e) {}
     }
 
-    if (!fetchedRows || fetchedRows.length === 0) {
-      const cloudUrl = this.config?.cloudTelemetry?.endpointUrl;
-      if (cloudUrl) {
-        try {
-          const fbUrl = cloudUrl.replace('.json', '/drainageData.json') + `?v=${Date.now()}`;
-          const fbResp = await fetch(fbUrl, { cache: 'no-store' });
-          if (fbResp.ok) {
-            const fbJson = await fbResp.json();
-            if (Array.isArray(fbJson) && fbJson.length > 0) {
-              fetchedRows = fbJson;
-              console.log(`[DrainageSync] Loaded ${fbJson.length} drainage rows from Firebase RTDB`);
-            }
-          }
-        } catch (e) {
-          console.warn('[DrainageSync] Firebase fallback error:', e);
-        }
-      }
-    }
-
     if (fetchedRows && fetchedRows.length > 0) {
-      // Google Sheet is the strict Single Source of Truth
+      // Google Sheet is 100% the SOLE Database and Single Source of Truth
       this.records = fetchedRows.sort((a, b) => this.compareRecordDate(b, a));
       this.saveToCache(this.records);
       localStorage.setItem(this.lastSyncKey, new Date().toISOString());
@@ -522,18 +507,7 @@ class DrainageService {
     this.saveToCache(this.records);
     localStorage.setItem(this.lastSyncKey, new Date().toISOString());
 
-    const cloudUrl = this.config?.cloudTelemetry?.endpointUrl;
-    if (cloudUrl) {
-      try {
-        fetch(cloudUrl.replace('.json', '/drainageData.json'), {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.records)
-        }).catch(err => console.warn('Firebase drainage write error', err));
-      } catch (e) {}
-    }
-
-    // 3. Direct Google Apps Script Web App Push (Appends row to Google Sheet)
+    // 2. Direct Google Apps Script Web App Push (Appends row to Google Sheet)
     const appsScriptUrl = this.sheetConfig?.appsScriptUrl || this.config?.sheets?.drainageSheet?.appsScriptUrl;
     if (appsScriptUrl && appsScriptUrl.startsWith('http')) {
       try {
