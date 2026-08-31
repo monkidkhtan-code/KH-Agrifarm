@@ -2,7 +2,7 @@
  * KH AGRIFARM - CONFIGURATION
  */
 const APP_CONFIG = {
-  version: "v11.27",
+  version: "v11.30",
   buildDate: "2026.08.31",
   farmName: "KH Agrifarm",
   farmAddress: "LOT 20371, Jalan Sgg 6/3, Kampung Sungai Gulang Gulang, 45500 Tanjong Karang, Selangor",
@@ -16,6 +16,8 @@ const APP_CONFIG = {
       id: "drainage-monitoring",
       name: "Drainage EC & PH monitoring",
       gid: "1176156551",
+      // Google Apps Script Web App Deployment URL for 2-way Google Sheet pushing:
+      appsScriptUrl: "https://script.google.com/macros/s/AKfycbzsaMU0VKB2GRp7wGBOZBBw8VHJtu2umK5nY2Yt3nhoe3NcwyzzFSXABfDKlDozvkLm5A/exec",
       plot1Stations: [
         { id: "p1_s1", name: "Station 1", ecCol: "Plot 1 - Station1 EC", phCol: "Plot 1 - Station 1 PH" },
         { id: "p1_s2", name: "Station 2", ecCol: "Plot 1 - Station 2 EC", phCol: "Plot 1 - Station 2 PH" },
@@ -168,8 +170,8 @@ const APP_CONFIG = {
   storageKeys: {
     cachedData: "kh_agrifarm_data_cache_v2",
     lastSync: "kh_agrifarm_last_sync_v2",
-    drainageData: "kh_agrifarm_drainage_cache_v1",
-    drainageLastSync: "kh_agrifarm_drainage_last_sync_v1",
+    drainageData: "kh_agrifarm_drainage_cache_v3",
+    drainageLastSync: "kh_agrifarm_drainage_last_sync_v3",
     customConfig: "kh_agrifarm_custom_config_v2",
     taskChecklist: "kh_agrifarm_task_checklist_v2"
   }

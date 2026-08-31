@@ -375,7 +375,8 @@ class DrainageService {
     }
 
     if (fetchedRows && fetchedRows.length > 0) {
-      this.records = this.mergeRecords(this.records, fetchedRows);
+      // Google Sheet is the strict Single Source of Truth
+      this.records = fetchedRows.sort((a, b) => this.compareRecordDate(b, a));
       this.saveToCache(this.records);
       localStorage.setItem(this.lastSyncKey, new Date().toISOString());
       return this.records;
@@ -532,7 +533,58 @@ class DrainageService {
       } catch (e) {}
     }
 
+    // 3. Direct Google Apps Script Web App Push (Appends row to Google Sheet)
+    const appsScriptUrl = this.sheetConfig?.appsScriptUrl || this.config?.sheets?.drainageSheet?.appsScriptUrl;
+    if (appsScriptUrl && appsScriptUrl.startsWith('http')) {
+      try {
+        const gasPayload = {
+          action: "appendDrainageRow",
+          sheetName: this.sheetConfig?.name || "Drainage EC & PH monitoring",
+          date: newEntry.dateRaw || newEntry.date,
+          time: newEntry.time,
+          ecIn: newEntry.ecIn,
+          phIn: newEntry.phIn,
+          p1_s1_ec: newEntry.stations.p1_s1.ec,
+          p1_s1_ph: newEntry.stations.p1_s1.ph,
+          p1_s2_ec: newEntry.stations.p1_s2.ec,
+          p1_s2_ph: newEntry.stations.p1_s2.ph,
+          p1_s3_ec: newEntry.stations.p1_s3.ec,
+          p1_s3_ph: newEntry.stations.p1_s3.ph,
+          p2_s4_ec: newEntry.stations.p2_s4.ec,
+          p2_s4_ph: newEntry.stations.p2_s4.ph,
+          p2_s5_ec: newEntry.stations.p2_s5.ec,
+          p2_s5_ph: newEntry.stations.p2_s5.ph,
+          p2_s6_ec: newEntry.stations.p2_s6.ec,
+          p2_s6_ph: newEntry.stations.p2_s6.ph,
+          p2_s7_ec: newEntry.stations.p2_s7.ec,
+          p2_s7_ph: newEntry.stations.p2_s7.ph
+        };
+
+        fetch(appsScriptUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(gasPayload)
+        }).then(() => {
+          console.log('[DrainageSync] Pushed drainage entry to Google Apps Script');
+          setTimeout(() => this.fetchDrainageData(), 3000);
+        }).catch(err => {
+          console.warn('[DrainageSync] Apps Script POST error:', err);
+        });
+      } catch (e) {
+        console.warn('[DrainageSync] Apps Script write error:', e);
+      }
+    }
+
     return true;
+  }
+
+  async clearDrainageCacheAndSync() {
+    localStorage.removeItem(this.cacheKey);
+    localStorage.removeItem(this.lastSyncKey);
+    this.records = [];
+    await this.fetchDrainageData();
+    return this.records;
   }
 
   getCachedRecords() {
