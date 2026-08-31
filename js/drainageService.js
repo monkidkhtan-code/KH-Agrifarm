@@ -1108,58 +1108,98 @@ class DrainageService {
       let plotSectionsHtml = '';
 
       if (isPlot1Active && summaryP1) {
+        const deltaStr = summaryP1.ecDelta !== null 
+          ? (summaryP1.ecDelta > 0 ? `+${summaryP1.ecDelta.toFixed(1)}` : `${summaryP1.ecDelta.toFixed(1)}`) 
+          : '--';
+        const avgPhStr = summaryP1.avgDrainagePh !== null ? summaryP1.avgDrainagePh.toFixed(1) : '--';
+
         plotSectionsHtml += `
-          <div class="record-plot-block block-p1">
-            <div class="record-plot-header">
-              <span class="plot-color-indicator dot-p1"></span>
-              <strong>Plot 1</strong>
-              <span class="record-delta-tag ${summaryP1.ecEval.badgeClass}">${summaryP1.ecEval.tag}</span>
-              <span class="record-ph-tag ${summaryP1.avgPhEval.badgeClass}">${summaryP1.avgPhEval.tag}</span>
+          <div class="rec-plot-list-block block-p1">
+            <div class="rec-plot-list-header">
+              <div class="plot-tag-left">
+                <span class="plot-color-indicator dot-p1"></span>
+                <strong>Plot 1</strong>
+              </div>
+              <div class="plot-eval-pills-right">
+                <span class="rec-eval-pill ${summaryP1.ecEval.badgeClass}">&Delta;EC ${deltaStr} (${summaryP1.ecEval.tag})</span>
+                <span class="rec-eval-pill ${summaryP1.avgPhEval.badgeClass}">pH ${avgPhStr} (${summaryP1.avgPhEval.tag})</span>
+              </div>
             </div>
-            <div class="record-stations-grid">
-              ${summaryP1.stations.map(st => `
-                <div class="st-cell ${st.phEval.status === 'safe' ? 'cell-safe' : 'cell-warn'}">
-                  <span class="st-cell-title">${st.name}</span>
-                  <span class="st-cell-val font-mono">${st.ec !== null ? st.ec.toFixed(1) + ' EC' : '--'} &bull; pH ${st.ph !== null ? st.ph.toFixed(1) : '--'}</span>
-                  <span class="st-cell-sub ${st.phEval.status === 'safe' ? 'text-emerald' : 'text-amber'}">${st.phEval.shortTag}</span>
-                </div>
-              `).join('')}
+            <div class="rec-station-list-table">
+              ${summaryP1.stations.map(st => {
+                const ecVal = st.ec !== null ? st.ec.toFixed(1) : '--';
+                const phVal = st.ph !== null ? st.ph.toFixed(1) : '--';
+                const ev = st.phEval || { status: 'safe', dotClass: 'dot-emerald', shortTag: 'Sweet Spot', badgeClass: 'pill-neutral' };
+                return `
+                  <div class="rec-station-list-row ${ev.status === 'safe' ? 'row-safe' : 'row-warn'}">
+                    <div class="st-item-name">
+                      <span class="st-dot ${ev.dotClass}"></span>
+                      <span>${st.name.replace('Station ', 'St ')}</span>
+                    </div>
+                    <div class="st-item-metrics font-mono">
+                      <span class="metric-ec"><strong>${ecVal}</strong> <small>EC</small></span>
+                      <span class="metric-ph ${ev.status === 'safe' ? 'text-emerald' : 'text-amber'}">pH <strong>${phVal}</strong></span>
+                      <span class="metric-diag-pill ${ev.badgeClass}">${ev.shortTag}</span>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
             </div>
           </div>
         `;
       }
 
       if (isPlot2Active && summaryP2) {
+        const deltaStr = summaryP2.ecDelta !== null 
+          ? (summaryP2.ecDelta > 0 ? `+${summaryP2.ecDelta.toFixed(1)}` : `${summaryP2.ecDelta.toFixed(1)}`) 
+          : '--';
+        const avgPhStr = summaryP2.avgDrainagePh !== null ? summaryP2.avgDrainagePh.toFixed(1) : '--';
+
         plotSectionsHtml += `
-          <div class="record-plot-block block-p2">
-            <div class="record-plot-header">
-              <span class="plot-color-indicator dot-p2"></span>
-              <strong>Plot 2</strong>
-              <span class="record-delta-tag ${summaryP2.ecEval.badgeClass}">${summaryP2.ecEval.tag}</span>
-              <span class="record-ph-tag ${summaryP2.avgPhEval.badgeClass}">${summaryP2.avgPhEval.tag}</span>
+          <div class="rec-plot-list-block block-p2">
+            <div class="rec-plot-list-header">
+              <div class="plot-tag-left">
+                <span class="plot-color-indicator dot-p2"></span>
+                <strong>Plot 2</strong>
+              </div>
+              <div class="plot-eval-pills-right">
+                <span class="rec-eval-pill ${summaryP2.ecEval.badgeClass}">&Delta;EC ${deltaStr} (${summaryP2.ecEval.tag})</span>
+                <span class="rec-eval-pill ${summaryP2.avgPhEval.badgeClass}">pH ${avgPhStr} (${summaryP2.avgPhEval.tag})</span>
+              </div>
             </div>
-            <div class="record-stations-grid">
-              ${summaryP2.stations.map(st => `
-                <div class="st-cell ${st.phEval.status === 'safe' ? 'cell-safe' : 'cell-warn'}">
-                  <span class="st-cell-title">${st.name}</span>
-                  <span class="st-cell-val font-mono">${st.ec !== null ? st.ec.toFixed(1) + ' EC' : '--'} &bull; pH ${st.ph !== null ? st.ph.toFixed(1) : '--'}</span>
-                  <span class="st-cell-sub ${st.phEval.status === 'safe' ? 'text-emerald' : 'text-amber'}">${st.phEval.shortTag}</span>
-                </div>
-              `).join('')}
+            <div class="rec-station-list-table">
+              ${summaryP2.stations.map(st => {
+                const ecVal = st.ec !== null ? st.ec.toFixed(1) : '--';
+                const phVal = st.ph !== null ? st.ph.toFixed(1) : '--';
+                const ev = st.phEval || { status: 'safe', dotClass: 'dot-emerald', shortTag: 'Sweet Spot', badgeClass: 'pill-neutral' };
+                return `
+                  <div class="rec-station-list-row ${ev.status === 'safe' ? 'row-safe' : 'row-warn'}">
+                    <div class="st-item-name">
+                      <span class="st-dot ${ev.dotClass}"></span>
+                      <span>${st.name.replace('Station ', 'St ')}</span>
+                    </div>
+                    <div class="st-item-metrics font-mono">
+                      <span class="metric-ec"><strong>${ecVal}</strong> <small>EC</small></span>
+                      <span class="metric-ph ${ev.status === 'safe' ? 'text-emerald' : 'text-amber'}">pH <strong>${phVal}</strong></span>
+                      <span class="metric-diag-pill ${ev.badgeClass}">${ev.shortTag}</span>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
             </div>
           </div>
         `;
       }
 
       cardsHtml += `
-        <div class="drainage-record-card ${idx === 0 ? 'card-latest' : ''}">
+        <div class="drainage-record-card compact-list-card ${idx === 0 ? 'card-latest' : ''}">
           <div class="record-card-top">
             <div class="record-datetime">
               <i data-lucide="calendar" style="width:13px;height:13px;color:#38bdf8;"></i>
               <strong>${entry.date}</strong>
-              <span class="record-time-badge">${entry.time}</span>
+              <span class="record-time-badge font-mono">${entry.time}</span>
             </div>
-            <div class="record-inflow-badge">
+            <div class="record-inflow-badge font-mono">
               <span>Inflow: <strong>${entry.ecIn !== null ? entry.ecIn.toFixed(1) + ' EC' : '--'}</strong> &bull; <strong>pH ${entry.phIn !== null ? entry.phIn.toFixed(1) : '--'}</strong></span>
             </div>
           </div>

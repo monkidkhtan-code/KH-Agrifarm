@@ -26,11 +26,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Custom Styles with cache-busting -->
-  <link rel="stylesheet" href="css/styles.css?v=11.39">
+  <link rel="stylesheet" href="css/styles.css?v=11.40">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=11.39').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=11.40').then(reg => {
           reg.update();
         }).catch(() => {});
       });
@@ -938,152 +938,157 @@
           <button id="drainage-modal-close-btn" class="btn-close-modal" aria-label="Close Drainage Modal"><i data-lucide="x"></i></button>
         </div>
 
-        <div class="modal-body drainage-modal-body">
+        <div class="modal-body drainage-modal-body compact-list-mode">
           <form id="drainage-entry-form" onsubmit="return false;">
-            <!-- Timestamp & Inflow Row -->
-            <div class="drainage-form-section">
-              <div class="drainage-form-section-title">
-                <i data-lucide="clock" style="width: 14px; height: 14px; color: #38bdf8;"></i>
-                <span>1. Log Date, Time &amp; Fertigation Inflow</span>
-              </div>
-              <div class="drainage-form-grid-top">
-                <div class="form-group">
-                  <label for="drainage-input-date">Log Date</label>
-                  <input type="text" id="drainage-input-date" class="form-input font-mono" placeholder="DD/MM/YYYY e.g. 31/08/2026" required>
+            <!-- 1. Date & Time Row -->
+            <div class="drainage-form-compact-section meta-section">
+              <div class="drainage-form-meta-row">
+                <div class="meta-field">
+                  <label for="drainage-input-date"><i data-lucide="calendar" style="width:12px;height:12px;display:inline;"></i> Log Date</label>
+                  <input type="text" id="drainage-input-date" class="form-input font-mono compact-input" placeholder="DD/MM/YYYY" required>
                 </div>
-                <div class="form-group">
-                  <label for="drainage-input-time">Time Stamp</label>
-                  <input type="text" id="drainage-input-time" class="form-input font-mono" placeholder="e.g. 12:00 pm or 10:30 am" value="12:00 pm">
-                </div>
-                <div class="form-group">
-                  <label for="drainage-input-ec-in">Fertigation EC In <span class="unit">(mS/cm)</span></label>
-                  <input type="number" step="0.1" id="drainage-input-ec-in" class="form-input font-mono highlight-inflow" placeholder="e.g. 0.2 or 1.8" required>
-                </div>
-                <div class="form-group">
-                  <label for="drainage-input-ph-in">Fertigation pH In</label>
-                  <input type="number" step="0.1" id="drainage-input-ph-in" class="form-input font-mono highlight-inflow" placeholder="e.g. 7.0 or 6.0" required>
+                <div class="meta-field">
+                  <label for="drainage-input-time"><i data-lucide="clock" style="width:12px;height:12px;display:inline;"></i> Time Stamp</label>
+                  <input type="text" id="drainage-input-time" class="form-input font-mono compact-input" placeholder="e.g. 12:00 pm" value="12:00 pm">
                 </div>
               </div>
             </div>
 
-            <!-- Plot 1 Stations (1, 2, 3) -->
-            <div class="drainage-form-section plot-1-block">
-              <div class="drainage-form-section-title">
-                <span class="plot-color-indicator dot-p1"></span>
-                <span>2. Plot 1 Run-off Stations (Stations 1, 2, 3)</span>
+            <!-- 2. Fertigation Inflow Row -->
+            <div class="drainage-form-compact-section inflow-section">
+              <div class="list-section-header">
+                <div class="header-left">
+                  <i data-lucide="droplets" style="width:14px;height:14px;color:#38bdf8;"></i>
+                  <span>1. Fertigation Inflow (Benchmark)</span>
+                </div>
+                <div class="header-col-labels font-mono">
+                  <span>EC (mS/cm)</span>
+                  <span>pH Target</span>
+                </div>
               </div>
-              <div class="stations-input-grid grid-3-cols">
+              <div class="station-list-table">
+                <div class="station-list-row inflow-list-row">
+                  <div class="st-row-label">
+                    <span class="st-row-dot dot-cyan"></span>
+                    <span class="st-row-name">Inflow Source</span>
+                  </div>
+                  <div class="st-row-inputs">
+                    <input type="number" step="0.1" id="drainage-input-ec-in" class="form-input font-mono compact-num-input highlight-inflow" placeholder="EC In" required>
+                    <input type="number" step="0.1" id="drainage-input-ph-in" class="form-input font-mono compact-num-input highlight-inflow" placeholder="pH In" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Plot 1 Run-off List (Stations 1, 2, 3) -->
+            <div class="drainage-form-compact-section plot-1-block">
+              <div class="list-section-header">
+                <div class="header-left">
+                  <span class="plot-color-indicator dot-p1"></span>
+                  <span>2. Plot 1 Run-off (St 1, 2, 3)</span>
+                </div>
+                <div class="header-col-labels font-mono">
+                  <span>EC (mS/cm)</span>
+                  <span>pH</span>
+                </div>
+              </div>
+              <div class="station-list-table">
                 <!-- Station 1 -->
-                <div class="station-input-card">
-                  <div class="st-card-title">Station 1</div>
-                  <div class="st-fields-row">
-                    <div>
-                      <label for="drainage-p1-s1-ec">EC</label>
-                      <input type="number" step="0.1" id="drainage-p1-s1-ec" class="form-input font-mono" placeholder="EC">
-                    </div>
-                    <div>
-                      <label for="drainage-p1-s1-ph">pH</label>
-                      <input type="number" step="0.1" id="drainage-p1-s1-ph" class="form-input font-mono" placeholder="pH">
-                    </div>
+                <div class="station-list-row">
+                  <div class="st-row-label">
+                    <span class="st-row-tag tag-p1">St 1</span>
+                    <span class="st-row-name">Station 1</span>
+                  </div>
+                  <div class="st-row-inputs">
+                    <input type="number" step="0.1" id="drainage-p1-s1-ec" class="form-input font-mono compact-num-input" placeholder="EC">
+                    <input type="number" step="0.1" id="drainage-p1-s1-ph" class="form-input font-mono compact-num-input" placeholder="pH">
                   </div>
                 </div>
 
                 <!-- Station 2 -->
-                <div class="station-input-card">
-                  <div class="st-card-title">Station 2</div>
-                  <div class="st-fields-row">
-                    <div>
-                      <label for="drainage-p1-s2-ec">EC</label>
-                      <input type="number" step="0.1" id="drainage-p1-s2-ec" class="form-input font-mono" placeholder="EC">
-                    </div>
-                    <div>
-                      <label for="drainage-p1-s2-ph">pH</label>
-                      <input type="number" step="0.1" id="drainage-p1-s2-ph" class="form-input font-mono" placeholder="pH">
-                    </div>
+                <div class="station-list-row">
+                  <div class="st-row-label">
+                    <span class="st-row-tag tag-p1">St 2</span>
+                    <span class="st-row-name">Station 2</span>
+                  </div>
+                  <div class="st-row-inputs">
+                    <input type="number" step="0.1" id="drainage-p1-s2-ec" class="form-input font-mono compact-num-input" placeholder="EC">
+                    <input type="number" step="0.1" id="drainage-p1-s2-ph" class="form-input font-mono compact-num-input" placeholder="pH">
                   </div>
                 </div>
 
                 <!-- Station 3 -->
-                <div class="station-input-card">
-                  <div class="st-card-title">Station 3</div>
-                  <div class="st-fields-row">
-                    <div>
-                      <label for="drainage-p1-s3-ec">EC</label>
-                      <input type="number" step="0.1" id="drainage-p1-s3-ec" class="form-input font-mono" placeholder="EC">
-                    </div>
-                    <div>
-                      <label for="drainage-p1-s3-ph">pH</label>
-                      <input type="number" step="0.1" id="drainage-p1-s3-ph" class="form-input font-mono" placeholder="pH">
-                    </div>
+                <div class="station-list-row">
+                  <div class="st-row-label">
+                    <span class="st-row-tag tag-p1">St 3</span>
+                    <span class="st-row-name">Station 3</span>
+                  </div>
+                  <div class="st-row-inputs">
+                    <input type="number" step="0.1" id="drainage-p1-s3-ec" class="form-input font-mono compact-num-input" placeholder="EC">
+                    <input type="number" step="0.1" id="drainage-p1-s3-ph" class="form-input font-mono compact-num-input" placeholder="pH">
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Plot 2 Stations (4, 5, 6, 7) -->
-            <div class="drainage-form-section plot-2-block">
-              <div class="drainage-form-section-title">
-                <span class="plot-color-indicator dot-p2"></span>
-                <span>3. Plot 2 Run-off Stations (Stations 4, 5, 6, 7)</span>
+            <!-- 4. Plot 2 Run-off List (Stations 4, 5, 6, 7) -->
+            <div class="drainage-form-compact-section plot-2-block">
+              <div class="list-section-header">
+                <div class="header-left">
+                  <span class="plot-color-indicator dot-p2"></span>
+                  <span>3. Plot 2 Run-off (St 4, 5, 6, 7)</span>
+                </div>
+                <div class="header-col-labels font-mono">
+                  <span>EC (mS/cm)</span>
+                  <span>pH</span>
+                </div>
               </div>
-              <div class="stations-input-grid grid-4-cols">
+              <div class="station-list-table">
                 <!-- Station 4 -->
-                <div class="station-input-card">
-                  <div class="st-card-title">Station 4</div>
-                  <div class="st-fields-row">
-                    <div>
-                      <label for="drainage-p2-s4-ec">EC</label>
-                      <input type="number" step="0.1" id="drainage-p2-s4-ec" class="form-input font-mono" placeholder="EC">
-                    </div>
-                    <div>
-                      <label for="drainage-p2-s4-ph">pH</label>
-                      <input type="number" step="0.1" id="drainage-p2-s4-ph" class="form-input font-mono" placeholder="pH">
-                    </div>
+                <div class="station-list-row">
+                  <div class="st-row-label">
+                    <span class="st-row-tag tag-p2">St 4</span>
+                    <span class="st-row-name">Station 4</span>
+                  </div>
+                  <div class="st-row-inputs">
+                    <input type="number" step="0.1" id="drainage-p2-s4-ec" class="form-input font-mono compact-num-input" placeholder="EC">
+                    <input type="number" step="0.1" id="drainage-p2-s4-ph" class="form-input font-mono compact-num-input" placeholder="pH">
                   </div>
                 </div>
 
                 <!-- Station 5 -->
-                <div class="station-input-card">
-                  <div class="st-card-title">Station 5</div>
-                  <div class="st-fields-row">
-                    <div>
-                      <label for="drainage-p2-s5-ec">EC</label>
-                      <input type="number" step="0.1" id="drainage-p2-s5-ec" class="form-input font-mono" placeholder="EC">
-                    </div>
-                    <div>
-                      <label for="drainage-p2-s5-ph">pH</label>
-                      <input type="number" step="0.1" id="drainage-p2-s5-ph" class="form-input font-mono" placeholder="pH">
-                    </div>
+                <div class="station-list-row">
+                  <div class="st-row-label">
+                    <span class="st-row-tag tag-p2">St 5</span>
+                    <span class="st-row-name">Station 5</span>
+                  </div>
+                  <div class="st-row-inputs">
+                    <input type="number" step="0.1" id="drainage-p2-s5-ec" class="form-input font-mono compact-num-input" placeholder="EC">
+                    <input type="number" step="0.1" id="drainage-p2-s5-ph" class="form-input font-mono compact-num-input" placeholder="pH">
                   </div>
                 </div>
 
                 <!-- Station 6 -->
-                <div class="station-input-card">
-                  <div class="st-card-title">Station 6</div>
-                  <div class="st-fields-row">
-                    <div>
-                      <label for="drainage-p2-s6-ec">EC</label>
-                      <input type="number" step="0.1" id="drainage-p2-s6-ec" class="form-input font-mono" placeholder="EC">
-                    </div>
-                    <div>
-                      <label for="drainage-p2-s6-ph">pH</label>
-                      <input type="number" step="0.1" id="drainage-p2-s6-ph" class="form-input font-mono" placeholder="pH">
-                    </div>
+                <div class="station-list-row">
+                  <div class="st-row-label">
+                    <span class="st-row-tag tag-p2">St 6</span>
+                    <span class="st-row-name">Station 6</span>
+                  </div>
+                  <div class="st-row-inputs">
+                    <input type="number" step="0.1" id="drainage-p2-s6-ec" class="form-input font-mono compact-num-input" placeholder="EC">
+                    <input type="number" step="0.1" id="drainage-p2-s6-ph" class="form-input font-mono compact-num-input" placeholder="pH">
                   </div>
                 </div>
 
                 <!-- Station 7 -->
-                <div class="station-input-card">
-                  <div class="st-card-title">Station 7</div>
-                  <div class="st-fields-row">
-                    <div>
-                      <label for="drainage-p2-s7-ec">EC</label>
-                      <input type="number" step="0.1" id="drainage-p2-s7-ec" class="form-input font-mono" placeholder="EC">
-                    </div>
-                    <div>
-                      <label for="drainage-p2-s7-ph">pH</label>
-                      <input type="number" step="0.1" id="drainage-p2-s7-ph" class="form-input font-mono" placeholder="pH">
-                    </div>
+                <div class="station-list-row">
+                  <div class="st-row-label">
+                    <span class="st-row-tag tag-p2">St 7</span>
+                    <span class="st-row-name">Station 7</span>
+                  </div>
+                  <div class="st-row-inputs">
+                    <input type="number" step="0.1" id="drainage-p2-s7-ec" class="form-input font-mono compact-num-input" placeholder="EC">
+                    <input type="number" step="0.1" id="drainage-p2-s7-ph" class="form-input font-mono compact-num-input" placeholder="pH">
                   </div>
                 </div>
               </div>
@@ -1159,15 +1164,15 @@
   </div>
 
   <!-- Application Scripts -->
-  <script src="js/config.js?v=11.39"></script>
-  <script src="js/sampleData.js?v=11.39"></script>
-  <script src="js/googleSheetsService.js?v=11.39"></script>
-  <script src="js/drainageService.js?v=11.39"></script>
-  <script src="js/weatherService.js?v=11.39"></script>
-  <script src="js/sprayAdvisory.js?v=11.39"></script>
-  <script src="js/soilMoistureService.js?v=11.39"></script>
-  <script src="js/tapoService.js?v=11.39"></script>
-  <script src="js/radarService.js?v=11.39"></script>
-  <script src="js/app.js?v=11.39"></script>
+  <script src="js/config.js?v=11.40"></script>
+  <script src="js/sampleData.js?v=11.40"></script>
+  <script src="js/googleSheetsService.js?v=11.40"></script>
+  <script src="js/drainageService.js?v=11.40"></script>
+  <script src="js/weatherService.js?v=11.40"></script>
+  <script src="js/sprayAdvisory.js?v=11.40"></script>
+  <script src="js/soilMoistureService.js?v=11.40"></script>
+  <script src="js/tapoService.js?v=11.40"></script>
+  <script src="js/radarService.js?v=11.40"></script>
+  <script src="js/app.js?v=11.40"></script>
 </body>
 </html>
