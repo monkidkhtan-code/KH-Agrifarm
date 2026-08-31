@@ -51,12 +51,15 @@ class KHAgrifarmApp {
     // Fetch live weather immediately for Tanjong Karang
     this.refreshWeather();
 
-    // Initialize Soil Moisture & Tapo Services
+    // Initialize Soil Moisture, Tapo & Drainage Services
     if (window.soilMoistureService) {
       await window.soilMoistureService.init();
     }
     if (window.tapoService) {
       await window.tapoService.init();
+    }
+    if (window.drainageService) {
+      await window.drainageService.init();
     }
 
     // Trigger instant live cloud sync for all sensors & Google Sheets on page launch
@@ -323,6 +326,180 @@ class KHAgrifarmApp {
         );
       });
     }
+
+    // 9. Drainage Log Modal Event Handlers
+    const drainageModal = document.getElementById('drainage-modal');
+    const drainageModalClose = document.getElementById('drainage-modal-close-btn');
+    const drainageCancelBtn = document.getElementById('btn-drainage-cancel');
+    const drainageSaveBtn = document.getElementById('btn-drainage-save');
+
+    if (drainageModalClose) drainageModalClose.addEventListener('click', () => this.closeDrainageModal());
+    if (drainageCancelBtn) drainageCancelBtn.addEventListener('click', () => this.closeDrainageModal());
+    if (drainageSaveBtn) drainageSaveBtn.addEventListener('click', () => this.saveDrainageEntryFromModal());
+
+    if (drainageModal) {
+      drainageModal.addEventListener('click', (e) => {
+        if (e.target === drainageModal) this.closeDrainageModal();
+      });
+    }
+
+    // 10. Drainage Records Sheet Modal Event Handlers
+    const recordsModal = document.getElementById('drainage-records-modal');
+    const recordsModalClose = document.getElementById('drainage-records-modal-close-btn');
+    const btnOpenEntryFromRec = document.getElementById('btn-open-entry-from-records');
+
+    if (recordsModalClose) recordsModalClose.addEventListener('click', () => this.closeDrainageRecordsModal());
+    if (recordsModal) {
+      recordsModal.addEventListener('click', (e) => {
+        if (e.target === recordsModal) this.closeDrainageRecordsModal();
+      });
+    }
+
+    if (btnOpenEntryFromRec) {
+      btnOpenEntryFromRec.addEventListener('click', () => {
+        this.closeDrainageRecordsModal();
+        this.openDrainageModal(this._activeRecordsPlot || 'plot-1');
+      });
+    }
+
+    // Modal Filter Tabs
+    ['rec-tab-plot1', 'rec-tab-plot2', 'rec-tab-all'].forEach(tabId => {
+      const btn = document.getElementById(tabId);
+      if (btn) {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.records-filter-tabs .rec-tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const plotFilter = btn.getAttribute('data-plot') || 'plot-1';
+          this._activeRecordsPlot = plotFilter;
+          if (window.drainageService) {
+            window.drainageService.renderDetailedRecordsList(plotFilter);
+          }
+        });
+      }
+    });
+
+    // Escape closes both modals
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (drainageModal && !drainageModal.classList.contains('hidden-modal')) {
+          this.closeDrainageModal();
+        }
+        if (recordsModal && !recordsModal.classList.contains('hidden-modal')) {
+          this.closeDrainageRecordsModal();
+        }
+      }
+    });
+  }
+
+  openDrainageRecordsModal(plotId = 'plot-1') {
+    const recordsModal = document.getElementById('drainage-records-modal');
+    if (!recordsModal) return;
+
+    this._activeRecordsPlot = plotId;
+
+    // Set active tab
+    const tabPlot1 = document.getElementById('rec-tab-plot1');
+    const tabPlot2 = document.getElementById('rec-tab-plot2');
+    const tabAll = document.getElementById('rec-tab-all');
+
+    if (tabPlot1) tabPlot1.classList.toggle('active', plotId === 'plot-1');
+    if (tabPlot2) tabPlot2.classList.toggle('active', plotId === 'plot-2');
+    if (tabAll) tabAll.classList.toggle('active', plotId === 'all');
+
+    if (window.drainageService) {
+      window.drainageService.renderDetailedRecordsList(plotId);
+    }
+
+    recordsModal.classList.remove('hidden-modal');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  closeDrainageRecordsModal() {
+    const recordsModal = document.getElementById('drainage-records-modal');
+    if (recordsModal) recordsModal.classList.add('hidden-modal');
+  }
+
+  openDrainageModal(plotId = 'plot-1') {
+    const drainageModal = document.getElementById('drainage-modal');
+    if (!drainageModal) return;
+
+    // Date
+    const dateInput = document.getElementById('drainage-input-date');
+    if (dateInput) {
+      dateInput.value = this.selectedDate || this.getTodayDateStr();
+    }
+
+    // Time
+    const timeInput = document.getElementById('drainage-input-time');
+    if (timeInput) {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'pm' : 'am';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      timeInput.value = `${hours}:${minutes} ${ampm}`;
+    }
+
+    // Pre-fill latest baseline or leave empty
+    const latestP1 = window.drainageService ? window.drainageService.getLatestRecord('plot-1') : null;
+    const latestP2 = window.drainageService ? window.drainageService.getLatestRecord('plot-2') : null;
+    const ecInEl = document.getElementById('drainage-input-ec-in');
+    const phInEl = document.getElementById('drainage-input-ph-in');
+
+    if (latestP1 && latestP1.summary) {
+      if (ecInEl && !ecInEl.value) ecInEl.value = latestP1.summary.ecIn !== null ? latestP1.summary.ecIn : '';
+      if (phInEl && !phInEl.value) phInEl.value = latestP1.summary.phIn !== null ? latestP1.summary.phIn : '';
+    }
+
+    drainageModal.classList.remove('hidden-modal');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  closeDrainageModal() {
+    const drainageModal = document.getElementById('drainage-modal');
+    if (drainageModal) drainageModal.classList.add('hidden-modal');
+  }
+
+  async saveDrainageEntryFromModal() {
+    const dateVal = document.getElementById('drainage-input-date')?.value?.trim();
+    const timeVal = document.getElementById('drainage-input-time')?.value?.trim() || '12:00 pm';
+    const ecInVal = document.getElementById('drainage-input-ec-in')?.value?.trim();
+    const phInVal = document.getElementById('drainage-input-ph-in')?.value?.trim();
+
+    if (!dateVal) {
+      this.showToast('Please enter a valid date (DD/MM/YYYY)', 'error');
+      return;
+    }
+
+    const payload = {
+      date: dateVal,
+      time: timeVal,
+      ecIn: ecInVal,
+      phIn: phInVal,
+      p1_s1_ec: document.getElementById('drainage-p1-s1-ec')?.value?.trim(),
+      p1_s1_ph: document.getElementById('drainage-p1-s1-ph')?.value?.trim(),
+      p1_s2_ec: document.getElementById('drainage-p1-s2-ec')?.value?.trim(),
+      p1_s2_ph: document.getElementById('drainage-p1-s2-ph')?.value?.trim(),
+      p1_s3_ec: document.getElementById('drainage-p1-s3-ec')?.value?.trim(),
+      p1_s3_ph: document.getElementById('drainage-p1-s3-ph')?.value?.trim(),
+      p2_s4_ec: document.getElementById('drainage-p2-s4-ec')?.value?.trim(),
+      p2_s4_ph: document.getElementById('drainage-p2-s4-ph')?.value?.trim(),
+      p2_s5_ec: document.getElementById('drainage-p2-s5-ec')?.value?.trim(),
+      p2_s5_ph: document.getElementById('drainage-p2-s5-ph')?.value?.trim(),
+      p2_s6_ec: document.getElementById('drainage-p2-s6-ec')?.value?.trim(),
+      p2_s6_ph: document.getElementById('drainage-p2-s6-ph')?.value?.trim(),
+      p2_s7_ec: document.getElementById('drainage-p2-s7-ec')?.value?.trim(),
+      p2_s7_ph: document.getElementById('drainage-p2-s7-ph')?.value?.trim()
+    };
+
+    if (window.drainageService) {
+      await window.drainageService.saveDrainageEntry(payload);
+    }
+
+    this.closeDrainageModal();
+    this.showToast(`🧪 Drainage readings recorded & synced for Plot 1 & Plot 2!`);
+    this.renderAll();
   }
 
   populateSettingsModal() {
@@ -904,12 +1081,36 @@ class KHAgrifarmApp {
       grid.appendChild(card);
     });
 
+    // Wire up Drainage Log Modal Triggers
+    const drainageBtns = grid.querySelectorAll('[data-open-drainage-modal]');
+    drainageBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const plotId = btn.getAttribute('data-open-drainage-modal') || 'plot-1';
+        this.openDrainageModal(plotId);
+      });
+    });
+
+    // Wire up Drainage Detailed Records Modal Triggers
+    const recordsBtns = grid.querySelectorAll('[data-open-records-modal]');
+    recordsBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const plotId = btn.getAttribute('data-open-records-modal') || 'plot-1';
+        this.openDrainageRecordsModal(plotId);
+      });
+    });
+
     if (window.soilMoistureService) {
       window.soilMoistureService.renderAllSparklines();
     }
 
     if (window.tapoService) {
       window.tapoService.renderAllNurserySparklines();
+    }
+
+    if (window.drainageService) {
+      window.drainageService.renderAllDrainageCharts();
     }
 
     if (window.lucide) window.lucide.createIcons();
@@ -1014,6 +1215,10 @@ class KHAgrifarmApp {
         if (window.soilMoistureService) {
           html += window.soilMoistureService.renderPlotMoistureCard(plotConf.id, data ? data.moisture : null);
         }
+        // 3c. Drainage EC & pH Monitoring (Plot 1 & Plot 2)
+        if (window.drainageService) {
+          html += window.drainageService.renderPlotDrainageCard(plotConf.id);
+        }
       } else if (plotConf.id === 'plot-3' || plotConf.id === 'plot-4') {
         if (window.tapoService) {
           html += window.tapoService.renderPlotNurseryCard(plotConf.id);
@@ -1033,10 +1238,11 @@ class KHAgrifarmApp {
       }
     }
 
-    // Always ensure Sensor Monitoring is visible on empty/rest days
+    // Always ensure Sensor & Drainage Monitoring is visible on empty/rest days
     if (!data) {
       if (plotConf.id === 'plot-1' || plotConf.id === 'plot-2') {
         if (window.soilMoistureService) html += window.soilMoistureService.renderPlotMoistureCard(plotConf.id, null);
+        if (window.drainageService) html += window.drainageService.renderPlotDrainageCard(plotConf.id);
       } else if (plotConf.id === 'plot-3' || plotConf.id === 'plot-4') {
         if (window.tapoService) html += window.tapoService.renderPlotNurseryCard(plotConf.id);
       }
@@ -1044,18 +1250,20 @@ class KHAgrifarmApp {
 
     html += `</div>`; // Close card body
 
-    // Footer with EC Level & Task Complete Checkbox
+    // Footer with Plot-Specific EC Level & Interactive Task Checkbox
     const ecVal = data && data.ec ? data.ec : '--';
+    const pCode = plotConf.id.replace('plot-', 'p');
     html += `
-      <div class="plot-card-footer">
+      <div class="plot-card-footer plot-footer-${pCode}">
         <div class="ec-display-wrap">
-          <span class="ec-pill" title="Electrical Conductivity Level of fertilizer formula">
-            <i data-lucide="zap"></i> EC: ${ecVal}
+          <span class="ec-pill ec-pill-${pCode}" title="Electrical Conductivity Formula Target for ${plotConf.name}">
+            <i data-lucide="zap"></i> <span class="ec-lbl">EC:</span> <strong>${ecVal}</strong>
           </span>
         </div>
-        <label class="task-checkbox-toggle">
+        <label class="task-checkbox-toggle task-toggle-${pCode}" title="Toggle task completion status">
           <input type="checkbox" data-task-key="${taskKey}" ${isCompleted ? 'checked' : ''}>
-          <span>${isCompleted ? 'Completed' : 'Mark Done'}</span>
+          <span class="custom-check-box"><i data-lucide="check" class="check-icon"></i></span>
+          <span class="toggle-text">${isCompleted ? 'Completed' : 'Mark Done'}</span>
         </label>
       </div>
     `;
@@ -1068,7 +1276,8 @@ class KHAgrifarmApp {
       chk.addEventListener('change', (e) => {
         this.taskChecklist[taskKey] = e.target.checked;
         this.saveTaskChecklist();
-        chk.nextElementSibling.innerText = e.target.checked ? 'Completed' : 'Mark Done';
+        const txt = card.querySelector('.toggle-text');
+        if (txt) txt.innerText = e.target.checked ? 'Completed' : 'Mark Done';
       });
     }
 

@@ -223,6 +223,11 @@ class GoogleSheetsService {
 
     await Promise.all(plotPromises);
 
+    // Also trigger live drainage monitoring sheet sync in parallel
+    if (window.drainageService) {
+      window.drainageService.fetchDrainageData().catch(() => {});
+    }
+
     // If live Google Sheets CSV fetch succeeded for all/most plots, save and return!
     if (liveSuccessCount >= 2) {
       this.saveToCache(results);

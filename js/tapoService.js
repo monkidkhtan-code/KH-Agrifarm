@@ -442,6 +442,7 @@ class TapoService {
             ${tipText}
           </div>
         </div>
+      </div>
     `;
   }
 

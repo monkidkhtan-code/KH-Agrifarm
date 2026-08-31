@@ -1,7 +1,7 @@
 /**
  * KH AGRIFARM - SERVICE WORKER (NETWORK FIRST STRATEGY)
  */
-const CACHE_NAME = 'kh-agrifarm-v11.10';
+const CACHE_NAME = 'kh-agrifarm-v11.27';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const ASSETS_TO_CACHE = [
   './js/config.js',
   './js/sampleData.js',
   './js/googleSheetsService.js',
+  './js/drainageService.js',
   './js/weatherService.js',
   './js/sprayAdvisory.js',
   './js/soilMoistureService.js',

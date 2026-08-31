@@ -2,8 +2,8 @@
  * KH AGRIFARM - CONFIGURATION
  */
 const APP_CONFIG = {
-  version: "v11.10",
-  buildDate: "2026.08.27",
+  version: "v11.27",
+  buildDate: "2026.08.31",
   farmName: "KH Agrifarm",
   farmAddress: "LOT 20371, Jalan Sgg 6/3, Kampung Sungai Gulang Gulang, 45500 Tanjong Karang, Selangor",
   season: "Season 6 (June 2026 - Jan 2027)",
@@ -12,6 +12,22 @@ const APP_CONFIG = {
   sheets: {
     baseUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSIn4Ad6HiOlE5ko3fCnHjVVn4su9QTVzau6t-wrke4sbycCDSZSf5cgACsLrP_hsxc0PNoc--OPmz/pub",
     htmlUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSIn4Ad6HiOlE5ko3fCnHjVVn4su9QTVzau6t-wrke4sbycCDSZSf5cgACsLrP_hsxc0PNoc--OPmz/pubhtml",
+    drainageSheet: {
+      id: "drainage-monitoring",
+      name: "Drainage EC & PH monitoring",
+      gid: "1176156551",
+      plot1Stations: [
+        { id: "p1_s1", name: "Station 1", ecCol: "Plot 1 - Station1 EC", phCol: "Plot 1 - Station 1 PH" },
+        { id: "p1_s2", name: "Station 2", ecCol: "Plot 1 - Station 2 EC", phCol: "Plot 1 - Station 2 PH" },
+        { id: "p1_s3", name: "Station 3", ecCol: "Plot 1 - Station 3 EC", phCol: "Plot 1 - Station 3 PH" }
+      ],
+      plot2Stations: [
+        { id: "p2_s4", name: "Station 4", ecCol: "Plot 2 - Station 4 EC", phCol: "Plot 2 - Station 4 PH" },
+        { id: "p2_s5", name: "Station 5", ecCol: "Plot 2 - Station 5 EC", phCol: "Plot 2 - Station 5 PH" },
+        { id: "p2_s6", name: "Station 6", ecCol: "Plot 2 - Station 6 EC", phCol: "Plot 2 - Station 6 PH" },
+        { id: "p2_s7", name: "Station 7", ecCol: "Plot 2 - Station 7 EC", phCol: "Plot 2 - Station 7 PH" }
+      ]
+    },
     plots: [
       {
         id: "plot-1",
@@ -152,6 +168,8 @@ const APP_CONFIG = {
   storageKeys: {
     cachedData: "kh_agrifarm_data_cache_v2",
     lastSync: "kh_agrifarm_last_sync_v2",
+    drainageData: "kh_agrifarm_drainage_cache_v1",
+    drainageLastSync: "kh_agrifarm_drainage_last_sync_v1",
     customConfig: "kh_agrifarm_custom_config_v2",
     taskChecklist: "kh_agrifarm_task_checklist_v2"
   }

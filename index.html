@@ -26,11 +26,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Custom Styles with cache-busting -->
-  <link rel="stylesheet" href="css/styles.css?v=11.10">
+  <link rel="stylesheet" href="css/styles.css?v=11.27">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=11.10').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=11.27').then(reg => {
           reg.update();
         }).catch(() => {});
       });
@@ -918,17 +918,256 @@
         </div>
       </div>
     </div>
+
+    <!-- Unified Drainage EC & pH Data Entry Modal -->
+    <div id="drainage-modal" class="modal-backdrop hidden-modal">
+      <div class="modal-card modal-lg drainage-modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">
+              <i data-lucide="test-tube-2" class="modal-header-icon"></i>
+            </div>
+            <div class="modal-title-text-wrap">
+              <div class="modal-title-heading-row">
+                <h3 class="modal-title">Log Drainage EC &amp; pH Reading</h3>
+                <span class="version-tag-settings" style="background: rgba(110, 188, 72, 0.2); color: #86efac; border-color: rgba(110, 188, 72, 0.3);">All Stations (1 Form)</span>
+              </div>
+              <p class="modal-subtitle">Record fertigation source inflow &amp; multi-station run-off for Plot 1 and Plot 2</p>
+            </div>
+          </div>
+          <button id="drainage-modal-close-btn" class="btn-close-modal" aria-label="Close Drainage Modal"><i data-lucide="x"></i></button>
+        </div>
+
+        <div class="modal-body drainage-modal-body">
+          <form id="drainage-entry-form" onsubmit="return false;">
+            <!-- Timestamp & Inflow Row -->
+            <div class="drainage-form-section">
+              <div class="drainage-form-section-title">
+                <i data-lucide="clock" style="width: 14px; height: 14px; color: #38bdf8;"></i>
+                <span>1. Log Date, Time &amp; Fertigation Inflow</span>
+              </div>
+              <div class="drainage-form-grid-top">
+                <div class="form-group">
+                  <label for="drainage-input-date">Log Date</label>
+                  <input type="text" id="drainage-input-date" class="form-input font-mono" placeholder="DD/MM/YYYY e.g. 31/08/2026" required>
+                </div>
+                <div class="form-group">
+                  <label for="drainage-input-time">Time Stamp</label>
+                  <input type="text" id="drainage-input-time" class="form-input font-mono" placeholder="e.g. 12:00 pm or 10:30 am" value="12:00 pm">
+                </div>
+                <div class="form-group">
+                  <label for="drainage-input-ec-in">Fertigation EC In <span class="unit">(mS/cm)</span></label>
+                  <input type="number" step="0.1" id="drainage-input-ec-in" class="form-input font-mono highlight-inflow" placeholder="e.g. 0.2 or 1.8" required>
+                </div>
+                <div class="form-group">
+                  <label for="drainage-input-ph-in">Fertigation pH In</label>
+                  <input type="number" step="0.1" id="drainage-input-ph-in" class="form-input font-mono highlight-inflow" placeholder="e.g. 7.0 or 6.0" required>
+                </div>
+              </div>
+            </div>
+
+            <!-- Plot 1 Stations (1, 2, 3) -->
+            <div class="drainage-form-section plot-1-block">
+              <div class="drainage-form-section-title">
+                <span class="plot-color-indicator dot-p1"></span>
+                <span>2. Plot 1 Run-off Stations (Stations 1, 2, 3)</span>
+              </div>
+              <div class="stations-input-grid grid-3-cols">
+                <!-- Station 1 -->
+                <div class="station-input-card">
+                  <div class="st-card-title">Station 1</div>
+                  <div class="st-fields-row">
+                    <div>
+                      <label for="drainage-p1-s1-ec">EC</label>
+                      <input type="number" step="0.1" id="drainage-p1-s1-ec" class="form-input font-mono" placeholder="EC">
+                    </div>
+                    <div>
+                      <label for="drainage-p1-s1-ph">pH</label>
+                      <input type="number" step="0.1" id="drainage-p1-s1-ph" class="form-input font-mono" placeholder="pH">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Station 2 -->
+                <div class="station-input-card">
+                  <div class="st-card-title">Station 2</div>
+                  <div class="st-fields-row">
+                    <div>
+                      <label for="drainage-p1-s2-ec">EC</label>
+                      <input type="number" step="0.1" id="drainage-p1-s2-ec" class="form-input font-mono" placeholder="EC">
+                    </div>
+                    <div>
+                      <label for="drainage-p1-s2-ph">pH</label>
+                      <input type="number" step="0.1" id="drainage-p1-s2-ph" class="form-input font-mono" placeholder="pH">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Station 3 -->
+                <div class="station-input-card">
+                  <div class="st-card-title">Station 3</div>
+                  <div class="st-fields-row">
+                    <div>
+                      <label for="drainage-p1-s3-ec">EC</label>
+                      <input type="number" step="0.1" id="drainage-p1-s3-ec" class="form-input font-mono" placeholder="EC">
+                    </div>
+                    <div>
+                      <label for="drainage-p1-s3-ph">pH</label>
+                      <input type="number" step="0.1" id="drainage-p1-s3-ph" class="form-input font-mono" placeholder="pH">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Plot 2 Stations (4, 5, 6, 7) -->
+            <div class="drainage-form-section plot-2-block">
+              <div class="drainage-form-section-title">
+                <span class="plot-color-indicator dot-p2"></span>
+                <span>3. Plot 2 Run-off Stations (Stations 4, 5, 6, 7)</span>
+              </div>
+              <div class="stations-input-grid grid-4-cols">
+                <!-- Station 4 -->
+                <div class="station-input-card">
+                  <div class="st-card-title">Station 4</div>
+                  <div class="st-fields-row">
+                    <div>
+                      <label for="drainage-p2-s4-ec">EC</label>
+                      <input type="number" step="0.1" id="drainage-p2-s4-ec" class="form-input font-mono" placeholder="EC">
+                    </div>
+                    <div>
+                      <label for="drainage-p2-s4-ph">pH</label>
+                      <input type="number" step="0.1" id="drainage-p2-s4-ph" class="form-input font-mono" placeholder="pH">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Station 5 -->
+                <div class="station-input-card">
+                  <div class="st-card-title">Station 5</div>
+                  <div class="st-fields-row">
+                    <div>
+                      <label for="drainage-p2-s5-ec">EC</label>
+                      <input type="number" step="0.1" id="drainage-p2-s5-ec" class="form-input font-mono" placeholder="EC">
+                    </div>
+                    <div>
+                      <label for="drainage-p2-s5-ph">pH</label>
+                      <input type="number" step="0.1" id="drainage-p2-s5-ph" class="form-input font-mono" placeholder="pH">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Station 6 -->
+                <div class="station-input-card">
+                  <div class="st-card-title">Station 6</div>
+                  <div class="st-fields-row">
+                    <div>
+                      <label for="drainage-p2-s6-ec">EC</label>
+                      <input type="number" step="0.1" id="drainage-p2-s6-ec" class="form-input font-mono" placeholder="EC">
+                    </div>
+                    <div>
+                      <label for="drainage-p2-s6-ph">pH</label>
+                      <input type="number" step="0.1" id="drainage-p2-s6-ph" class="form-input font-mono" placeholder="pH">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Station 7 -->
+                <div class="station-input-card">
+                  <div class="st-card-title">Station 7</div>
+                  <div class="st-fields-row">
+                    <div>
+                      <label for="drainage-p2-s7-ec">EC</label>
+                      <input type="number" step="0.1" id="drainage-p2-s7-ec" class="form-input font-mono" placeholder="EC">
+                    </div>
+                    <div>
+                      <label for="drainage-p2-s7-ph">pH</label>
+                      <input type="number" step="0.1" id="drainage-p2-s7-ph" class="form-input font-mono" placeholder="pH">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal Bottom Actions -->
+            <div class="drainage-modal-footer">
+              <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQSIn4Ad6HiOlE5ko3fCnHjVVn4su9QTVzau6t-wrke4sbycCDSZSf5cgACsLrP_hsxc0PNoc--OPmz/pubhtml" target="_blank" rel="noopener noreferrer" class="btn-sheet-link-compact">
+                <i data-lucide="external-link"></i>
+                <span>Open Master Sheet</span>
+              </a>
+              <div class="footer-btn-group">
+                <button type="button" id="btn-drainage-cancel" class="btn-secondary">Cancel</button>
+                <button type="button" id="btn-drainage-save" class="btn-primary">
+                  <i data-lucide="check-circle-2"></i>
+                  <span>Save &amp; Sync Readings</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full Detailed Drainage Records Modal (Mobile-Optimized Sheet View) -->
+    <div id="drainage-records-modal" class="modal-backdrop hidden-modal">
+      <div class="modal-card modal-lg drainage-records-modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <div class="modal-icon-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">
+              <i data-lucide="file-spreadsheet" class="modal-header-icon"></i>
+            </div>
+            <div class="modal-title-text-wrap">
+              <div class="modal-title-heading-row">
+                <h3 class="modal-title" id="drainage-records-modal-title">Drainage EC &amp; pH Master Records</h3>
+                <span class="version-tag-settings" id="drainage-records-count-badge">0 Logged</span>
+              </div>
+              <p class="modal-subtitle">Full historical multi-station run-off &amp; agronomic diagnostics</p>
+            </div>
+          </div>
+          <button id="drainage-records-modal-close-btn" class="btn-close-modal" aria-label="Close Records Modal"><i data-lucide="x"></i></button>
+        </div>
+
+        <div class="modal-body drainage-records-modal-body">
+          <!-- Plot Filter Tabs inside Modal -->
+          <div class="records-filter-tabs">
+            <button class="rec-tab-btn active" id="rec-tab-plot1" data-plot="plot-1">Plot 1 (St 1–3)</button>
+            <button class="rec-tab-btn" id="rec-tab-plot2" data-plot="plot-2">Plot 2 (St 4–7)</button>
+            <button class="rec-tab-btn" id="rec-tab-all" data-plot="all">All Stations</button>
+          </div>
+
+          <!-- Dynamic Detailed Records List (Mobile-Optimized Card Grid) -->
+          <div id="drainage-records-container" class="drainage-records-container">
+            <!-- Dynamically injected via drainageService.renderDetailedRecordsList() -->
+          </div>
+
+          <!-- Modal Footer Actions -->
+          <div class="drainage-records-modal-footer">
+            <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQSIn4Ad6HiOlE5ko3fCnHjVVn4su9QTVzau6t-wrke4sbycCDSZSf5cgACsLrP_hsxc0PNoc--OPmz/pubhtml" target="_blank" rel="noopener noreferrer" class="btn-sheet-link-compact">
+              <i data-lucide="external-link"></i>
+              <span>Open Google Sheet</span>
+            </a>
+            <div class="footer-btn-group">
+              <button type="button" id="btn-open-entry-from-records" class="btn-primary">
+                <i data-lucide="plus"></i>
+                <span>Log New Reading</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Application Scripts -->
-  <script src="js/config.js?v=11.10"></script>
-  <script src="js/sampleData.js?v=11.10"></script>
-  <script src="js/googleSheetsService.js?v=11.10"></script>
-  <script src="js/weatherService.js?v=11.10"></script>
-  <script src="js/sprayAdvisory.js?v=11.10"></script>
-  <script src="js/soilMoistureService.js?v=11.10"></script>
-  <script src="js/tapoService.js?v=11.10"></script>
-  <script src="js/radarService.js?v=11.10"></script>
-  <script src="js/app.js?v=11.10"></script>
+  <script src="js/config.js?v=11.27"></script>
+  <script src="js/sampleData.js?v=11.27"></script>
+  <script src="js/googleSheetsService.js?v=11.27"></script>
+  <script src="js/drainageService.js?v=11.27"></script>
+  <script src="js/weatherService.js?v=11.27"></script>
+  <script src="js/sprayAdvisory.js?v=11.27"></script>
+  <script src="js/soilMoistureService.js?v=11.27"></script>
+  <script src="js/tapoService.js?v=11.27"></script>
+  <script src="js/radarService.js?v=11.27"></script>
+  <script src="js/app.js?v=11.27"></script>
 </body>
 </html>
