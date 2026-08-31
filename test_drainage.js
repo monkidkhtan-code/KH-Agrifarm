@@ -1,3 +1,24 @@
+
+var window = this;
+var APP_CONFIG = {
+  sheets: {
+    drainageSheet: {
+      id: 'drainage-monitoring',
+      name: 'Drainage EC & PH monitoring',
+      gid: '1176156551'
+    }
+  },
+  storageKeys: {
+    drainageData: 'kh_agrifarm_drainage_cache_v3',
+    drainageLastSync: 'kh_agrifarm_drainage_last_sync_v3'
+  }
+};
+var localStorage = {
+  getItem: function(k) { return null; },
+  setItem: function(k, v) {},
+  removeItem: function(k) {}
+};
+
 /**
  * KH AGRIFARM - DRAINAGE EC & PH MONITORING SERVICE
  * Features 2 Dedicated Separated Graphs (EC Trend & pH Trend),
@@ -1033,8 +1054,6 @@ class DrainageService {
         });
       }
     });
-  }
-
   /**
    * Render Full Detail Sheet List inside the Mobile-Optimized Records Modal
    */
@@ -1138,3 +1157,12 @@ class DrainageService {
 
 window.DrainageService = DrainageService;
 window.drainageService = new DrainageService();
+
+var svc = new DrainageService(APP_CONFIG);
+var outP1 = svc.renderPlotDrainageCard('plot-1');
+WScript.Echo('P1 Length: ' + outP1.length);
+var outP2 = svc.renderPlotDrainageCard('plot-2');
+WScript.Echo('P2 Length: ' + outP2.length);
+if (outP1.length > 0) {
+  WScript.Echo('P1 start: ' + outP1.substr(0, 150));
+}

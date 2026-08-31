@@ -62,6 +62,8 @@ class KHAgrifarmApp {
       await window.drainageService.init();
     }
 
+    this.renderAll();
+
     // Trigger instant live cloud sync for all sensors & Google Sheets on page launch
     await this.syncSheets(false);
 
@@ -1213,15 +1215,15 @@ class KHAgrifarmApp {
       // 3b. Environmental & Sensor Monitoring (RainPoint Soil Probes vs. Tapo Nursery Sensors)
       if (plotConf.id === 'plot-1' || plotConf.id === 'plot-2') {
         if (window.soilMoistureService) {
-          html += window.soilMoistureService.renderPlotMoistureCard(plotConf.id, data ? data.moisture : null);
+          try { html += window.soilMoistureService.renderPlotMoistureCard(plotConf.id, data ? data.moisture : null); } catch(e) { console.error('Soil moisture error:', e); }
         }
         // 3c. Drainage EC & pH Monitoring (Plot 1 & Plot 2)
         if (window.drainageService) {
-          html += window.drainageService.renderPlotDrainageCard(plotConf.id);
+          try { html += window.drainageService.renderPlotDrainageCard(plotConf.id); } catch(e) { console.error('Drainage error:', e); }
         }
       } else if (plotConf.id === 'plot-3' || plotConf.id === 'plot-4') {
         if (window.tapoService) {
-          html += window.tapoService.renderPlotNurseryCard(plotConf.id);
+          try { html += window.tapoService.renderPlotNurseryCard(plotConf.id); } catch(e) { console.error('Tapo error:', e); }
         }
       }
 
@@ -1241,10 +1243,16 @@ class KHAgrifarmApp {
     // Always ensure Sensor & Drainage Monitoring is visible on empty/rest days
     if (!data) {
       if (plotConf.id === 'plot-1' || plotConf.id === 'plot-2') {
-        if (window.soilMoistureService) html += window.soilMoistureService.renderPlotMoistureCard(plotConf.id, null);
-        if (window.drainageService) html += window.drainageService.renderPlotDrainageCard(plotConf.id);
+        if (window.soilMoistureService) {
+          try { html += window.soilMoistureService.renderPlotMoistureCard(plotConf.id, null); } catch(e) {}
+        }
+        if (window.drainageService) {
+          try { html += window.drainageService.renderPlotDrainageCard(plotConf.id); } catch(e) {}
+        }
       } else if (plotConf.id === 'plot-3' || plotConf.id === 'plot-4') {
-        if (window.tapoService) html += window.tapoService.renderPlotNurseryCard(plotConf.id);
+        if (window.tapoService) {
+          try { html += window.tapoService.renderPlotNurseryCard(plotConf.id); } catch(e) {}
+        }
       }
     }
 
