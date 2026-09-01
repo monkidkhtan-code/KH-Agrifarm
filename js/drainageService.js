@@ -11,8 +11,8 @@ class DrainageService {
       name: "Drainage EC & PH monitoring",
       gid: "1176156551"
     };
-    this.cacheKey = this.config?.storageKeys?.drainageData || "kh_agrifarm_drainage_cache_v4";
-    this.lastSyncKey = this.config?.storageKeys?.drainageLastSync || "kh_agrifarm_drainage_last_sync_v4";
+    this.cacheKey = this.config?.storageKeys?.drainageData || "kh_agrifarm_drainage_cache_v5";
+    this.lastSyncKey = this.config?.storageKeys?.drainageLastSync || "kh_agrifarm_drainage_last_sync_v5";
     this.records = this.getCachedRecords();
     if (!this.records || this.records.length === 0) {
       this.records = this.getDefaultBaselineRecords();
@@ -34,57 +34,6 @@ class DrainageService {
    */
   getDefaultBaselineRecords() {
     return [
-      {
-        date: "01/09/2026",
-        dateRaw: "01/09/2026",
-        time: "07:22",
-        timestamp: "01/09/2026 07:22",
-        ecIn: 4.0,
-        phIn: 4.0,
-        stations: {
-          p1_s1: { ec: 4.0, ph: 4.0, name: "Station 1", plot: "plot-1" },
-          p1_s2: { ec: 4.0, ph: 4.0, name: "Station 2", plot: "plot-1" },
-          p1_s3: { ec: 4.0, ph: 4.0, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 4.0, ph: 4.0, name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: 4.0, ph: 4.0, name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: 4.0, ph: 4.0, name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: 4.0, ph: 4.0, name: "Station 7", plot: "plot-2" }
-        }
-      },
-      {
-        date: "01/09/2026",
-        dateRaw: "01/09/26",
-        time: "12:18 am",
-        timestamp: "01/09/2026 12:18 am",
-        ecIn: 3.0,
-        phIn: 3.0,
-        stations: {
-          p1_s1: { ec: 3.0, ph: 3.0, name: "Station 1", plot: "plot-1" },
-          p1_s2: { ec: 3.0, ph: 3.0, name: "Station 2", plot: "plot-1" },
-          p1_s3: { ec: 3.0, ph: 3.0, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 3.0, ph: 3.0, name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: 3.0, ph: 3.0, name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: 3.0, ph: 3.0, name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: 3.0, ph: 3.0, name: "Station 7", plot: "plot-2" }
-        }
-      },
-      {
-        date: "31/08/2026",
-        dateRaw: "31/08/26",
-        time: "11:45 pm",
-        timestamp: "31/08/2026 11:45 pm",
-        ecIn: 2.0,
-        phIn: 2.0,
-        stations: {
-          p1_s1: { ec: 2.0, ph: 2.0, name: "Station 1", plot: "plot-1" },
-          p1_s2: { ec: 2.0, ph: 2.0, name: "Station 2", plot: "plot-1" },
-          p1_s3: { ec: 2.0, ph: 2.0, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 2.0, ph: 2.0, name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: 2.0, ph: 2.0, name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: 2.0, ph: 2.0, name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: 2.0, ph: 2.0, name: "Station 7", plot: "plot-2" }
-        }
-      },
       {
         date: "31/08/2026",
         dateRaw: "31-8-26",
@@ -415,13 +364,12 @@ class DrainageService {
     }
 
     if (fetchedRows && fetchedRows.length > 0) {
-      // Non-destructive merge: Ensure newly submitted entries aren't wiped out by Google CDN propagation lag
-      const prevCount = this.records ? this.records.length : 0;
-      this.records = this.mergeRecords(this.records, fetchedRows);
+      // Google Sheet is 100% the Single Source of Truth
+      this.records = fetchedRows.sort((a, b) => this.compareRecordDate(b, a));
       this.saveToCache(this.records);
       localStorage.setItem(this.lastSyncKey, new Date().toISOString());
 
-      if (this.records.length !== prevCount && window.khApp && typeof window.khApp.renderAll === 'function') {
+      if (window.khApp && typeof window.khApp.renderAll === 'function') {
         window.khApp.renderAll();
       }
       return this.records;
