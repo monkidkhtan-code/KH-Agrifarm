@@ -2,7 +2,7 @@
  * KH AGRIFARM - CONFIGURATION
  */
 const APP_CONFIG = {
-  version: "v11.41",
+  version: "v11.42",
   buildDate: "2026.09.01",
   farmName: "KH Agrifarm",
   farmAddress: "LOT 20371, Jalan Sgg 6/3, Kampung Sungai Gulang Gulang, 45500 Tanjong Karang, Selangor",

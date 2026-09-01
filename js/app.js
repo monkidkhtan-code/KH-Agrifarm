@@ -364,6 +364,26 @@ class KHAgrifarmApp {
       });
     }
 
+    const btnForceSync = document.getElementById('btn-force-drainage-sync');
+    if (btnForceSync) {
+      btnForceSync.addEventListener('click', async () => {
+        btnForceSync.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:12px;height:12px;display:inline;"></i> <span>Syncing...</span>';
+        if (window.lucide) window.lucide.createIcons();
+        if (window.drainageService) {
+          await window.drainageService.fetchDrainageData();
+          window.drainageService.renderDetailedRecordsList(this._activeRecordsPlot || 'plot-1');
+        }
+        this.renderAll();
+        btnForceSync.innerHTML = '<i data-lucide="check" style="width:12px;height:12px;display:inline;color:#34d399;"></i> <span>Synced</span>';
+        if (window.lucide) window.lucide.createIcons();
+        this.showToast('✅ Drainage records synchronized with Google Sheets!');
+        setTimeout(() => {
+          btnForceSync.innerHTML = '<i data-lucide="refresh-cw" style="width:12px;height:12px;display:inline;"></i> <span>Force Sync</span>';
+          if (window.lucide) window.lucide.createIcons();
+        }, 2500);
+      });
+    }
+
     // Modal Filter Tabs
     ['rec-tab-plot1', 'rec-tab-plot2', 'rec-tab-all'].forEach(tabId => {
       const btn = document.getElementById(tabId);
@@ -635,8 +655,11 @@ class KHAgrifarmApp {
       const syncResult = await this.sheetsService.fetchAllPlots();
       this.farmData = syncResult.data;
 
-      // Also trigger 15-min sensor refresh for Soil Moisture and Tapo Greenhouse
+      // Also trigger 15-min sensor refresh for Soil Moisture, Tapo Greenhouse, and Drainage
       await this.refreshSensorData(userTriggered);
+      if (window.drainageService) {
+        await window.drainageService.fetchDrainageData();
+      }
       
       syncText.innerText = "Synced Live";
       syncTime.innerText = this.sheetsService.getLastSyncTime();
