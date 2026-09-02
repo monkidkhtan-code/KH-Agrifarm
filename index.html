@@ -26,11 +26,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Custom Styles with cache-busting -->
-  <link rel="stylesheet" href="css/styles.css?v=11.43">
+  <link rel="stylesheet" href="css/styles.css?v=11.44">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=11.43').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=11.44').then(reg => {
           reg.update();
         }).catch(() => {});
       });
@@ -930,7 +930,6 @@
             <div class="modal-title-text-wrap">
               <div class="modal-title-heading-row">
                 <h3 class="modal-title">Log Drainage EC &amp; pH Reading</h3>
-                <span class="version-tag-settings" style="background: rgba(110, 188, 72, 0.2); color: #86efac; border-color: rgba(110, 188, 72, 0.3);">All Stations (1 Form)</span>
               </div>
               <p class="modal-subtitle">Record fertigation source inflow &amp; multi-station run-off for Plot 1 and Plot 2</p>
             </div>
@@ -1193,15 +1192,15 @@
   </div>
 
   <!-- Application Scripts -->
-  <script src="js/config.js?v=11.43"></script>
-  <script src="js/sampleData.js?v=11.43"></script>
-  <script src="js/googleSheetsService.js?v=11.43"></script>
-  <script src="js/drainageService.js?v=11.43"></script>
-  <script src="js/weatherService.js?v=11.43"></script>
-  <script src="js/sprayAdvisory.js?v=11.43"></script>
-  <script src="js/soilMoistureService.js?v=11.43"></script>
-  <script src="js/tapoService.js?v=11.43"></script>
-  <script src="js/radarService.js?v=11.43"></script>
-  <script src="js/app.js?v=11.43"></script>
+  <script src="js/config.js?v=11.44"></script>
+  <script src="js/sampleData.js?v=11.44"></script>
+  <script src="js/googleSheetsService.js?v=11.44"></script>
+  <script src="js/drainageService.js?v=11.44"></script>
+  <script src="js/weatherService.js?v=11.44"></script>
+  <script src="js/sprayAdvisory.js?v=11.44"></script>
+  <script src="js/soilMoistureService.js?v=11.44"></script>
+  <script src="js/tapoService.js?v=11.44"></script>
+  <script src="js/radarService.js?v=11.44"></script>
+  <script src="js/app.js?v=11.44"></script>
 </body>
 </html>
