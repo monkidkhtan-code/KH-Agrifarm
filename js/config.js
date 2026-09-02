@@ -2,8 +2,8 @@
  * KH AGRIFARM - CONFIGURATION
  */
 const APP_CONFIG = {
-  version: "v11.42",
-  buildDate: "2026.09.01",
+  version: "v11.43",
+  buildDate: "2026.09.02",
   farmName: "KH Agrifarm",
   farmAddress: "LOT 20371, Jalan Sgg 6/3, Kampung Sungai Gulang Gulang, 45500 Tanjong Karang, Selangor",
   season: "Season 6 (June 2026 - Jan 2027)",
@@ -170,8 +170,8 @@ const APP_CONFIG = {
   storageKeys: {
     cachedData: "kh_agrifarm_data_cache_v2",
     lastSync: "kh_agrifarm_last_sync_v2",
-    drainageData: "kh_agrifarm_drainage_cache_v5",
-    drainageLastSync: "kh_agrifarm_drainage_last_sync_v5",
+    drainageData: "kh_agrifarm_drainage_cache_v6",
+    drainageLastSync: "kh_agrifarm_drainage_last_sync_v6",
     customConfig: "kh_agrifarm_custom_config_v2",
     taskChecklist: "kh_agrifarm_task_checklist_v2"
   }

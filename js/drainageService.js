@@ -11,8 +11,8 @@ class DrainageService {
       name: "Drainage EC & PH monitoring",
       gid: "1176156551"
     };
-    this.cacheKey = this.config?.storageKeys?.drainageData || "kh_agrifarm_drainage_cache_v5";
-    this.lastSyncKey = this.config?.storageKeys?.drainageLastSync || "kh_agrifarm_drainage_last_sync_v5";
+    this.cacheKey = this.config?.storageKeys?.drainageData || "kh_agrifarm_drainage_cache_v6";
+    this.lastSyncKey = this.config?.storageKeys?.drainageLastSync || "kh_agrifarm_drainage_last_sync_v6";
     this.records = this.getCachedRecords();
     if (!this.records || this.records.length === 0) {
       this.records = this.getDefaultBaselineRecords();
@@ -35,10 +35,47 @@ class DrainageService {
   getDefaultBaselineRecords() {
     return [
       {
+        date: "02/09/2026",
+        dateRaw: "02/09/2026",
+        time: "11:47",
+        timestamp: "02/09/2026 11:47",
+        fertilizer: "Water",
+        ecIn: 0.3,
+        phIn: 7.1,
+        stations: {
+          p1_s1: { ec: 3.2, ph: 6.5, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 2.1, ph: 7.2, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 1.8, ph: 7.0, name: "Station 3", plot: "plot-1" },
+          p2_s4: { ec: 1.3, ph: 6.4, name: "Station 4", plot: "plot-2" },
+          p2_s5: { ec: 1.5, ph: 6.4, name: "Station 5", plot: "plot-2" },
+          p2_s6: { ec: 1.2, ph: 6.7, name: "Station 6", plot: "plot-2" },
+          p2_s7: { ec: 1.6, ph: 6.7, name: "Station 7", plot: "plot-2" }
+        }
+      },
+      {
+        date: "01/09/2026",
+        dateRaw: "01/09/2026",
+        time: "09:41",
+        timestamp: "01/09/2026 09:41",
+        fertilizer: "AB Solution",
+        ecIn: 2.5,
+        phIn: 7.0,
+        stations: {
+          p1_s1: { ec: 1.5, ph: 7.0, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 2.1, ph: 7.4, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 1.6, ph: 7.2, name: "Station 3", plot: "plot-1" },
+          p2_s4: { ec: 1.2, ph: 6.6, name: "Station 4", plot: "plot-2" },
+          p2_s5: { ec: 1.1, ph: 6.6, name: "Station 5", plot: "plot-2" },
+          p2_s6: { ec: 1.2, ph: 6.9, name: "Station 6", plot: "plot-2" },
+          p2_s7: { ec: 1.7, ph: 6.9, name: "Station 7", plot: "plot-2" }
+        }
+      },
+      {
         date: "31/08/2026",
-        dateRaw: "31-8-26",
+        dateRaw: "31/08/26",
         time: "12:00 pm",
         timestamp: "31/08/2026 12:00 pm",
+        fertilizer: "Water",
         ecIn: 0.2,
         phIn: 7.0,
         stations: {
@@ -256,6 +293,7 @@ class DrainageService {
 
     const idxDate = findIndex(['date', 'tarikh', 'hari bulan']);
     const idxTime = findIndex(['time', 'stamp', 'masa', 'jam']);
+    const idxFertilizer = findIndex(['fertilizer', 'water', 'baja', 'air', 'liquid', 'solution']);
     const idxEcIn = findIndex(['ec in', 'ec_in', 'ec masuk', 'in ec']);
     const idxPhIn = findIndex(['ph in', 'ph_in', 'ph masuk', 'in ph']);
 
@@ -290,22 +328,28 @@ class DrainageService {
 
       const normDate = this.normalizeDate(rawDate);
       const timeVal = (idxTime >= 0 && r[idxTime]) ? r[idxTime] : '12:00 pm';
+      
+      let fertVal = (idxFertilizer >= 0 && r[idxFertilizer]) ? r[idxFertilizer].trim() : (r[2] && isNaN(parseFloat(r[2])) ? r[2].trim() : 'Water');
+      if (fertVal.toLowerCase() === 'ab' || fertVal.toLowerCase() === 'ab solution') {
+        fertVal = 'AB Solution';
+      }
 
       parsedRecords.push({
         date: normDate,
         dateRaw: rawDate,
         time: timeVal,
         timestamp: `${normDate} ${timeVal}`,
-        ecIn: numVal(idxEcIn >= 0 ? r[idxEcIn] : r[2]),
-        phIn: numVal(idxPhIn >= 0 ? r[idxPhIn] : r[3]),
+        fertilizer: fertVal || 'Water',
+        ecIn: numVal(idxEcIn >= 0 ? r[idxEcIn] : (idxFertilizer >= 0 ? r[3] : r[2])),
+        phIn: numVal(idxPhIn >= 0 ? r[idxPhIn] : (idxFertilizer >= 0 ? r[4] : r[3])),
         stations: {
-          p1_s1: { ec: numVal(idxP1S1Ec >= 0 ? r[idxP1S1Ec] : r[4]), ph: numVal(idxP1S1Ph >= 0 ? r[idxP1S1Ph] : r[5]), name: "Station 1", plot: "plot-1" },
-          p1_s2: { ec: numVal(idxP1S2Ec >= 0 ? r[idxP1S2Ec] : r[6]), ph: numVal(idxP1S2Ph >= 0 ? r[idxP1S2Ph] : r[7]), name: "Station 2", plot: "plot-1" },
-          p1_s3: { ec: numVal(idxP1S3Ec >= 0 ? r[idxP1S3Ec] : r[8]), ph: numVal(idxP1S3Ph >= 0 ? r[idxP1S3Ph] : r[9]), name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: numVal(idxP2S4Ec >= 0 ? r[idxP2S4Ec] : r[10]), ph: numVal(idxP2S4Ph >= 0 ? r[idxP2S4Ph] : r[11]), name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: numVal(idxP2S5Ec >= 0 ? r[idxP2S5Ec] : r[12]), ph: numVal(idxP2S5Ph >= 0 ? r[idxP2S5Ph] : r[13]), name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: numVal(idxP2S6Ec >= 0 ? r[idxP2S6Ec] : r[14]), ph: numVal(idxP2S6Ph >= 0 ? r[idxP2S6Ph] : r[15]), name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: numVal(idxP2S7Ec >= 0 ? r[idxP2S7Ec] : r[16]), ph: numVal(idxP2S7Ph >= 0 ? r[idxP2S7Ph] : r[17]), name: "Station 7", plot: "plot-2" }
+          p1_s1: { ec: numVal(idxP1S1Ec >= 0 ? r[idxP1S1Ec] : (idxFertilizer >= 0 ? r[5] : r[4])), ph: numVal(idxP1S1Ph >= 0 ? r[idxP1S1Ph] : (idxFertilizer >= 0 ? r[6] : r[5])), name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: numVal(idxP1S2Ec >= 0 ? r[idxP1S2Ec] : (idxFertilizer >= 0 ? r[7] : r[6])), ph: numVal(idxP1S2Ph >= 0 ? r[idxP1S2Ph] : (idxFertilizer >= 0 ? r[8] : r[7])), name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: numVal(idxP1S3Ec >= 0 ? r[idxP1S3Ec] : (idxFertilizer >= 0 ? r[9] : r[8])), ph: numVal(idxP1S3Ph >= 0 ? r[idxP1S3Ph] : (idxFertilizer >= 0 ? r[10] : r[9])), name: "Station 3", plot: "plot-1" },
+          p2_s4: { ec: numVal(idxP2S4Ec >= 0 ? r[idxP2S4Ec] : (idxFertilizer >= 0 ? r[11] : r[10])), ph: numVal(idxP2S4Ph >= 0 ? r[idxP2S4Ph] : (idxFertilizer >= 0 ? r[12] : r[11])), name: "Station 4", plot: "plot-2" },
+          p2_s5: { ec: numVal(idxP2S5Ec >= 0 ? r[idxP2S5Ec] : (idxFertilizer >= 0 ? r[13] : r[12])), ph: numVal(idxP2S5Ph >= 0 ? r[idxP2S5Ph] : (idxFertilizer >= 0 ? r[14] : r[13])), name: "Station 5", plot: "plot-2" },
+          p2_s6: { ec: numVal(idxP2S6Ec >= 0 ? r[idxP2S6Ec] : (idxFertilizer >= 0 ? r[15] : r[14])), ph: numVal(idxP2S6Ph >= 0 ? r[idxP2S6Ph] : (idxFertilizer >= 0 ? r[16] : r[15])), name: "Station 6", plot: "plot-2" },
+          p2_s7: { ec: numVal(idxP2S7Ec >= 0 ? r[idxP2S7Ec] : (idxFertilizer >= 0 ? r[17] : r[16])), ph: numVal(idxP2S7Ph >= 0 ? r[idxP2S7Ph] : (idxFertilizer >= 0 ? r[18] : r[17])), name: "Station 7", plot: "plot-2" }
         }
       });
     });
@@ -493,6 +537,7 @@ class DrainageService {
     return {
       date: entry.date,
       time: entry.time,
+      fertilizer: entry.fertilizer || 'Water',
       ecIn: entry.ecIn,
       phIn: entry.phIn,
       inflowPhEval: inflowPhEval,
@@ -539,6 +584,7 @@ class DrainageService {
       dateRaw: payload.date,
       time: payload.time || '12:00 pm',
       timestamp: `${normDate} ${payload.time || '12:00 pm'}`,
+      fertilizer: payload.fertilizer || 'Water',
       ecIn: (payload.ecIn !== undefined && payload.ecIn !== '') ? parseFloat(payload.ecIn) : null,
       phIn: (payload.phIn !== undefined && payload.phIn !== '') ? parseFloat(payload.phIn) : null,
       stations: {
@@ -568,6 +614,8 @@ class DrainageService {
           sheetName: this.sheetConfig?.name || "Drainage EC & PH monitoring",
           date: newEntry.dateRaw || newEntry.date,
           time: newEntry.time,
+          fertilizer: newEntry.fertilizer,
+          fertilizerWater: newEntry.fertilizer,
           ecIn: newEntry.ecIn,
           phIn: newEntry.phIn,
           p1_s1_ec: newEntry.stations.p1_s1.ec,
@@ -744,7 +792,7 @@ class DrainageService {
           <!-- Top Row: Inflow Benchmark vs Drainage Outflow Average -->
           <div class="hero-metric-row">
             <div class="hero-metric-item">
-              <span class="hero-lbl">Inflow (Fertigation)</span>
+              <span class="hero-lbl">Inflow <strong style="color:#38bdf8;">(${summary && summary.fertilizer ? summary.fertilizer : 'Water'})</strong></span>
               <span class="hero-val font-mono"><strong>${ecInVal}</strong> <small>EC</small> &bull; pH <strong>${phInVal}</strong></span>
             </div>
             <div class="hero-metric-item text-right">
@@ -1147,7 +1195,8 @@ class DrainageService {
               <strong>${entry.date}</strong>
               <span class="record-time-badge font-mono">${entry.time}</span>
             </div>
-            <div class="record-inflow-badge font-mono">
+            <div class="record-inflow-badge font-mono" style="display:flex; align-items:center; gap:0.4rem;">
+              <span class="fertilizer-badge" style="background:rgba(56,189,248,0.18); border:1px solid rgba(56,189,248,0.35); padding:1px 6px; border-radius:3px; color:#38bdf8; font-weight:700; font-size:0.68rem;">${entry.fertilizer || 'Water'}</span>
               <span>Inflow: <strong>${entry.ecIn !== null ? entry.ecIn.toFixed(1) + ' EC' : '--'}</strong> &bull; <strong>pH ${entry.phIn !== null ? entry.phIn.toFixed(1) : '--'}</strong></span>
             </div>
           </div>

@@ -26,11 +26,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Custom Styles with cache-busting -->
-  <link rel="stylesheet" href="css/styles.css?v=11.42">
+  <link rel="stylesheet" href="css/styles.css?v=11.43">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=11.42').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=11.43').then(reg => {
           reg.update();
         }).catch(() => {});
       });
@@ -954,7 +954,7 @@
               </div>
             </div>
 
-            <!-- 2. Fertigation Inflow Row -->
+            <!-- 2. Fertigation Inflow & Liquid Type Row -->
             <div class="drainage-form-compact-section inflow-section">
               <div class="list-section-header">
                 <div class="header-left">
@@ -966,11 +966,34 @@
                   <span>pH Target</span>
                 </div>
               </div>
+              
+              <!-- Fertilizer / Liquid Dropdown Selector -->
+              <div class="solution-select-row" style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; padding:0.3rem 0.45rem; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.05); border-radius:4px; margin-bottom:0.35rem;">
+                <div class="st-row-label" style="display:flex; align-items:center; gap:0.35rem;">
+                  <i data-lucide="flask-conical" style="width:13px;height:13px;color:#38bdf8;"></i>
+                  <span style="font-size:0.72rem; font-weight:700; color:#cbd5e1;">Fertilizer / Liquid:</span>
+                </div>
+                <select id="drainage-input-fertilizer" class="form-input" style="flex:1; max-width:210px; height:32px; font-size:0.75rem; padding:0.2rem 0.5rem; background:rgba(15,23,42,0.95); border:1px solid rgba(56,189,248,0.35); color:#38bdf8; font-weight:700; border-radius:4px;">
+                  <option value="AB Solution">AB Solution</option>
+                  <option value="Water" selected>Water</option>
+                  <option value="Seaweed Extract">Seaweed Extract</option>
+                  <option value="Fulvic Acid">Fulvic Acid</option>
+                  <option value="Super Nila">Super Nila</option>
+                  <option value="Bacillus + Rootboom">Bacillus + Rootboom</option>
+                  <option value="Blackboom">Blackboom</option>
+                  <option value="CN">CN</option>
+                  <option value="PN">PN</option>
+                  <option value="MKP">MKP</option>
+                  <option value="SOP">SOP</option>
+                  <option value="MGS">MGS</option>
+                </select>
+              </div>
+
               <div class="station-list-table">
                 <div class="station-list-row inflow-list-row">
                   <div class="st-row-label">
                     <span class="st-row-dot dot-cyan"></span>
-                    <span class="st-row-name">Inflow Source</span>
+                    <span class="st-row-name">Inflow Benchmark</span>
                   </div>
                   <div class="st-row-inputs">
                     <input type="number" step="0.1" id="drainage-input-ec-in" class="form-input font-mono compact-num-input highlight-inflow" placeholder="EC In" required>
@@ -1170,15 +1193,15 @@
   </div>
 
   <!-- Application Scripts -->
-  <script src="js/config.js?v=11.42"></script>
-  <script src="js/sampleData.js?v=11.42"></script>
-  <script src="js/googleSheetsService.js?v=11.42"></script>
-  <script src="js/drainageService.js?v=11.42"></script>
-  <script src="js/weatherService.js?v=11.42"></script>
-  <script src="js/sprayAdvisory.js?v=11.42"></script>
-  <script src="js/soilMoistureService.js?v=11.42"></script>
-  <script src="js/tapoService.js?v=11.42"></script>
-  <script src="js/radarService.js?v=11.42"></script>
-  <script src="js/app.js?v=11.42"></script>
+  <script src="js/config.js?v=11.43"></script>
+  <script src="js/sampleData.js?v=11.43"></script>
+  <script src="js/googleSheetsService.js?v=11.43"></script>
+  <script src="js/drainageService.js?v=11.43"></script>
+  <script src="js/weatherService.js?v=11.43"></script>
+  <script src="js/sprayAdvisory.js?v=11.43"></script>
+  <script src="js/soilMoistureService.js?v=11.43"></script>
+  <script src="js/tapoService.js?v=11.43"></script>
+  <script src="js/radarService.js?v=11.43"></script>
+  <script src="js/app.js?v=11.43"></script>
 </body>
 </html>

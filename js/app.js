@@ -468,6 +468,11 @@ class KHAgrifarmApp {
     const latestP2 = window.drainageService ? window.drainageService.getLatestRecord('plot-2') : null;
     const ecInEl = document.getElementById('drainage-input-ec-in');
     const phInEl = document.getElementById('drainage-input-ph-in');
+    const fertEl = document.getElementById('drainage-input-fertilizer');
+
+    if (fertEl) {
+      fertEl.value = (latestP1 && latestP1.record && latestP1.record.fertilizer) ? latestP1.record.fertilizer : 'Water';
+    }
 
     if (latestP1 && latestP1.summary) {
       if (ecInEl && !ecInEl.value) ecInEl.value = latestP1.summary.ecIn !== null ? latestP1.summary.ecIn : '';
@@ -486,6 +491,7 @@ class KHAgrifarmApp {
   async saveDrainageEntryFromModal() {
     const dateVal = document.getElementById('drainage-input-date')?.value?.trim();
     const timeVal = document.getElementById('drainage-input-time')?.value?.trim() || '12:00 pm';
+    const fertVal = document.getElementById('drainage-input-fertilizer')?.value?.trim() || 'Water';
     const ecInVal = document.getElementById('drainage-input-ec-in')?.value?.trim();
     const phInVal = document.getElementById('drainage-input-ph-in')?.value?.trim();
 
@@ -497,6 +503,7 @@ class KHAgrifarmApp {
     const payload = {
       date: dateVal,
       time: timeVal,
+      fertilizer: fertVal,
       ecIn: ecInVal,
       phIn: phInVal,
       p1_s1_ec: document.getElementById('drainage-p1-s1-ec')?.value?.trim(),
