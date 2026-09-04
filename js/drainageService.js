@@ -11,8 +11,8 @@ class DrainageService {
       name: "Drainage EC & PH monitoring",
       gid: "1176156551"
     };
-    this.cacheKey = this.config?.storageKeys?.drainageData || "kh_agrifarm_drainage_cache_v6";
-    this.lastSyncKey = this.config?.storageKeys?.drainageLastSync || "kh_agrifarm_drainage_last_sync_v6";
+    this.cacheKey = this.config?.storageKeys?.drainageData || "kh_agrifarm_drainage_cache_v7";
+    this.lastSyncKey = this.config?.storageKeys?.drainageLastSync || "kh_agrifarm_drainage_last_sync_v7";
     this.records = this.getCachedRecords();
     if (!this.records || this.records.length === 0) {
       this.records = this.getDefaultBaselineRecords();
@@ -34,6 +34,114 @@ class DrainageService {
    */
   getDefaultBaselineRecords() {
     return [
+      {
+        date: "04/09/2026",
+        dateRaw: "04/09/2026",
+        time: "18:08",
+        timestamp: "04/09/2026 18:08",
+        fertilizer: "AB Solution",
+        ecIn: 2.6,
+        phIn: 5.4,
+        stations: {
+          p1_s1: { ec: 1.3, ph: 7.0, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 1.6, ph: 7.5, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 1.7, ph: 6.3, name: "Station 3", plot: "plot-1" },
+          p2_s4: { ec: 0.9, ph: 6.7, name: "Station 4", plot: "plot-2" },
+          p2_s5: { ec: 1.0, ph: 5.7, name: "Station 5", plot: "plot-2" },
+          p2_s6: { ec: 1.0, ph: 6.2, name: "Station 6", plot: "plot-2" },
+          p2_s7: { ec: 1.5, ph: 6.4, name: "Station 7", plot: "plot-2" }
+        }
+      },
+      {
+        date: "04/09/2026",
+        dateRaw: "04/09/2026",
+        time: "14:55",
+        timestamp: "04/09/2026 14:55",
+        fertilizer: "Water",
+        ecIn: 0.2,
+        phIn: 5.9,
+        stations: {
+          p1_s1: { ec: 1.1, ph: 7.2, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 1.7, ph: 7.4, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 1.6, ph: 6.6, name: "Station 3", plot: "plot-1" },
+          p2_s4: { ec: 1.0, ph: 6.6, name: "Station 4", plot: "plot-2" },
+          p2_s5: { ec: 1.1, ph: 5.9, name: "Station 5", plot: "plot-2" },
+          p2_s6: { ec: 1.1, ph: 6.5, name: "Station 6", plot: "plot-2" },
+          p2_s7: { ec: 1.6, ph: 6.7, name: "Station 7", plot: "plot-2" }
+        }
+      },
+      {
+        date: "04/09/2026",
+        dateRaw: "04/09/2026",
+        time: "12:00",
+        timestamp: "04/09/2026 12:00",
+        fertilizer: "AB Solution",
+        ecIn: 2.5,
+        phIn: 5.8,
+        stations: {
+          p1_s1: { ec: 1.3, ph: 7.3, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 1.7, ph: 7.4, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 1.5, ph: 6.8, name: "Station 3", plot: "plot-1" },
+          p2_s4: { ec: 0.9, ph: 6.2, name: "Station 4", plot: "plot-2" },
+          p2_s5: { ec: 1.0, ph: 5.9, name: "Station 5", plot: "plot-2" },
+          p2_s6: { ec: 1.1, ph: 6.4, name: "Station 6", plot: "plot-2" },
+          p2_s7: { ec: 1.4, ph: 6.8, name: "Station 7", plot: "plot-2" }
+        }
+      },
+      {
+        date: "03/09/2026",
+        dateRaw: "03/09/2026",
+        time: "17:23",
+        timestamp: "03/09/2026 17:23",
+        fertilizer: "AB Solution",
+        ecIn: 2.5,
+        phIn: 6.2,
+        stations: {
+          p1_s1: { ec: 1.7, ph: 7.2, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 1.7, ph: 7.5, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 1.2, ph: 7.4, name: "Station 3", plot: "plot-1" },
+          p2_s4: { ec: 1.0, ph: 6.8, name: "Station 4", plot: "plot-2" },
+          p2_s5: { ec: 1.7, ph: 6.7, name: "Station 5", plot: "plot-2" },
+          p2_s6: { ec: 1.1, ph: 7.0, name: "Station 6", plot: "plot-2" },
+          p2_s7: { ec: 1.3, ph: 7.2, name: "Station 7", plot: "plot-2" }
+        }
+      },
+      {
+        date: "03/09/2026",
+        dateRaw: "03/09/2026",
+        time: "15:24",
+        timestamp: "03/09/2026 15:24",
+        fertilizer: "Water",
+        ecIn: 0.2,
+        phIn: 6.2,
+        stations: {
+          p1_s1: { ec: 1.6, ph: 7.1, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 1.9, ph: 7.4, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 1.8, ph: 7.1, name: "Station 3", plot: "plot-1" },
+          p2_s4: { ec: 1.1, ph: 6.5, name: "Station 4", plot: "plot-2" },
+          p2_s5: { ec: 1.2, ph: 6.5, name: "Station 5", plot: "plot-2" },
+          p2_s6: { ec: 1.2, ph: 6.8, name: "Station 6", plot: "plot-2" },
+          p2_s7: { ec: 1.4, ph: 6.9, name: "Station 7", plot: "plot-2" }
+        }
+      },
+      {
+        date: "02/09/2026",
+        dateRaw: "02/09/2026",
+        time: "19:43",
+        timestamp: "02/09/2026 19:43",
+        fertilizer: "Fulvic Acid",
+        ecIn: 0.2,
+        phIn: 7.3,
+        stations: {
+          p1_s1: { ec: 1.2, ph: 6.6, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 1.7, ph: 7.2, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 1.8, ph: 6.9, name: "Station 3", plot: "plot-1" },
+          p2_s4: { ec: 1.1, ph: 6.1, name: "Station 4", plot: "plot-2" },
+          p2_s5: { ec: 1.2, ph: 6.0, name: "Station 5", plot: "plot-2" },
+          p2_s6: { ec: 1.1, ph: 6.6, name: "Station 6", plot: "plot-2" },
+          p2_s7: { ec: 1.4, ph: 6.7, name: "Station 7", plot: "plot-2" }
+        }
+      },
       {
         date: "02/09/2026",
         dateRaw: "02/09/2026",
@@ -373,15 +481,22 @@ class DrainageService {
         return await resp.text();
       },
       async () => {
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(directUrl)}&disableCache=true&_t=${timestamp}`;
+        const proxyUrl = `https://proxy.cors.sh/${directUrl}`;
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
-        if (!resp.ok) throw new Error(`Proxy 1 HTTP ${resp.status}`);
+        if (!resp.ok) throw new Error(`Proxy cors.sh HTTP ${resp.status}`);
         return await resp.text();
       },
       async () => {
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(directUrl)}`;
         const resp = await fetch(proxyUrl, { cache: 'no-store' });
-        if (!resp.ok) throw new Error(`Proxy 2 HTTP ${resp.status}`);
+        if (!resp.ok) throw new Error(`Proxy allorigins JSON HTTP ${resp.status}`);
+        const data = await resp.json();
+        return data.contents;
+      },
+      async () => {
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(directUrl)}&disableCache=true&_t=${timestamp}`;
+        const resp = await fetch(proxyUrl, { cache: 'no-store' });
+        if (!resp.ok) throw new Error(`Proxy 1 HTTP ${resp.status}`);
         return await resp.text();
       },
       async () => {
