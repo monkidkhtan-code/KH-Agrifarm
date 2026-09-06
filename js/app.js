@@ -385,13 +385,13 @@ class KHAgrifarmApp {
     }
 
     // Modal Filter Tabs
-    ['rec-tab-plot1', 'rec-tab-plot2', 'rec-tab-all'].forEach(tabId => {
+    ['rec-tab-all', 'rec-tab-plot1', 'rec-tab-plot2a', 'rec-tab-plot2b'].forEach(tabId => {
       const btn = document.getElementById(tabId);
       if (btn) {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.records-filter-tabs .rec-tab-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
-          const plotFilter = btn.getAttribute('data-plot') || 'plot-1';
+          const plotFilter = btn.getAttribute('data-plot') || 'all';
           this._activeRecordsPlot = plotFilter;
           if (window.drainageService) {
             window.drainageService.renderDetailedRecordsList(plotFilter);
@@ -413,7 +413,7 @@ class KHAgrifarmApp {
     });
   }
 
-  openDrainageRecordsModal(plotId = 'plot-1') {
+  openDrainageRecordsModal(plotId = 'all') {
     const recordsModal = document.getElementById('drainage-records-modal');
     if (!recordsModal) return;
 
@@ -421,15 +421,18 @@ class KHAgrifarmApp {
 
     // Set active tab
     const tabPlot1 = document.getElementById('rec-tab-plot1');
-    const tabPlot2 = document.getElementById('rec-tab-plot2');
+    const tabPlot2a = document.getElementById('rec-tab-plot2a');
+    const tabPlot2b = document.getElementById('rec-tab-plot2b');
     const tabAll = document.getElementById('rec-tab-all');
 
     if (tabPlot1) tabPlot1.classList.toggle('active', plotId === 'plot-1');
-    if (tabPlot2) tabPlot2.classList.toggle('active', plotId === 'plot-2');
-    if (tabAll) tabAll.classList.toggle('active', plotId === 'all');
+    if (tabPlot2a) tabPlot2a.classList.toggle('active', plotId === 'plot-2a');
+    if (tabPlot2b) tabPlot2b.classList.toggle('active', plotId === 'plot-2b');
+    if (tabAll) tabAll.classList.toggle('active', plotId === 'all' || plotId === 'plot-2');
 
+    const effectiveFilter = (plotId === 'plot-2') ? 'all' : plotId;
     if (window.drainageService) {
-      window.drainageService.renderDetailedRecordsList(plotId);
+      window.drainageService.renderDetailedRecordsList(effectiveFilter);
     }
 
     recordsModal.classList.remove('hidden-modal');
@@ -465,18 +468,49 @@ class KHAgrifarmApp {
 
     // Pre-fill latest baseline or leave empty
     const latestP1 = window.drainageService ? window.drainageService.getLatestRecord('plot-1') : null;
-    const latestP2 = window.drainageService ? window.drainageService.getLatestRecord('plot-2') : null;
-    const ecInEl = document.getElementById('drainage-input-ec-in');
-    const phInEl = document.getElementById('drainage-input-ph-in');
-    const fertEl = document.getElementById('drainage-input-fertilizer');
+    const latestP2a = window.drainageService ? window.drainageService.getLatestRecord('plot-2a') : null;
+    const latestP2b = window.drainageService ? window.drainageService.getLatestRecord('plot-2b') : null;
 
-    if (fertEl) {
-      fertEl.value = (latestP1 && latestP1.record && latestP1.record.fertilizer) ? latestP1.record.fertilizer : 'Water';
+    const p1FertEl = document.getElementById('drainage-p1-fertilizer');
+    const p2aFertEl = document.getElementById('drainage-p2a-fertilizer');
+    const p2bFertEl = document.getElementById('drainage-p2b-fertilizer');
+
+    if (p1FertEl) {
+      p1FertEl.value = (latestP1?.record?.p1_fertilizer || latestP1?.record?.fertilizer || 'Water');
+    }
+    if (p2aFertEl) {
+      p2aFertEl.value = (latestP2a?.record?.p2a_fertilizer || latestP2a?.record?.fertilizer || 'Water');
+    }
+    if (p2bFertEl) {
+      p2bFertEl.value = (latestP2b?.record?.p2b_fertilizer || latestP2b?.record?.fertilizer || 'Water');
     }
 
-    if (latestP1 && latestP1.summary) {
-      if (ecInEl && !ecInEl.value) ecInEl.value = latestP1.summary.ecIn !== null ? latestP1.summary.ecIn : '';
-      if (phInEl && !phInEl.value) phInEl.value = latestP1.summary.phIn !== null ? latestP1.summary.phIn : '';
+    const p1EcInEl = document.getElementById('drainage-p1-ec-in');
+    const p1PhInEl = document.getElementById('drainage-p1-ph-in');
+    const p2aEcInEl = document.getElementById('drainage-p2a-ec-in');
+    const p2aPhInEl = document.getElementById('drainage-p2a-ph-in');
+    const p2bEcInEl = document.getElementById('drainage-p2b-ec-in');
+    const p2bPhInEl = document.getElementById('drainage-p2b-ph-in');
+
+    if (p1EcInEl && latestP1?.summary?.ecIn !== null && latestP1?.summary?.ecIn !== undefined) {
+      p1EcInEl.value = latestP1.summary.ecIn;
+    }
+    if (p1PhInEl && latestP1?.summary?.phIn !== null && latestP1?.summary?.phIn !== undefined) {
+      p1PhInEl.value = latestP1.summary.phIn;
+    }
+
+    if (p2aEcInEl && latestP2a?.summary?.ecIn !== null && latestP2a?.summary?.ecIn !== undefined) {
+      p2aEcInEl.value = latestP2a.summary.ecIn;
+    }
+    if (p2aPhInEl && latestP2a?.summary?.phIn !== null && latestP2a?.summary?.phIn !== undefined) {
+      p2aPhInEl.value = latestP2a.summary.phIn;
+    }
+
+    if (p2bEcInEl && latestP2b?.summary?.ecIn !== null && latestP2b?.summary?.ecIn !== undefined) {
+      p2bEcInEl.value = latestP2b.summary.ecIn;
+    }
+    if (p2bPhInEl && latestP2b?.summary?.phIn !== null && latestP2b?.summary?.phIn !== undefined) {
+      p2bPhInEl.value = latestP2b.summary.phIn;
     }
 
     drainageModal.classList.remove('hidden-modal');
@@ -491,9 +525,17 @@ class KHAgrifarmApp {
   async saveDrainageEntryFromModal() {
     const dateVal = document.getElementById('drainage-input-date')?.value?.trim();
     const timeVal = document.getElementById('drainage-input-time')?.value?.trim() || '12:00 pm';
-    const fertVal = document.getElementById('drainage-input-fertilizer')?.value?.trim() || 'Water';
-    const ecInVal = document.getElementById('drainage-input-ec-in')?.value?.trim();
-    const phInVal = document.getElementById('drainage-input-ph-in')?.value?.trim();
+
+    const p1FertVal = document.getElementById('drainage-p1-fertilizer')?.value?.trim() || 'Water';
+    const p2aFertVal = document.getElementById('drainage-p2a-fertilizer')?.value?.trim() || 'Water';
+    const p2bFertVal = document.getElementById('drainage-p2b-fertilizer')?.value?.trim() || 'Water';
+
+    const p1EcInVal = document.getElementById('drainage-p1-ec-in')?.value?.trim();
+    const p1PhInVal = document.getElementById('drainage-p1-ph-in')?.value?.trim();
+    const p2aEcInVal = document.getElementById('drainage-p2a-ec-in')?.value?.trim();
+    const p2aPhInVal = document.getElementById('drainage-p2a-ph-in')?.value?.trim();
+    const p2bEcInVal = document.getElementById('drainage-p2b-ec-in')?.value?.trim();
+    const p2bPhInVal = document.getElementById('drainage-p2b-ph-in')?.value?.trim();
 
     if (!dateVal) {
       this.showToast('Please enter a valid date (DD/MM/YYYY)', 'error');
@@ -503,9 +545,18 @@ class KHAgrifarmApp {
     const payload = {
       date: dateVal,
       time: timeVal,
-      fertilizer: fertVal,
-      ecIn: ecInVal,
-      phIn: phInVal,
+      fertilizer: p1FertVal,
+      p1_fertilizer: p1FertVal,
+      p2a_fertilizer: p2aFertVal,
+      p2b_fertilizer: p2bFertVal,
+      p1_ecIn: p1EcInVal,
+      p1_phIn: p1PhInVal,
+      p2a_ecIn: p2aEcInVal,
+      p2a_phIn: p2aPhInVal,
+      p2b_ecIn: p2bEcInVal,
+      p2b_phIn: p2bPhInVal,
+      ecIn: p1EcInVal || p2aEcInVal,
+      phIn: p1PhInVal || p2aPhInVal,
       p1_s1_ec: document.getElementById('drainage-p1-s1-ec')?.value?.trim(),
       p1_s1_ph: document.getElementById('drainage-p1-s1-ph')?.value?.trim(),
       p1_s2_ec: document.getElementById('drainage-p1-s2-ec')?.value?.trim(),
@@ -527,7 +578,7 @@ class KHAgrifarmApp {
     }
 
     this.closeDrainageModal();
-    this.showToast(`🧪 Drainage readings recorded & synced for Plot 1 & Plot 2!`);
+    this.showToast(`🧪 Drainage readings recorded & synced for Plot 1, Plot 2A & Plot 2B!`);
     this.renderAll();
   }
 

@@ -11,8 +11,8 @@ class DrainageService {
       name: "Drainage EC & PH monitoring",
       gid: "1176156551"
     };
-    this.cacheKey = this.config?.storageKeys?.drainageData || "kh_agrifarm_drainage_cache_v7";
-    this.lastSyncKey = this.config?.storageKeys?.drainageLastSync || "kh_agrifarm_drainage_last_sync_v7";
+    this.cacheKey = 'kh_agrifarm_drainage_cache_v9';
+    this.lastSyncKey = 'kh_agrifarm_drainage_last_sync_v9';
     this.records = this.getCachedRecords();
     if (!this.records || this.records.length === 0) {
       this.records = this.getDefaultBaselineRecords();
@@ -35,21 +35,111 @@ class DrainageService {
   getDefaultBaselineRecords() {
     return [
       {
+        date: "06/09/2026",
+        dateRaw: "06/09/2026",
+        time: "13:06",
+        timestamp: "06/09/2026 13:06",
+        fertilizer: "Super Nila",
+        p1_fertilizer: "Super Nila",
+        p2a_fertilizer: "Super Nila",
+        p2b_fertilizer: "Super Nila",
+        p1_ecIn: 1.2,
+        p1_phIn: 5.5,
+        p2a_ecIn: 1.2,
+        p2a_phIn: 5.5,
+        p2b_ecIn: 1.2,
+        p2b_phIn: 5.5,
+        ecIn: 1.2,
+        phIn: 5.5,
+        stations: {
+          p1_s1: { ec: 1.0, ph: 6.8, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 1.4, ph: 7.2, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 1.5, ph: 6.5, name: "Station 3", plot: "plot-1" },
+          p2_s4: { ec: 1.3, ph: 6.6, name: "Station 4", plot: "plot-2a" },
+          p2_s5: { ec: 1.3, ph: 6.3, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.0, ph: 6.4, name: "Station 6", plot: "plot-2b" },
+          p2_s7: { ec: 1.4, ph: 6.9, name: "Station 7", plot: "plot-2b" }
+        }
+      },
+      {
+        date: "05/09/2026",
+        dateRaw: "05/09/2026",
+        time: "20:44",
+        timestamp: "05/09/2026 20:44",
+        fertilizer: "Bacillus + Rootboom",
+        p1_fertilizer: "Bacillus + Rootboom",
+        p2a_fertilizer: "Bacillus + Rootboom",
+        p2b_fertilizer: "Bacillus + Rootboom",
+        p1_ecIn: 0.4,
+        p1_phIn: 3.4,
+        p2a_ecIn: 0.4,
+        p2a_phIn: 3.4,
+        p2b_ecIn: 0.4,
+        p2b_phIn: 3.4,
+        ecIn: 0.4,
+        phIn: 3.4,
+        stations: {
+          p1_s1: { ec: 1.1, ph: 6.8, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 1.4, ph: 7.4, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 1.3, ph: 6.6, name: "Station 3", plot: "plot-1" },
+          p2_s4: { ec: 1.2, ph: 6.2, name: "Station 4", plot: "plot-2a" },
+          p2_s5: { ec: 1.2, ph: 6.0, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.0, ph: 6.2, name: "Station 6", plot: "plot-2b" },
+          p2_s7: { ec: 1.2, ph: 6.6, name: "Station 7", plot: "plot-2b" }
+        }
+      },
+      {
+        date: "05/09/2026",
+        dateRaw: "05/09/2026",
+        time: "11:49",
+        timestamp: "05/09/2026 11:49",
+        fertilizer: "Water",
+        p1_fertilizer: "Water",
+        p2a_fertilizer: "Water",
+        p2b_fertilizer: "Water",
+        p1_ecIn: 0.2,
+        p1_phIn: 5.8,
+        p2a_ecIn: 0.2,
+        p2a_phIn: 5.8,
+        p2b_ecIn: 0.2,
+        p2b_phIn: 5.8,
+        ecIn: 0.2,
+        phIn: 5.8,
+        stations: {
+          p1_s1: { ec: 1.4, ph: 6.9, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 1.5, ph: 7.4, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 1.8, ph: 6.7, name: "Station 3", plot: "plot-1" },
+          p2_s4: { ec: 1.0, ph: 6.2, name: "Station 4", plot: "plot-2a" },
+          p2_s5: { ec: 0.9, ph: 6.2, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 0.9, ph: 6.2, name: "Station 6", plot: "plot-2b" },
+          p2_s7: { ec: 1.3, ph: 6.7, name: "Station 7", plot: "plot-2b" }
+        }
+      },
+      {
         date: "04/09/2026",
         dateRaw: "04/09/2026",
         time: "18:08",
         timestamp: "04/09/2026 18:08",
         fertilizer: "AB Solution",
+        p1_fertilizer: "AB Solution",
+        p2a_fertilizer: "AB Solution",
+        p2b_fertilizer: "AB Solution",
+        p1_ecIn: 2.6,
+        p1_phIn: 5.4,
+        p2a_ecIn: 2.6,
+        p2a_phIn: 5.4,
+        p2b_ecIn: 2.6,
+        p2b_phIn: 5.4,
         ecIn: 2.6,
         phIn: 5.4,
         stations: {
           p1_s1: { ec: 1.3, ph: 7.0, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.6, ph: 7.5, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.7, ph: 6.3, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 0.9, ph: 6.7, name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: 1.0, ph: 5.7, name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: 1.0, ph: 6.2, name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: 1.5, ph: 6.4, name: "Station 7", plot: "plot-2" }
+          p2_s4: { ec: 0.9, ph: 6.7, name: "Station 4", plot: "plot-2a" },
+          p2_s5: { ec: 1.0, ph: 5.7, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.0, ph: 6.2, name: "Station 6", plot: "plot-2b" },
+          p2_s7: { ec: 1.5, ph: 6.4, name: "Station 7", plot: "plot-2b" }
         }
       },
       {
@@ -58,16 +148,25 @@ class DrainageService {
         time: "14:55",
         timestamp: "04/09/2026 14:55",
         fertilizer: "Water",
+        p1_fertilizer: "Water",
+        p2a_fertilizer: "Water",
+        p2b_fertilizer: "Water",
+        p1_ecIn: 0.2,
+        p1_phIn: 5.9,
+        p2a_ecIn: 0.2,
+        p2a_phIn: 5.9,
+        p2b_ecIn: 0.2,
+        p2b_phIn: 5.9,
         ecIn: 0.2,
         phIn: 5.9,
         stations: {
           p1_s1: { ec: 1.1, ph: 7.2, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.7, ph: 7.4, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.6, ph: 6.6, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.0, ph: 6.6, name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: 1.1, ph: 5.9, name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: 1.1, ph: 6.5, name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: 1.6, ph: 6.7, name: "Station 7", plot: "plot-2" }
+          p2_s4: { ec: 1.0, ph: 6.6, name: "Station 4", plot: "plot-2a" },
+          p2_s5: { ec: 1.1, ph: 5.9, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.1, ph: 6.5, name: "Station 6", plot: "plot-2b" },
+          p2_s7: { ec: 1.6, ph: 6.7, name: "Station 7", plot: "plot-2b" }
         }
       },
       {
@@ -76,16 +175,25 @@ class DrainageService {
         time: "12:00",
         timestamp: "04/09/2026 12:00",
         fertilizer: "AB Solution",
+        p1_fertilizer: "AB Solution",
+        p2a_fertilizer: "AB Solution",
+        p2b_fertilizer: "AB Solution",
+        p1_ecIn: 2.5,
+        p1_phIn: 5.8,
+        p2a_ecIn: 2.5,
+        p2a_phIn: 5.8,
+        p2b_ecIn: 2.5,
+        p2b_phIn: 5.8,
         ecIn: 2.5,
         phIn: 5.8,
         stations: {
           p1_s1: { ec: 1.3, ph: 7.3, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.7, ph: 7.4, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.5, ph: 6.8, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 0.9, ph: 6.2, name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: 1.0, ph: 5.9, name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: 1.1, ph: 6.4, name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: 1.4, ph: 6.8, name: "Station 7", plot: "plot-2" }
+          p2_s4: { ec: 0.9, ph: 6.2, name: "Station 4", plot: "plot-2a" },
+          p2_s5: { ec: 1.0, ph: 5.9, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.1, ph: 6.4, name: "Station 6", plot: "plot-2b" },
+          p2_s7: { ec: 1.4, ph: 6.8, name: "Station 7", plot: "plot-2b" }
         }
       },
       {
@@ -94,16 +202,25 @@ class DrainageService {
         time: "17:23",
         timestamp: "03/09/2026 17:23",
         fertilizer: "AB Solution",
+        p1_fertilizer: "AB Solution",
+        p2a_fertilizer: "AB Solution",
+        p2b_fertilizer: "AB Solution",
+        p1_ecIn: 2.5,
+        p1_phIn: 6.2,
+        p2a_ecIn: 2.5,
+        p2a_phIn: 6.2,
+        p2b_ecIn: 2.5,
+        p2b_phIn: 6.2,
         ecIn: 2.5,
         phIn: 6.2,
         stations: {
           p1_s1: { ec: 1.7, ph: 7.2, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.7, ph: 7.5, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.2, ph: 7.4, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.0, ph: 6.8, name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: 1.7, ph: 6.7, name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: 1.1, ph: 7.0, name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: 1.3, ph: 7.2, name: "Station 7", plot: "plot-2" }
+          p2_s4: { ec: 1.0, ph: 6.8, name: "Station 4", plot: "plot-2a" },
+          p2_s5: { ec: 1.7, ph: 6.7, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.1, ph: 7.0, name: "Station 6", plot: "plot-2b" },
+          p2_s7: { ec: 1.3, ph: 7.2, name: "Station 7", plot: "plot-2b" }
         }
       },
       {
@@ -112,16 +229,25 @@ class DrainageService {
         time: "15:24",
         timestamp: "03/09/2026 15:24",
         fertilizer: "Water",
+        p1_fertilizer: "Water",
+        p2a_fertilizer: "Water",
+        p2b_fertilizer: "Water",
+        p1_ecIn: 0.2,
+        p1_phIn: 6.2,
+        p2a_ecIn: 0.2,
+        p2a_phIn: 6.2,
+        p2b_ecIn: 0.2,
+        p2b_phIn: 6.2,
         ecIn: 0.2,
         phIn: 6.2,
         stations: {
           p1_s1: { ec: 1.6, ph: 7.1, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.9, ph: 7.4, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.8, ph: 7.1, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.1, ph: 6.5, name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: 1.2, ph: 6.5, name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: 1.2, ph: 6.8, name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: 1.4, ph: 6.9, name: "Station 7", plot: "plot-2" }
+          p2_s4: { ec: 1.1, ph: 6.5, name: "Station 4", plot: "plot-2a" },
+          p2_s5: { ec: 1.2, ph: 6.5, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.2, ph: 6.8, name: "Station 6", plot: "plot-2b" },
+          p2_s7: { ec: 1.4, ph: 6.9, name: "Station 7", plot: "plot-2b" }
         }
       },
       {
@@ -130,16 +256,25 @@ class DrainageService {
         time: "19:43",
         timestamp: "02/09/2026 19:43",
         fertilizer: "Fulvic Acid",
+        p1_fertilizer: "Fulvic Acid",
+        p2a_fertilizer: "Fulvic Acid",
+        p2b_fertilizer: "Fulvic Acid",
+        p1_ecIn: 0.2,
+        p1_phIn: 7.3,
+        p2a_ecIn: 0.2,
+        p2a_phIn: 7.3,
+        p2b_ecIn: 0.2,
+        p2b_phIn: 7.3,
         ecIn: 0.2,
         phIn: 7.3,
         stations: {
           p1_s1: { ec: 1.2, ph: 6.6, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.7, ph: 7.2, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.8, ph: 6.9, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.1, ph: 6.1, name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: 1.2, ph: 6.0, name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: 1.1, ph: 6.6, name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: 1.4, ph: 6.7, name: "Station 7", plot: "plot-2" }
+          p2_s4: { ec: 1.1, ph: 6.1, name: "Station 4", plot: "plot-2a" },
+          p2_s5: { ec: 1.2, ph: 6.0, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.1, ph: 6.6, name: "Station 6", plot: "plot-2b" },
+          p2_s7: { ec: 1.4, ph: 6.7, name: "Station 7", plot: "plot-2b" }
         }
       },
       {
@@ -148,16 +283,25 @@ class DrainageService {
         time: "11:47",
         timestamp: "02/09/2026 11:47",
         fertilizer: "Water",
+        p1_fertilizer: "Water",
+        p2a_fertilizer: "Water",
+        p2b_fertilizer: "Water",
+        p1_ecIn: 0.3,
+        p1_phIn: 7.1,
+        p2a_ecIn: 0.3,
+        p2a_phIn: 7.1,
+        p2b_ecIn: 0.3,
+        p2b_phIn: 7.1,
         ecIn: 0.3,
         phIn: 7.1,
         stations: {
           p1_s1: { ec: 3.2, ph: 6.5, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 2.1, ph: 7.2, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.8, ph: 7.0, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.3, ph: 6.4, name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: 1.5, ph: 6.4, name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: 1.2, ph: 6.7, name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: 1.6, ph: 6.7, name: "Station 7", plot: "plot-2" }
+          p2_s4: { ec: 1.3, ph: 6.4, name: "Station 4", plot: "plot-2a" },
+          p2_s5: { ec: 1.5, ph: 6.4, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.2, ph: 6.7, name: "Station 6", plot: "plot-2b" },
+          p2_s7: { ec: 1.6, ph: 6.7, name: "Station 7", plot: "plot-2b" }
         }
       },
       {
@@ -166,34 +310,52 @@ class DrainageService {
         time: "09:41",
         timestamp: "01/09/2026 09:41",
         fertilizer: "AB Solution",
+        p1_fertilizer: "AB Solution",
+        p2a_fertilizer: "AB Solution",
+        p2b_fertilizer: "AB Solution",
+        p1_ecIn: 2.5,
+        p1_phIn: 7.0,
+        p2a_ecIn: 2.5,
+        p2a_phIn: 7.0,
+        p2b_ecIn: 2.5,
+        p2b_phIn: 7.0,
         ecIn: 2.5,
         phIn: 7.0,
         stations: {
           p1_s1: { ec: 1.5, ph: 7.0, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 2.1, ph: 7.4, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.6, ph: 7.2, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.2, ph: 6.6, name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: 1.1, ph: 6.6, name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: 1.2, ph: 6.9, name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: 1.7, ph: 6.9, name: "Station 7", plot: "plot-2" }
+          p2_s4: { ec: 1.2, ph: 6.6, name: "Station 4", plot: "plot-2a" },
+          p2_s5: { ec: 1.1, ph: 6.6, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.2, ph: 6.9, name: "Station 6", plot: "plot-2b" },
+          p2_s7: { ec: 1.7, ph: 6.9, name: "Station 7", plot: "plot-2b" }
         }
       },
       {
         date: "31/08/2026",
-        dateRaw: "31/08/26",
+        dateRaw: "31/08/2026",
         time: "12:00 pm",
         timestamp: "31/08/2026 12:00 pm",
         fertilizer: "Water",
+        p1_fertilizer: "Water",
+        p2a_fertilizer: "Water",
+        p2b_fertilizer: "Water",
+        p1_ecIn: 0.2,
+        p1_phIn: 7.0,
+        p2a_ecIn: 0.2,
+        p2a_phIn: 7.0,
+        p2b_ecIn: 0.2,
+        p2b_phIn: 7.0,
         ecIn: 0.2,
         phIn: 7.0,
         stations: {
           p1_s1: { ec: 1.6, ph: 6.8, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.9, ph: 6.7, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.7, ph: 6.6, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.1, ph: 6.3, name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: 1.2, ph: 6.3, name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: 1.3, ph: 6.5, name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: 1.7, ph: 6.5, name: "Station 7", plot: "plot-2" }
+          p2_s4: { ec: 1.1, ph: 6.3, name: "Station 4", plot: "plot-2a" },
+          p2_s5: { ec: 1.2, ph: 6.3, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.3, ph: 6.5, name: "Station 6", plot: "plot-2b" },
+          p2_s7: { ec: 1.7, ph: 6.5, name: "Station 7", plot: "plot-2b" }
         }
       }
     ];
@@ -402,6 +564,17 @@ class DrainageService {
     const idxDate = findIndex(['date', 'tarikh', 'hari bulan']);
     const idxTime = findIndex(['time', 'stamp', 'masa', 'jam']);
     const idxFertilizer = findIndex(['fertilizer', 'water', 'baja', 'air', 'liquid', 'solution']);
+    const idxP1Fert = findIndex(['p1 fertilizer', 'p1 liquid', 'p1 baja', 'p1 air', 'plot 1 fertilizer', 'p1 solution']);
+    const idxP2aFert = findIndex(['p2a fertilizer', 'p2a liquid', 'p2a baja', 'p2a air', 'plot 2a fertilizer', 'p2a solution']);
+    const idxP2bFert = findIndex(['p2b fertilizer', 'p2b liquid', 'p2b baja', 'p2b air', 'plot 2b fertilizer', 'p2b solution']);
+    
+    // Inflow Benchmarks (Plot 1, Plot 2A, Plot 2B + General fallback)
+    const idxP1EcIn = findIndex(['p1 ec in', 'plot 1 ec in', 'plot1 ec in', 'p1 ec masuk', 'ec in p1']);
+    const idxP1PhIn = findIndex(['p1 ph in', 'plot 1 ph in', 'plot1 ph in', 'p1 ph masuk', 'ph in p1']);
+    const idxP2aEcIn = findIndex(['p2a ec in', 'plot 2a ec in', 'plot2a ec in', 'tank a ec in', 'p2a ec masuk']);
+    const idxP2aPhIn = findIndex(['p2a ph in', 'plot 2a ph in', 'plot2a ph in', 'tank a ph in', 'p2a ph masuk']);
+    const idxP2bEcIn = findIndex(['p2b ec in', 'plot 2b ec in', 'plot2b ec in', 'tank b ec in', 'p2b ec masuk']);
+    const idxP2bPhIn = findIndex(['p2b ph in', 'plot 2b ph in', 'plot2b ph in', 'tank b ph in', 'p2b ph masuk']);
     const idxEcIn = findIndex(['ec in', 'ec_in', 'ec masuk', 'in ec']);
     const idxPhIn = findIndex(['ph in', 'ph_in', 'ph masuk', 'in ph']);
 
@@ -442,22 +615,45 @@ class DrainageService {
         fertVal = 'AB Solution';
       }
 
+      const p1Fert = (idxP1Fert >= 0 && r[idxP1Fert]) ? r[idxP1Fert].trim() : fertVal;
+      const p2aFert = (idxP2aFert >= 0 && r[idxP2aFert]) ? r[idxP2aFert].trim() : fertVal;
+      const p2bFert = (idxP2bFert >= 0 && r[idxP2bFert]) ? r[idxP2bFert].trim() : fertVal;
+
+      const rawEcIn = numVal(idxEcIn >= 0 ? r[idxEcIn] : (idxFertilizer >= 0 ? r[3] : r[2]));
+      const rawPhIn = numVal(idxPhIn >= 0 ? r[idxPhIn] : (idxFertilizer >= 0 ? r[4] : r[3]));
+
+      const p1EcIn = (idxP1EcIn >= 0 && numVal(r[idxP1EcIn]) !== null) ? numVal(r[idxP1EcIn]) : rawEcIn;
+      const p1PhIn = (idxP1PhIn >= 0 && numVal(r[idxP1PhIn]) !== null) ? numVal(r[idxP1PhIn]) : rawPhIn;
+      const p2aEcIn = (idxP2aEcIn >= 0 && numVal(r[idxP2aEcIn]) !== null) ? numVal(r[idxP2aEcIn]) : rawEcIn;
+      const p2aPhIn = (idxP2aPhIn >= 0 && numVal(r[idxP2aPhIn]) !== null) ? numVal(r[idxP2aPhIn]) : rawPhIn;
+      const p2bEcIn = (idxP2bEcIn >= 0 && numVal(r[idxP2bEcIn]) !== null) ? numVal(r[idxP2bEcIn]) : rawEcIn;
+      const p2bPhIn = (idxP2bPhIn >= 0 && numVal(r[idxP2bPhIn]) !== null) ? numVal(r[idxP2bPhIn]) : rawPhIn;
+
       parsedRecords.push({
         date: normDate,
         dateRaw: rawDate,
         time: timeVal,
         timestamp: `${normDate} ${timeVal}`,
         fertilizer: fertVal || 'Water',
-        ecIn: numVal(idxEcIn >= 0 ? r[idxEcIn] : (idxFertilizer >= 0 ? r[3] : r[2])),
-        phIn: numVal(idxPhIn >= 0 ? r[idxPhIn] : (idxFertilizer >= 0 ? r[4] : r[3])),
+        p1_fertilizer: p1Fert,
+        p2a_fertilizer: p2aFert,
+        p2b_fertilizer: p2bFert,
+        p1_ecIn: p1EcIn,
+        p1_phIn: p1PhIn,
+        p2a_ecIn: p2aEcIn,
+        p2a_phIn: p2aPhIn,
+        p2b_ecIn: p2bEcIn,
+        p2b_phIn: p2bPhIn,
+        ecIn: rawEcIn,
+        phIn: rawPhIn,
         stations: {
           p1_s1: { ec: numVal(idxP1S1Ec >= 0 ? r[idxP1S1Ec] : (idxFertilizer >= 0 ? r[5] : r[4])), ph: numVal(idxP1S1Ph >= 0 ? r[idxP1S1Ph] : (idxFertilizer >= 0 ? r[6] : r[5])), name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: numVal(idxP1S2Ec >= 0 ? r[idxP1S2Ec] : (idxFertilizer >= 0 ? r[7] : r[6])), ph: numVal(idxP1S2Ph >= 0 ? r[idxP1S2Ph] : (idxFertilizer >= 0 ? r[8] : r[7])), name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: numVal(idxP1S3Ec >= 0 ? r[idxP1S3Ec] : (idxFertilizer >= 0 ? r[9] : r[8])), ph: numVal(idxP1S3Ph >= 0 ? r[idxP1S3Ph] : (idxFertilizer >= 0 ? r[10] : r[9])), name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: numVal(idxP2S4Ec >= 0 ? r[idxP2S4Ec] : (idxFertilizer >= 0 ? r[11] : r[10])), ph: numVal(idxP2S4Ph >= 0 ? r[idxP2S4Ph] : (idxFertilizer >= 0 ? r[12] : r[11])), name: "Station 4", plot: "plot-2" },
-          p2_s5: { ec: numVal(idxP2S5Ec >= 0 ? r[idxP2S5Ec] : (idxFertilizer >= 0 ? r[13] : r[12])), ph: numVal(idxP2S5Ph >= 0 ? r[idxP2S5Ph] : (idxFertilizer >= 0 ? r[14] : r[13])), name: "Station 5", plot: "plot-2" },
-          p2_s6: { ec: numVal(idxP2S6Ec >= 0 ? r[idxP2S6Ec] : (idxFertilizer >= 0 ? r[15] : r[14])), ph: numVal(idxP2S6Ph >= 0 ? r[idxP2S6Ph] : (idxFertilizer >= 0 ? r[16] : r[15])), name: "Station 6", plot: "plot-2" },
-          p2_s7: { ec: numVal(idxP2S7Ec >= 0 ? r[idxP2S7Ec] : (idxFertilizer >= 0 ? r[17] : r[16])), ph: numVal(idxP2S7Ph >= 0 ? r[idxP2S7Ph] : (idxFertilizer >= 0 ? r[18] : r[17])), name: "Station 7", plot: "plot-2" }
+          p2_s4: { ec: numVal(idxP2S4Ec >= 0 ? r[idxP2S4Ec] : (idxFertilizer >= 0 ? r[11] : r[10])), ph: numVal(idxP2S4Ph >= 0 ? r[idxP2S4Ph] : (idxFertilizer >= 0 ? r[12] : r[11])), name: "Station 4", plot: "plot-2a" },
+          p2_s5: { ec: numVal(idxP2S5Ec >= 0 ? r[idxP2S5Ec] : (idxFertilizer >= 0 ? r[13] : r[12])), ph: numVal(idxP2S5Ph >= 0 ? r[idxP2S5Ph] : (idxFertilizer >= 0 ? r[14] : r[13])), name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: numVal(idxP2S6Ec >= 0 ? r[idxP2S6Ec] : (idxFertilizer >= 0 ? r[15] : r[14])), ph: numVal(idxP2S6Ph >= 0 ? r[idxP2S6Ph] : (idxFertilizer >= 0 ? r[16] : r[15])), name: "Station 6", plot: "plot-2b" },
+          p2_s7: { ec: numVal(idxP2S7Ec >= 0 ? r[idxP2S7Ec] : (idxFertilizer >= 0 ? r[17] : r[16])), ph: numVal(idxP2S7Ph >= 0 ? r[idxP2S7Ph] : (idxFertilizer >= 0 ? r[18] : r[17])), name: "Station 7", plot: "plot-2b" }
         }
       });
     });
@@ -574,16 +770,17 @@ class DrainageService {
 
       let hour = 12, min = 0;
       if (timeStr) {
-        const cleanTime = String(timeStr).trim().toLowerCase();
-        const isPM = cleanTime.includes('pm') || cleanTime.includes('p.m.');
-        const isAM = cleanTime.includes('am') || cleanTime.includes('a.m.');
-        const timeDigits = cleanTime.replace(/[^\d:]/g, '');
-        const timeParts = timeDigits.split(':');
-        if (timeParts.length >= 1 && timeParts[0] !== '') {
-          hour = parseInt(timeParts[0], 10);
-          min = timeParts.length > 1 ? parseInt(timeParts[1], 10) : 0;
-          if (isPM && hour < 12) hour += 12;
-          if (isAM && hour === 12) hour = 0;
+        const isPm = timeStr.toLowerCase().includes('pm');
+        const isAm = timeStr.toLowerCase().includes('am');
+        const cleanT = timeStr.toLowerCase().replace(/[^\d:]/g, '');
+        const tParts = cleanT.split(':');
+        if (tParts.length >= 1) {
+          hour = parseInt(tParts[0], 10) || 12;
+          if (isPm && hour < 12) hour += 12;
+          if (isAm && hour === 12) hour = 0;
+        }
+        if (tParts.length >= 2) {
+          min = parseInt(tParts[1], 10) || 0;
         }
       }
 
@@ -601,13 +798,39 @@ class DrainageService {
 
   /**
    * Calculate Plot Specific Aggregate Metrics with Agronomic Diagnostics
+   * Supports: 'plot-1', 'plot-2a', 'plot-2b', and 'plot-2'
    */
   calcPlotSummary(entry, plotId) {
     if (!entry) return null;
-    const isP1 = (plotId === 'plot-1');
-    const stationKeys = isP1 
-      ? ['p1_s1', 'p1_s2', 'p1_s3'] 
-      : ['p2_s4', 'p2_s5', 'p2_s6', 'p2_s7'];
+    let stationKeys = [];
+    let ecIn = entry.ecIn;
+    let phIn = entry.phIn;
+    let plotLabel = "Plot 1";
+
+    let fert = entry.fertilizer || 'Water';
+    if (plotId === 'plot-1') {
+      stationKeys = ['p1_s1', 'p1_s2', 'p1_s3'];
+      ecIn = (entry.p1_ecIn !== undefined && entry.p1_ecIn !== null) ? entry.p1_ecIn : entry.ecIn;
+      phIn = (entry.p1_phIn !== undefined && entry.p1_phIn !== null) ? entry.p1_phIn : entry.phIn;
+      fert = entry.p1_fertilizer || entry.fertilizer || 'Water';
+      plotLabel = "Plot 1";
+    } else if (plotId === 'plot-2a') {
+      stationKeys = ['p2_s4', 'p2_s5'];
+      ecIn = (entry.p2a_ecIn !== undefined && entry.p2a_ecIn !== null) ? entry.p2a_ecIn : entry.ecIn;
+      phIn = (entry.p2a_phIn !== undefined && entry.p2a_phIn !== null) ? entry.p2a_phIn : entry.phIn;
+      fert = entry.p2a_fertilizer || entry.fertilizer || 'Water';
+      plotLabel = "Plot 2A";
+    } else if (plotId === 'plot-2b') {
+      stationKeys = ['p2_s6', 'p2_s7'];
+      ecIn = (entry.p2b_ecIn !== undefined && entry.p2b_ecIn !== null) ? entry.p2b_ecIn : entry.ecIn;
+      phIn = (entry.p2b_phIn !== undefined && entry.p2b_phIn !== null) ? entry.p2b_phIn : entry.phIn;
+      fert = entry.p2b_fertilizer || entry.fertilizer || 'Water';
+      plotLabel = "Plot 2B";
+    } else {
+      // General plot-2 fallback
+      stationKeys = ['p2_s4', 'p2_s5', 'p2_s6', 'p2_s7'];
+      plotLabel = "Plot 2";
+    }
 
     const validEcs = [];
     const validPhs = [];
@@ -641,20 +864,22 @@ class DrainageService {
     const avgPh = validPhs.length > 0 ? (validPhs.reduce((a, b) => a + b, 0) / validPhs.length) : null;
     
     let ecDelta = null;
-    if (avgEc !== null && entry.ecIn !== null && entry.ecIn !== undefined) {
-      ecDelta = Math.round((avgEc - entry.ecIn) * 100) / 100;
+    if (avgEc !== null && ecIn !== null && ecIn !== undefined) {
+      ecDelta = Math.round((avgEc - ecIn) * 100) / 100;
     }
 
     const ecEval = this.evaluateEcDelta(ecDelta);
     const avgPhEval = this.evaluatePh(avgPh);
-    const inflowPhEval = this.evaluatePh(entry.phIn);
+    const inflowPhEval = this.evaluatePh(phIn);
 
     return {
+      plotId: plotId,
+      plotLabel: plotLabel,
       date: entry.date,
       time: entry.time,
-      fertilizer: entry.fertilizer || 'Water',
-      ecIn: entry.ecIn,
-      phIn: entry.phIn,
+      fertilizer: fert,
+      ecIn: ecIn,
+      phIn: phIn,
       inflowPhEval: inflowPhEval,
       avgDrainageEc: avgEc !== null ? Math.round(avgEc * 100) / 100 : null,
       avgDrainagePh: avgPh !== null ? Math.round(avgPh * 100) / 100 : null,
@@ -694,22 +919,42 @@ class DrainageService {
     if (!payload || !payload.date) return false;
 
     const normDate = this.normalizeDate(payload.date);
+    const p1EcIn = (payload.p1_ecIn !== undefined && payload.p1_ecIn !== '') ? parseFloat(payload.p1_ecIn) : ((payload.ecIn !== undefined && payload.ecIn !== '') ? parseFloat(payload.ecIn) : null);
+    const p1PhIn = (payload.p1_phIn !== undefined && payload.p1_phIn !== '') ? parseFloat(payload.p1_phIn) : ((payload.phIn !== undefined && payload.phIn !== '') ? parseFloat(payload.phIn) : null);
+    const p2aEcIn = (payload.p2a_ecIn !== undefined && payload.p2a_ecIn !== '') ? parseFloat(payload.p2a_ecIn) : ((payload.ecIn !== undefined && payload.ecIn !== '') ? parseFloat(payload.ecIn) : null);
+    const p2aPhIn = (payload.p2a_phIn !== undefined && payload.p2a_phIn !== '') ? parseFloat(payload.p2a_phIn) : ((payload.phIn !== undefined && payload.phIn !== '') ? parseFloat(payload.phIn) : null);
+    const p2bEcIn = (payload.p2b_ecIn !== undefined && payload.p2b_ecIn !== '') ? parseFloat(payload.p2b_ecIn) : ((payload.ecIn !== undefined && payload.ecIn !== '') ? parseFloat(payload.ecIn) : null);
+    const p2bPhIn = (payload.p2b_phIn !== undefined && payload.p2b_phIn !== '') ? parseFloat(payload.p2b_phIn) : ((payload.phIn !== undefined && payload.phIn !== '') ? parseFloat(payload.phIn) : null);
+
+    const p1Fert = payload.p1_fertilizer || payload.fertilizer || 'Water';
+    const p2aFert = payload.p2a_fertilizer || payload.fertilizer || 'Water';
+    const p2bFert = payload.p2b_fertilizer || payload.fertilizer || 'Water';
+
     const newEntry = {
       date: normDate,
       dateRaw: payload.date,
       time: payload.time || '12:00 pm',
       timestamp: `${normDate} ${payload.time || '12:00 pm'}`,
-      fertilizer: payload.fertilizer || 'Water',
-      ecIn: (payload.ecIn !== undefined && payload.ecIn !== '') ? parseFloat(payload.ecIn) : null,
-      phIn: (payload.phIn !== undefined && payload.phIn !== '') ? parseFloat(payload.phIn) : null,
+      fertilizer: p1Fert,
+      p1_fertilizer: p1Fert,
+      p2a_fertilizer: p2aFert,
+      p2b_fertilizer: p2bFert,
+      p1_ecIn: p1EcIn,
+      p1_phIn: p1PhIn,
+      p2a_ecIn: p2aEcIn,
+      p2a_phIn: p2aPhIn,
+      p2b_ecIn: p2bEcIn,
+      p2b_phIn: p2bPhIn,
+      ecIn: p1EcIn ?? p2aEcIn,
+      phIn: p1PhIn ?? p2aPhIn,
       stations: {
         p1_s1: { ec: (payload.p1_s1_ec !== '' && payload.p1_s1_ec !== undefined) ? parseFloat(payload.p1_s1_ec) : null, ph: (payload.p1_s1_ph !== '' && payload.p1_s1_ph !== undefined) ? parseFloat(payload.p1_s1_ph) : null, name: "Station 1", plot: "plot-1" },
         p1_s2: { ec: (payload.p1_s2_ec !== '' && payload.p1_s2_ec !== undefined) ? parseFloat(payload.p1_s2_ec) : null, ph: (payload.p1_s2_ph !== '' && payload.p1_s2_ph !== undefined) ? parseFloat(payload.p1_s2_ph) : null, name: "Station 2", plot: "plot-1" },
         p1_s3: { ec: (payload.p1_s3_ec !== '' && payload.p1_s3_ec !== undefined) ? parseFloat(payload.p1_s3_ec) : null, ph: (payload.p1_s3_ph !== '' && payload.p1_s3_ph !== undefined) ? parseFloat(payload.p1_s3_ph) : null, name: "Station 3", plot: "plot-1" },
-        p2_s4: { ec: (payload.p2_s4_ec !== '' && payload.p2_s4_ec !== undefined) ? parseFloat(payload.p2_s4_ec) : null, ph: (payload.p2_s4_ph !== '' && payload.p2_s4_ph !== undefined) ? parseFloat(payload.p2_s4_ph) : null, name: "Station 4", plot: "plot-2" },
-        p2_s5: { ec: (payload.p2_s5_ec !== '' && payload.p2_s5_ec !== undefined) ? parseFloat(payload.p2_s5_ec) : null, ph: (payload.p2_s5_ph !== '' && payload.p2_s5_ph !== undefined) ? parseFloat(payload.p2_s5_ph) : null, name: "Station 5", plot: "plot-2" },
-        p2_s6: { ec: (payload.p2_s6_ec !== '' && payload.p2_s6_ec !== undefined) ? parseFloat(payload.p2_s6_ec) : null, ph: (payload.p2_s6_ph !== '' && payload.p2_s6_ph !== undefined) ? parseFloat(payload.p2_s6_ph) : null, name: "Station 6", plot: "plot-2" },
-        p2_s7: { ec: (payload.p2_s7_ec !== '' && payload.p2_s7_ec !== undefined) ? parseFloat(payload.p2_s7_ec) : null, ph: (payload.p2_s7_ph !== '' && payload.p2_s7_ph !== undefined) ? parseFloat(payload.p2_s7_ph) : null, name: "Station 7", plot: "plot-2" }
+        p2_s4: { ec: (payload.p2_s4_ec !== '' && payload.p2_s4_ec !== undefined) ? parseFloat(payload.p2_s4_ec) : null, ph: (payload.p2_s4_ph !== '' && payload.p2_s4_ph !== undefined) ? parseFloat(payload.p2_s4_ph) : null, name: "Station 4", plot: "plot-2a" },
+        p2_s5: { ec: (payload.p2_s5_ec !== '' && payload.p2_s5_ec !== undefined) ? parseFloat(payload.p2_s5_ec) : null, ph: (payload.p2_s5_ph !== '' && payload.p2_s5_ph !== undefined) ? parseFloat(payload.p2_s5_ph) : null, name: "Station 5", plot: "plot-2a" },
+        p2_s6: { ec: (payload.p2_s6_ec !== '' && payload.p2_s6_ec !== undefined) ? parseFloat(payload.p2_s6_ec) : null, ph: (payload.p2_s6_ph !== '' && payload.p2_s6_ph !== undefined) ? parseFloat(payload.p2_s6_ph) : null, name: "Station 6", plot: "plot-2b" },
+        p2_s7: { ec: (payload.p2_s7_ec !== '' && payload.p2_s7_ec !== undefined) ? parseFloat(payload.p2_s7_ec) : null, ph: (payload.p2_s7_ph !== '' && payload.p2_s7_ph !== undefined) ? parseFloat(payload.p2_s7_ph) : null, name: "Station 7", plot: "plot-2b" }
       }
     };
 
@@ -731,6 +976,15 @@ class DrainageService {
           time: newEntry.time,
           fertilizer: newEntry.fertilizer,
           fertilizerWater: newEntry.fertilizer,
+          p1_fertilizer: newEntry.p1_fertilizer,
+          p2a_fertilizer: newEntry.p2a_fertilizer,
+          p2b_fertilizer: newEntry.p2b_fertilizer,
+          p1_ecIn: newEntry.p1_ecIn,
+          p1_phIn: newEntry.p1_phIn,
+          p2a_ecIn: newEntry.p2a_ecIn,
+          p2a_phIn: newEntry.p2a_phIn,
+          p2b_ecIn: newEntry.p2b_ecIn,
+          p2b_phIn: newEntry.p2b_phIn,
           ecIn: newEntry.ecIn,
           phIn: newEntry.phIn,
           p1_s1_ec: newEntry.stations.p1_s1.ec,
@@ -796,114 +1050,93 @@ class DrainageService {
   /**
    * Render Ultra-Clean Dashboard Widget inside Daily Plot Cards with 2 Dedicated Separate Graphs
    */
-  renderPlotDrainageCard(plotId) {
-    try {
-      const isP1 = (plotId === 'plot-1');
-      const isP2 = (plotId === 'plot-2');
-      if (!isP1 && !isP2) return '';
+  /**
+   * Helper to build a single sub-plot telemetry block with hero metrics, status, station tiles, warnings & charts
+   */
+  buildSubPlotTelemetryBlock(subPlotId, subPlotTitle, subPlotBadgeHtml, summary, gridClass = 'grid-3-tiles') {
+    const ecInVal = (summary && summary.ecIn !== null && summary.ecIn !== undefined) ? Number(summary.ecIn).toFixed(1) : '--';
+    const phInVal = (summary && summary.phIn !== null && summary.phIn !== undefined) ? Number(summary.phIn).toFixed(1) : '--';
+    const drainEcVal = (summary && summary.avgDrainageEc !== null && summary.avgDrainageEc !== undefined) ? Number(summary.avgDrainageEc).toFixed(1) : '--';
+    const drainPhVal = (summary && summary.avgDrainagePh !== null && summary.avgDrainagePh !== undefined) ? Number(summary.avgDrainagePh).toFixed(1) : '--';
+    const deltaVal = (summary && summary.ecDelta !== null && summary.ecDelta !== undefined) 
+      ? (summary.ecDelta > 0 ? `+${Number(summary.ecDelta).toFixed(1)}` : `${Number(summary.ecDelta).toFixed(1)}`) 
+      : '--';
 
-      const history = this.getPast5Records(plotId) || [];
-      const latest = history.length > 0 ? history[0] : null;
-      const summary = latest ? latest.summary : null;
+    // Clean Lightweight Status Text
+    let ecStatusText = '';
+    if (summary && summary.ecDelta !== null && summary.ecDelta !== undefined && summary.ecEval) {
+      const ecColorClass = summary.ecEval.status === 'safe' ? 'text-emerald' : (summary.ecEval.status === 'danger' ? 'text-rose' : 'text-amber');
+      const ecLabel = summary.ecEval.status === 'danger' ? 'Salt Build-up' : (summary.ecEval.status === 'caution' ? 'Low Run-off' : 'Optimal Run-off');
+      ecStatusText = `<span class="stat-text-item ${ecColorClass}"><i data-lucide="zap"></i> &Delta;EC ${deltaVal} (${ecLabel})</span>`;
+    } else {
+      ecStatusText = `<span class="stat-text-item text-muted"><i data-lucide="zap"></i> No EC Delta</span>`;
+    }
 
-      const plotBadge = isP1 ? "Plot 1" : "Plot 2";
-      const ecInVal = (summary && summary.ecIn !== null && summary.ecIn !== undefined) ? Number(summary.ecIn).toFixed(1) : '--';
-      const phInVal = (summary && summary.phIn !== null && summary.phIn !== undefined) ? Number(summary.phIn).toFixed(1) : '--';
-      const drainEcVal = (summary && summary.avgDrainageEc !== null && summary.avgDrainageEc !== undefined) ? Number(summary.avgDrainageEc).toFixed(1) : '--';
-      const drainPhVal = (summary && summary.avgDrainagePh !== null && summary.avgDrainagePh !== undefined) ? Number(summary.avgDrainagePh).toFixed(1) : '--';
-      const deltaVal = (summary && summary.ecDelta !== null && summary.ecDelta !== undefined) 
-        ? (summary.ecDelta > 0 ? `+${Number(summary.ecDelta).toFixed(1)}` : `${Number(summary.ecDelta).toFixed(1)}`) 
-        : '--';
+    let phStatusText = '';
+    if (summary && summary.avgDrainagePh !== null && summary.avgDrainagePh !== undefined) {
+      const phColorClass = (summary.avgPhEval && summary.avgPhEval.status === 'safe') ? 'text-emerald' : ((summary.avgPhEval && summary.avgPhEval.status === 'danger') ? 'text-rose' : 'text-amber');
+      let phLabel = 'Sweet Spot';
+      const p = summary.avgDrainagePh;
+      if (p < 5.0) phLabel = 'Toxicity Risk';
+      else if (p < 5.5) phLabel = 'Slightly Acidic';
+      else if (p <= 6.3) phLabel = 'Sweet Spot';
+      else if (p <= 6.8) phLabel = 'Fe Declining';
+      else if (p <= 7.0) phLabel = 'Fe Lockout';
+      else phLabel = 'Severe Lockout';
 
-      // Clean Lightweight Status Text (No Box Borders)
-      let ecStatusText = '';
-      if (summary && summary.ecDelta !== null && summary.ecDelta !== undefined && summary.ecEval) {
-        const ecColorClass = summary.ecEval.status === 'safe' ? 'text-emerald' : (summary.ecEval.status === 'danger' ? 'text-rose' : 'text-amber');
-        const ecLabel = summary.ecEval.status === 'danger' ? 'Salt Build-up' : (summary.ecEval.status === 'caution' ? 'Low Run-off' : 'Optimal Run-off');
-        ecStatusText = `<span class="stat-text-item ${ecColorClass}"><i data-lucide="zap"></i> &Delta;EC ${deltaVal} (${ecLabel})</span>`;
-      } else {
-        ecStatusText = `<span class="stat-text-item text-muted"><i data-lucide="zap"></i> No EC Delta</span>`;
-      }
+      phStatusText = `<span class="stat-text-item ${phColorClass}"><i data-lucide="droplet"></i> Run-off pH ${drainPhVal} (${phLabel})</span>`;
+    }
 
-      let phStatusText = '';
-      if (summary && summary.avgDrainagePh !== null && summary.avgDrainagePh !== undefined) {
-        const phColorClass = (summary.avgPhEval && summary.avgPhEval.status === 'safe') ? 'text-emerald' : ((summary.avgPhEval && summary.avgPhEval.status === 'danger') ? 'text-rose' : 'text-amber');
-        let phLabel = 'Sweet Spot';
-        const p = summary.avgDrainagePh;
-        if (p < 5.0) phLabel = 'Toxicity Risk';
-        else if (p < 5.5) phLabel = 'Slightly Acidic';
-        else if (p <= 6.3) phLabel = 'Sweet Spot';
-        else if (p <= 6.8) phLabel = 'Fe Declining';
-        else if (p <= 7.0) phLabel = 'Fe Lockout';
-        else phLabel = 'Severe Lockout';
+    // Station Tiles Grid
+    let stationTilesHtml = '';
+    if (summary && summary.stations && summary.stations.length > 0) {
+      stationTilesHtml = summary.stations.map(st => {
+        const ecStr = (st.ec !== null && st.ec !== undefined) ? Number(st.ec).toFixed(1) : '--';
+        const phStr = (st.ph !== null && st.ph !== undefined) ? Number(st.ph).toFixed(1) : '--';
+        const ev = st.phEval || { status: 'safe', dotClass: 'dot-emerald', tag: 'Optimal' };
+        const tileClass = ev.status === 'safe' ? 'tile-safe' : (ev.status === 'danger' ? 'tile-danger' : (ev.status === 'warning' ? 'tile-warning' : 'tile-caution'));
+        const stName = (st.name || 'Station').replace('Station ', 'St ');
 
-        phStatusText = `<span class="stat-text-item ${phColorClass}"><i data-lucide="droplet"></i> Run-off pH ${drainPhVal} (${phLabel})</span>`;
-      }
-
-      // Station Structured Column Tiles (3 cols for Plot 1, 4 cols for Plot 2)
-      let stationTilesHtml = '';
-      if (summary && summary.stations && summary.stations.length > 0) {
-        stationTilesHtml = summary.stations.map(st => {
-          const ecStr = (st.ec !== null && st.ec !== undefined) ? Number(st.ec).toFixed(1) : '--';
-          const phStr = (st.ph !== null && st.ph !== undefined) ? Number(st.ph).toFixed(1) : '--';
-          const ev = st.phEval || { status: 'safe', dotClass: 'dot-emerald', tag: 'Optimal' };
-          const tileClass = ev.status === 'safe' ? 'tile-safe' : (ev.status === 'danger' ? 'tile-danger' : (ev.status === 'warning' ? 'tile-warning' : 'tile-caution'));
-          const stName = (st.name || 'Station').replace('Station ', 'St ');
-
-          return `
-            <div class="st-col-tile ${tileClass}" title="${stName}: ${ecStr} EC, pH ${phStr} (${ev.tag || ''})">
-              <div class="st-tile-head">
-                <span class="st-dot ${ev.dotClass || 'dot-emerald'}"></span>
-                <span class="st-tile-name">${stName}</span>
-              </div>
-              <div class="st-tile-ec font-mono">${ecStr} <small>EC</small></div>
-              <div class="st-tile-ph font-mono ${ev.status === 'safe' ? 'text-emerald' : 'text-amber'}">pH ${phStr}</div>
+        return `
+          <div class="st-col-tile ${tileClass}" title="${stName}: ${ecStr} EC, pH ${phStr} (${ev.tag || ''})">
+            <div class="st-tile-head">
+              <span class="st-dot ${ev.dotClass || 'dot-emerald'}"></span>
+              <span class="st-tile-name">${stName}</span>
             </div>
-          `;
-        }).join('');
-      }
-
-      // Concise 1-Line pH Warning (if any station out of sweet spot)
-      let warningBannerHtml = '';
-      if (summary && summary.hasStationWarning && summary.stationWarnings) {
-        const names = summary.stationWarnings.map(w => `${(w.name || 'Station').replace('Station ', 'St ')} (pH ${w.ph})`).join(', ');
-        warningBannerHtml = `
-          <div class="drainage-ph-micro-alert" title="Target Range: 5.5–6.3 pH">
-            <i data-lucide="alert-triangle" class="ph-micro-icon"></i>
-            <span><strong>pH Alert</strong>: ${names} outside 5.5–6.3 sweet spot</span>
+            <div class="st-tile-ec font-mono">${ecStr} <small>EC</small></div>
+            <div class="st-tile-ph font-mono ${ev.status === 'safe' ? 'text-emerald' : 'text-amber'}">pH ${phStr}</div>
           </div>
         `;
-      }
+      }).join('');
+    }
+
+    // Out of sweet spot Alert Banner
+    let warningBannerHtml = '';
+    if (summary && summary.hasStationWarning && summary.stationWarnings) {
+      const names = summary.stationWarnings.map(w => `${(w.name || 'Station').replace('Station ', 'St ')} (pH ${w.ph})`).join(', ');
+      warningBannerHtml = `
+        <div class="drainage-ph-micro-alert" title="Target Range: 5.5–6.3 pH">
+          <i data-lucide="alert-triangle" class="ph-micro-icon"></i>
+          <span><strong>pH Alert</strong>: ${names} outside 5.5–6.3 sweet spot</span>
+        </div>
+      `;
+    }
 
     return `
-      <div class="activity-section drainage-monitoring-section" data-plot-id="${plotId}">
-        <!-- Non-Colliding Header Bar -->
-        <div class="drainage-clean-header">
-          <div class="drainage-title-box">
-            <i data-lucide="test-tube-2" class="drainage-icon"></i>
-            <span class="drainage-title-text">Drainage Run-Off</span>
-            <span class="drainage-plot-badge">${plotBadge}</span>
+      <div class="drainage-sub-block" style="margin-bottom: 0.85rem;">
+        <!-- Sub-block Header / Sub-title -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; padding-bottom:0.35rem; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.75rem;">
+          <div style="display:inline-flex; align-items:center; gap:0.4rem; font-weight:700; color:#f8fafc;">
+            ${subPlotBadgeHtml}
+            <span>${subPlotTitle}</span>
           </div>
-          <div class="drainage-actions-wrap">
-            <button class="btn-clean-action btn-records" data-open-records-modal="${plotId}" title="View all records in full sheet popup">
-              <i data-lucide="file-spreadsheet"></i>
-              <span>Records</span>
-            </button>
-            <button class="btn-clean-action btn-log" data-open-drainage-modal="${plotId}" title="Log reading">
-              <i data-lucide="plus"></i>
-              <span>Log</span>
-            </button>
-          </div>
+          <span class="font-mono text-cyan" style="font-size:0.72rem; font-weight:600;">
+            ${summary ? `${summary.date} &bull; ${summary.time}` : 'No records'}
+          </span>
         </div>
 
         <!-- 1 Unified Telemetry Hero Box -->
         <div class="drainage-hero-box">
-          <!-- Latest Entry Timestamp Header -->
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.45rem; padding-bottom:0.35rem; border-bottom:1px solid rgba(255,255,255,0.06); font-size:0.72rem; color:#94a3b8;">
-            <span style="display:inline-flex; align-items:center; gap:0.3rem; font-weight:600;"><i data-lucide="clock" style="width:12px;height:12px;color:#38bdf8;"></i> Latest Logged Reading</span>
-            <span class="font-mono text-cyan" style="font-weight:700;">${summary ? `${summary.date} &bull; ${summary.time}` : 'No records'}</span>
-          </div>
-
           <!-- Top Row: Inflow Benchmark vs Drainage Outflow Average -->
           <div class="hero-metric-row">
             <div class="hero-metric-item">
@@ -911,12 +1144,12 @@ class DrainageService {
               <span class="hero-val font-mono"><strong>${ecInVal}</strong> <small>EC</small> &bull; pH <strong>${phInVal}</strong></span>
             </div>
             <div class="hero-metric-item text-right">
-              <span class="hero-lbl">Drainage Run-off Avg</span>
+              <span class="hero-lbl">Run-off Avg</span>
               <span class="hero-val font-mono text-emerald"><strong>${drainEcVal}</strong> <small>EC</small> &bull; <span class="text-cyan">pH <strong>${drainPhVal}</strong></span></span>
             </div>
           </div>
 
-          <!-- Middle Row: Clean Colored Status Text (No Box Borders) -->
+          <!-- Middle Row: Clean Colored Status Text -->
           <div class="drainage-status-text-row">
             ${ecStatusText}
             <span class="stat-sep">&bull;</span>
@@ -925,7 +1158,7 @@ class DrainageService {
 
           <!-- Bottom Row: Station Column Tiles Grid -->
           ${stationTilesHtml ? `
-            <div class="drainage-station-grid-tiles ${isP1 ? 'grid-3-tiles' : 'grid-4-tiles'}">
+            <div class="drainage-station-grid-tiles ${gridClass}">
               ${stationTilesHtml}
             </div>
           ` : ''}
@@ -949,7 +1182,7 @@ class DrainageService {
               </div>
             </div>
             <div class="graph-canvas-container">
-              <canvas id="drainage-ec-chart-${plotId}" class="drainage-ec-canvas" data-plot="${plotId}"></canvas>
+              <canvas id="drainage-ec-chart-${subPlotId}" class="drainage-ec-canvas" data-plot="${subPlotId}"></canvas>
             </div>
           </div>
 
@@ -966,12 +1199,75 @@ class DrainageService {
               </div>
             </div>
             <div class="graph-canvas-container">
-              <canvas id="drainage-ph-chart-${plotId}" class="drainage-ph-canvas" data-plot="${plotId}"></canvas>
+              <canvas id="drainage-ph-chart-${subPlotId}" class="drainage-ph-canvas" data-plot="${subPlotId}"></canvas>
             </div>
           </div>
         </div>
       </div>
     `;
+  }
+
+  /**
+   * Render Ultra-Clean Dashboard Widget inside Daily Plot Cards with Dedicated Separate Graphs
+   */
+  renderPlotDrainageCard(plotId) {
+    try {
+      const isP1 = (plotId === 'plot-1');
+      const isP2 = (plotId === 'plot-2');
+      if (!isP1 && !isP2) return '';
+
+      let bodyContentHtml = '';
+
+      if (isP1) {
+        const historyP1 = this.getPast5Records('plot-1') || [];
+        const latestP1 = historyP1.length > 0 ? historyP1[0] : null;
+        const summaryP1 = latestP1 ? latestP1.summary : null;
+        const badgeHtml = `<span class="plot-color-indicator dot-p1"></span>`;
+        bodyContentHtml = this.buildSubPlotTelemetryBlock('plot-1', 'Plot 1 Stations (St 1, 2, 3)', badgeHtml, summaryP1, 'grid-3-tiles');
+      } else if (isP2) {
+        // Plot 2A (Stations 4 & 5)
+        const historyP2a = this.getPast5Records('plot-2a') || [];
+        const latestP2a = historyP2a.length > 0 ? historyP2a[0] : null;
+        const summaryP2a = latestP2a ? latestP2a.summary : null;
+        const badgeP2a = `<span class="plot-color-indicator dot-p2"></span>`;
+        const blockP2a = this.buildSubPlotTelemetryBlock('plot-2a', 'Plot 2A (St 4, 5)', badgeP2a, summaryP2a, 'grid-2-tiles');
+
+        // Plot 2B (Stations 6 & 7)
+        const historyP2b = this.getPast5Records('plot-2b') || [];
+        const latestP2b = historyP2b.length > 0 ? historyP2b[0] : null;
+        const summaryP2b = latestP2b ? latestP2b.summary : null;
+        const badgeP2b = `<span class="plot-color-indicator" style="background:#818cf8;"></span>`;
+        const blockP2b = this.buildSubPlotTelemetryBlock('plot-2b', 'Plot 2B (St 6, 7)', badgeP2b, summaryP2b, 'grid-2-tiles');
+
+        bodyContentHtml = `${blockP2a}${blockP2b}`;
+      }
+
+      const plotBadge = isP1 ? "Plot 1" : "Plot 2";
+
+      return `
+        <div class="activity-section drainage-monitoring-section" data-plot-id="${plotId}">
+          <!-- Header Bar -->
+          <div class="drainage-clean-header">
+            <div class="drainage-title-box">
+              <i data-lucide="test-tube-2" class="drainage-icon"></i>
+              <span class="drainage-title-text">Drainage Run-Off</span>
+              <span class="drainage-plot-badge">${plotBadge}</span>
+            </div>
+            <div class="drainage-actions-wrap">
+              <button class="btn-clean-action btn-records" data-open-records-modal="${plotId}" title="View all records in full sheet popup">
+                <i data-lucide="file-spreadsheet"></i>
+                <span>Records</span>
+              </button>
+              <button class="btn-clean-action btn-log" data-open-drainage-modal="${plotId}" title="Log reading">
+                <i data-lucide="plus"></i>
+                <span>Log</span>
+              </button>
+            </div>
+          </div>
+
+          ${bodyContentHtml}
+        </div>
+      `;
     } catch(err) {
       console.error('[DrainageService] renderPlotDrainageCard error:', err);
       return '';
@@ -991,7 +1287,7 @@ class DrainageService {
   renderAllDrainageCharts() {
     if (!window.Chart) return;
 
-    ['plot-1', 'plot-2'].forEach(plotId => {
+    ['plot-1', 'plot-2a', 'plot-2b'].forEach(plotId => {
       const pastEntries = this.getPastRecords(plotId, 10);
       const ordered = [...pastEntries].reverse();
 
@@ -1191,7 +1487,7 @@ class DrainageService {
   /**
    * Render Full Detail Sheet List inside the Mobile-Optimized Records Modal
    */
-  renderDetailedRecordsList(plotFilter = 'plot-1') {
+  renderDetailedRecordsList(plotFilter = 'all') {
     const container = document.getElementById('drainage-records-container');
     const countBadge = document.getElementById('drainage-records-count-badge');
     if (!container) return;
@@ -1216,25 +1512,32 @@ class DrainageService {
     let cardsHtml = '';
     allRecords.forEach((entry, idx) => {
       const summaryP1 = this.calcPlotSummary(entry, 'plot-1');
-      const summaryP2 = this.calcPlotSummary(entry, 'plot-2');
+      const summaryP2a = this.calcPlotSummary(entry, 'plot-2a');
+      const summaryP2b = this.calcPlotSummary(entry, 'plot-2b');
 
       const isPlot1Active = (plotFilter === 'plot-1' || plotFilter === 'all');
-      const isPlot2Active = (plotFilter === 'plot-2' || plotFilter === 'all');
+      const isPlot2aActive = (plotFilter === 'plot-2a' || plotFilter === 'all');
+      const isPlot2bActive = (plotFilter === 'plot-2b' || plotFilter === 'all');
 
       let plotSectionsHtml = '';
 
+      // Plot 1 Section
       if (isPlot1Active && summaryP1) {
         const deltaStr = summaryP1.ecDelta !== null 
           ? (summaryP1.ecDelta > 0 ? `+${summaryP1.ecDelta.toFixed(1)}` : `${summaryP1.ecDelta.toFixed(1)}`) 
           : '--';
         const avgPhStr = summaryP1.avgDrainagePh !== null ? summaryP1.avgDrainagePh.toFixed(1) : '--';
+        const ecInStr = summaryP1.ecIn !== null ? Number(summaryP1.ecIn).toFixed(1) : '--';
+        const phInStr = summaryP1.phIn !== null ? Number(summaryP1.phIn).toFixed(1) : '--';
+        const fertP1 = summaryP1.fertilizer || 'Water';
 
         plotSectionsHtml += `
-          <div class="rec-plot-list-block block-p1">
+          <div class="rec-plot-list-block block-p1" style="margin-top:0.5rem;">
             <div class="rec-plot-list-header">
               <div class="plot-tag-left">
                 <span class="plot-color-indicator dot-p1"></span>
                 <strong>Plot 1</strong>
+                <span class="font-mono" style="font-size:0.68rem; color:#94a3b8; margin-left:0.4rem;">${fertP1} &bull; In: ${ecInStr} EC &bull; pH ${phInStr}</span>
               </div>
               <div class="plot-eval-pills-right">
                 <span class="rec-eval-pill ${summaryP1.ecEval.badgeClass}">&Delta;EC ${deltaStr} (${summaryP1.ecEval.tag})</span>
@@ -1265,26 +1568,78 @@ class DrainageService {
         `;
       }
 
-      if (isPlot2Active && summaryP2) {
-        const deltaStr = summaryP2.ecDelta !== null 
-          ? (summaryP2.ecDelta > 0 ? `+${summaryP2.ecDelta.toFixed(1)}` : `${summaryP2.ecDelta.toFixed(1)}`) 
+      // Plot 2A Section
+      if (isPlot2aActive && summaryP2a) {
+        const deltaStr = summaryP2a.ecDelta !== null 
+          ? (summaryP2a.ecDelta > 0 ? `+${summaryP2a.ecDelta.toFixed(1)}` : `${summaryP2a.ecDelta.toFixed(1)}`) 
           : '--';
-        const avgPhStr = summaryP2.avgDrainagePh !== null ? summaryP2.avgDrainagePh.toFixed(1) : '--';
+        const avgPhStr = summaryP2a.avgDrainagePh !== null ? summaryP2a.avgDrainagePh.toFixed(1) : '--';
+        const ecInStr = summaryP2a.ecIn !== null ? Number(summaryP2a.ecIn).toFixed(1) : '--';
+        const phInStr = summaryP2a.phIn !== null ? Number(summaryP2a.phIn).toFixed(1) : '--';
+        const fertP2a = summaryP2a.fertilizer || 'Water';
 
         plotSectionsHtml += `
-          <div class="rec-plot-list-block block-p2">
+          <div class="rec-plot-list-block block-p2" style="margin-top:0.5rem;">
             <div class="rec-plot-list-header">
               <div class="plot-tag-left">
                 <span class="plot-color-indicator dot-p2"></span>
-                <strong>Plot 2</strong>
+                <strong>Plot 2A</strong>
+                <span class="font-mono" style="font-size:0.68rem; color:#94a3b8; margin-left:0.4rem;">${fertP2a} &bull; In: ${ecInStr} EC &bull; pH ${phInStr}</span>
               </div>
               <div class="plot-eval-pills-right">
-                <span class="rec-eval-pill ${summaryP2.ecEval.badgeClass}">&Delta;EC ${deltaStr} (${summaryP2.ecEval.tag})</span>
-                <span class="rec-eval-pill ${summaryP2.avgPhEval.badgeClass}">pH ${avgPhStr} (${summaryP2.avgPhEval.tag})</span>
+                <span class="rec-eval-pill ${summaryP2a.ecEval.badgeClass}">&Delta;EC ${deltaStr} (${summaryP2a.ecEval.tag})</span>
+                <span class="rec-eval-pill ${summaryP2a.avgPhEval.badgeClass}">pH ${avgPhStr} (${summaryP2a.avgPhEval.tag})</span>
               </div>
             </div>
             <div class="rec-station-list-table">
-              ${summaryP2.stations.map(st => {
+              ${summaryP2a.stations.map(st => {
+                const ecVal = st.ec !== null ? st.ec.toFixed(1) : '--';
+                const phVal = st.ph !== null ? st.ph.toFixed(1) : '--';
+                const ev = st.phEval || { status: 'safe', dotClass: 'dot-emerald', shortTag: 'Sweet Spot', badgeClass: 'pill-neutral' };
+                return `
+                  <div class="rec-station-list-row ${ev.status === 'safe' ? 'row-safe' : 'row-warn'}">
+                    <div class="st-item-name">
+                      <span class="st-dot ${ev.dotClass}"></span>
+                      <span>${st.name.replace('Station ', 'St ')}</span>
+                    </div>
+                    <div class="st-item-metrics font-mono">
+                      <span class="metric-ec"><strong>${ecVal}</strong> <small>EC</small></span>
+                      <span class="metric-ph ${ev.status === 'safe' ? 'text-emerald' : 'text-amber'}">pH <strong>${phVal}</strong></span>
+                      <span class="metric-diag-pill ${ev.badgeClass}">${ev.shortTag}</span>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // Plot 2B Section
+      if (isPlot2bActive && summaryP2b) {
+        const deltaStr = summaryP2b.ecDelta !== null 
+          ? (summaryP2b.ecDelta > 0 ? `+${summaryP2b.ecDelta.toFixed(1)}` : `${summaryP2b.ecDelta.toFixed(1)}`) 
+          : '--';
+        const avgPhStr = summaryP2b.avgDrainagePh !== null ? summaryP2b.avgDrainagePh.toFixed(1) : '--';
+        const ecInStr = summaryP2b.ecIn !== null ? Number(summaryP2b.ecIn).toFixed(1) : '--';
+        const phInStr = summaryP2b.phIn !== null ? Number(summaryP2b.phIn).toFixed(1) : '--';
+        const fertP2b = summaryP2b.fertilizer || 'Water';
+
+        plotSectionsHtml += `
+          <div class="rec-plot-list-block" style="border-left-color:#818cf8; margin-top:0.5rem;">
+            <div class="rec-plot-list-header">
+              <div class="plot-tag-left">
+                <span class="plot-color-indicator" style="background:#818cf8;"></span>
+                <strong>Plot 2B</strong>
+                <span class="font-mono" style="font-size:0.68rem; color:#94a3b8; margin-left:0.4rem;">${fertP2b} &bull; In: ${ecInStr} EC &bull; pH ${phInStr}</span>
+              </div>
+              <div class="plot-eval-pills-right">
+                <span class="rec-eval-pill ${summaryP2b.ecEval.badgeClass}">&Delta;EC ${deltaStr} (${summaryP2b.ecEval.tag})</span>
+                <span class="rec-eval-pill ${summaryP2b.avgPhEval.badgeClass}">pH ${avgPhStr} (${summaryP2b.avgPhEval.tag})</span>
+              </div>
+            </div>
+            <div class="rec-station-list-table">
+              ${summaryP2b.stations.map(st => {
                 const ecVal = st.ec !== null ? st.ec.toFixed(1) : '--';
                 const phVal = st.ph !== null ? st.ph.toFixed(1) : '--';
                 const ev = st.phEval || { status: 'safe', dotClass: 'dot-emerald', shortTag: 'Sweet Spot', badgeClass: 'pill-neutral' };
@@ -1314,10 +1669,6 @@ class DrainageService {
               <i data-lucide="calendar" style="width:13px;height:13px;color:#38bdf8;"></i>
               <strong>${entry.date}</strong>
               <span class="record-time-badge font-mono">${entry.time}</span>
-            </div>
-            <div class="record-inflow-badge font-mono" style="display:flex; align-items:center; gap:0.4rem;">
-              <span class="fertilizer-badge" style="background:rgba(56,189,248,0.18); border:1px solid rgba(56,189,248,0.35); padding:1px 6px; border-radius:3px; color:#38bdf8; font-weight:700; font-size:0.68rem;">${entry.fertilizer || 'Water'}</span>
-              <span>Inflow: <strong>${entry.ecIn !== null ? entry.ecIn.toFixed(1) + ' EC' : '--'}</strong> &bull; <strong>pH ${entry.phIn !== null ? entry.phIn.toFixed(1) : '--'}</strong></span>
             </div>
           </div>
           ${plotSectionsHtml}

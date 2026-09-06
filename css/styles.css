@@ -4351,6 +4351,10 @@ body {
   width: 100%;
 }
 
+.drainage-station-grid-tiles.grid-2-tiles {
+  grid-template-columns: repeat(2, 1fr);
+}
+
 .drainage-station-grid-tiles.grid-3-tiles {
   grid-template-columns: repeat(3, 1fr);
 }
@@ -4893,16 +4897,53 @@ body {
   border: 1px solid rgba(56, 189, 248, 0.4);
 }
 
+.tag-p2b {
+  background: rgba(129, 140, 248, 0.25);
+  color: #a5b4fc;
+  border: 1px solid rgba(129, 140, 248, 0.4);
+}
+
 .st-row-inputs {
   display: flex;
   gap: 0.5rem;
   width: 170px;
 }
 
+.header-inflow-col-labels {
+  display: flex;
+  gap: 0.4rem;
+  font-size: 0.65rem;
+  color: #94a3b8;
+  width: 250px;
+  justify-content: space-between;
+  padding-right: 0.2rem;
+}
+
+.inflow-row-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 250px;
+}
+
+.inflow-fert-select {
+  flex: 1.4;
+  min-width: 105px;
+  max-width: 135px;
+  height: 32px !important;
+  font-size: 0.72rem !important;
+  padding: 0.2rem 0.35rem !important;
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  color: #38bdf8 !important;
+  font-weight: 700;
+  border-radius: 4px;
+}
+
 .compact-num-input {
-  width: 80px !important;
+  width: 52px !important;
   flex: 1;
-  padding: 0.3rem 0.45rem !important;
+  padding: 0.3rem 0.25rem !important;
   font-size: 0.8rem !important;
   height: 32px !important;
   text-align: center;

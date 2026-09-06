@@ -26,11 +26,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Custom Styles with cache-busting -->
-  <link rel="stylesheet" href="css/styles.css?v=11.46">
+  <link rel="stylesheet" href="css/styles.css?v=11.51">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=11.46').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=11.51').then(reg => {
           reg.update();
         }).catch(() => {});
       });
@@ -958,51 +958,98 @@
               <div class="list-section-header">
                 <div class="header-left">
                   <i data-lucide="droplets" style="width:14px;height:14px;color:#38bdf8;"></i>
-                  <span>1. Fertigation Inflow (Benchmark)</span>
+                  <span>1. Fertigation Inflow Benchmarks</span>
                 </div>
-                <div class="header-col-labels font-mono">
-                  <span>EC (mS/cm)</span>
-                  <span>pH Target</span>
+                <div class="header-inflow-col-labels font-mono">
+                  <span>Liquid / Fertilizer</span>
+                  <span>EC In</span>
+                  <span>pH In</span>
                 </div>
-              </div>
-              
-              <!-- Fertilizer / Liquid Dropdown Selector -->
-              <div class="solution-select-row" style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; padding:0.3rem 0.45rem; background:rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.05); border-radius:4px; margin-bottom:0.35rem;">
-                <div class="st-row-label" style="display:flex; align-items:center; gap:0.35rem;">
-                  <i data-lucide="flask-conical" style="width:13px;height:13px;color:#38bdf8;"></i>
-                  <span style="font-size:0.72rem; font-weight:700; color:#cbd5e1;">Fertilizer / Liquid:</span>
-                </div>
-                <select id="drainage-input-fertilizer" class="form-input" style="flex:1; max-width:210px; height:32px; font-size:0.75rem; padding:0.2rem 0.5rem; background:rgba(15,23,42,0.95); border:1px solid rgba(56,189,248,0.35); color:#38bdf8; font-weight:700; border-radius:4px;">
-                  <option value="AB Solution">AB Solution</option>
-                  <option value="Water" selected>Water</option>
-                  <option value="Seaweed Extract">Seaweed Extract</option>
-                  <option value="Fulvic Acid">Fulvic Acid</option>
-                  <option value="Super Nila">Super Nila</option>
-                  <option value="Bacillus + Rootboom">Bacillus + Rootboom</option>
-                  <option value="Blackboom">Blackboom</option>
-                  <option value="CN">CN</option>
-                  <option value="PN">PN</option>
-                  <option value="MKP">MKP</option>
-                  <option value="SOP">SOP</option>
-                  <option value="MGS">MGS</option>
-                </select>
               </div>
 
+              <!-- 3 Inflow Rows: Plot 1, Plot 2A, Plot 2B (Each with its own Fertilizer & Inflow) -->
               <div class="station-list-table">
+                <!-- Plot 1 Inflow -->
                 <div class="station-list-row inflow-list-row">
                   <div class="st-row-label">
-                    <span class="st-row-dot dot-cyan"></span>
-                    <span class="st-row-name">Inflow Benchmark</span>
+                    <span class="st-row-tag tag-p1">P1</span>
+                    <span class="st-row-name">Plot 1</span>
                   </div>
-                  <div class="st-row-inputs">
-                    <input type="number" step="0.1" id="drainage-input-ec-in" class="form-input font-mono compact-num-input highlight-inflow" placeholder="EC In" required>
-                    <input type="number" step="0.1" id="drainage-input-ph-in" class="form-input font-mono compact-num-input highlight-inflow" placeholder="pH In" required>
+                  <div class="inflow-row-inputs">
+                    <select id="drainage-p1-fertilizer" class="form-input inflow-fert-select">
+                      <option value="AB Solution">AB Solution</option>
+                      <option value="Water" selected>Water</option>
+                      <option value="Seaweed Extract">Seaweed Extract</option>
+                      <option value="Fulvic Acid">Fulvic Acid</option>
+                      <option value="Super Nila">Super Nila</option>
+                      <option value="Bacillus + Rootboom">Bacillus + Rootboom</option>
+                      <option value="Blackboom">Blackboom</option>
+                      <option value="CN">CN</option>
+                      <option value="PN">PN</option>
+                      <option value="MKP">MKP</option>
+                      <option value="SOP">SOP</option>
+                      <option value="MGS">MGS</option>
+                    </select>
+                    <input type="number" step="0.1" id="drainage-p1-ec-in" class="form-input font-mono compact-num-input highlight-inflow" placeholder="EC" required>
+                    <input type="number" step="0.1" id="drainage-p1-ph-in" class="form-input font-mono compact-num-input highlight-inflow" placeholder="pH" required>
+                  </div>
+                </div>
+
+                <!-- Plot 2A Inflow -->
+                <div class="station-list-row inflow-list-row">
+                  <div class="st-row-label">
+                    <span class="st-row-tag tag-p2">P2A</span>
+                    <span class="st-row-name">Plot 2A</span>
+                  </div>
+                  <div class="inflow-row-inputs">
+                    <select id="drainage-p2a-fertilizer" class="form-input inflow-fert-select">
+                      <option value="AB Solution">AB Solution</option>
+                      <option value="Water" selected>Water</option>
+                      <option value="Seaweed Extract">Seaweed Extract</option>
+                      <option value="Fulvic Acid">Fulvic Acid</option>
+                      <option value="Super Nila">Super Nila</option>
+                      <option value="Bacillus + Rootboom">Bacillus + Rootboom</option>
+                      <option value="Blackboom">Blackboom</option>
+                      <option value="CN">CN</option>
+                      <option value="PN">PN</option>
+                      <option value="MKP">MKP</option>
+                      <option value="SOP">SOP</option>
+                      <option value="MGS">MGS</option>
+                    </select>
+                    <input type="number" step="0.1" id="drainage-p2a-ec-in" class="form-input font-mono compact-num-input highlight-inflow" placeholder="EC" required>
+                    <input type="number" step="0.1" id="drainage-p2a-ph-in" class="form-input font-mono compact-num-input highlight-inflow" placeholder="pH" required>
+                  </div>
+                </div>
+
+                <!-- Plot 2B Inflow -->
+                <div class="station-list-row inflow-list-row">
+                  <div class="st-row-label">
+                    <span class="st-row-tag tag-p2b">P2B</span>
+                    <span class="st-row-name">Plot 2B</span>
+                  </div>
+                  <div class="inflow-row-inputs">
+                    <select id="drainage-p2b-fertilizer" class="form-input inflow-fert-select">
+                      <option value="AB Solution">AB Solution</option>
+                      <option value="Water" selected>Water</option>
+                      <option value="Seaweed Extract">Seaweed Extract</option>
+                      <option value="Fulvic Acid">Fulvic Acid</option>
+                      <option value="Super Nila">Super Nila</option>
+                      <option value="Bacillus + Rootboom">Bacillus + Rootboom</option>
+                      <option value="Blackboom">Blackboom</option>
+                      <option value="CN">CN</option>
+                      <option value="PN">PN</option>
+                      <option value="MKP">MKP</option>
+                      <option value="SOP">SOP</option>
+                      <option value="MGS">MGS</option>
+                    </select>
+                    <input type="number" step="0.1" id="drainage-p2b-ec-in" class="form-input font-mono compact-num-input highlight-inflow" placeholder="EC" required>
+                    <input type="number" step="0.1" id="drainage-p2b-ph-in" class="form-input font-mono compact-num-input highlight-inflow" placeholder="pH" required>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- 3. Plot 1 Run-off List (Stations 1, 2, 3) -->
+            <!-- 2. Plot 1 Run-off List (Stations 1, 2, 3) -->
             <div class="drainage-form-compact-section plot-1-block">
               <div class="list-section-header">
                 <div class="header-left">
@@ -1053,12 +1100,12 @@
               </div>
             </div>
 
-            <!-- 4. Plot 2 Run-off List (Stations 4, 5, 6, 7) -->
-            <div class="drainage-form-compact-section plot-2-block">
+            <!-- 3. Plot 2A Run-off List (Stations 4, 5) -->
+            <div class="drainage-form-compact-section plot-2a-block">
               <div class="list-section-header">
                 <div class="header-left">
                   <span class="plot-color-indicator dot-p2"></span>
-                  <span>3. Plot 2 Run-off (St 4, 5, 6, 7)</span>
+                  <span>3. Plot 2A Run-off (St 4, 5)</span>
                 </div>
                 <div class="header-col-labels font-mono">
                   <span>EC (mS/cm)</span>
@@ -1089,11 +1136,26 @@
                     <input type="number" step="0.1" id="drainage-p2-s5-ph" class="form-input font-mono compact-num-input" placeholder="pH">
                   </div>
                 </div>
+              </div>
+            </div>
 
+            <!-- 4. Plot 2B Run-off List (Stations 6, 7) -->
+            <div class="drainage-form-compact-section plot-2b-block">
+              <div class="list-section-header">
+                <div class="header-left">
+                  <span class="plot-color-indicator" style="background:#818cf8;"></span>
+                  <span>4. Plot 2B Run-off (St 6, 7)</span>
+                </div>
+                <div class="header-col-labels font-mono">
+                  <span>EC (mS/cm)</span>
+                  <span>pH</span>
+                </div>
+              </div>
+              <div class="station-list-table">
                 <!-- Station 6 -->
                 <div class="station-list-row">
                   <div class="st-row-label">
-                    <span class="st-row-tag tag-p2">St 6</span>
+                    <span class="st-row-tag tag-p2b">St 6</span>
                     <span class="st-row-name">Station 6</span>
                   </div>
                   <div class="st-row-inputs">
@@ -1105,7 +1167,7 @@
                 <!-- Station 7 -->
                 <div class="station-list-row">
                   <div class="st-row-label">
-                    <span class="st-row-tag tag-p2">St 7</span>
+                    <span class="st-row-tag tag-p2b">St 7</span>
                     <span class="st-row-name">Station 7</span>
                   </div>
                   <div class="st-row-inputs">
@@ -1157,9 +1219,10 @@
         <div class="modal-body drainage-records-modal-body">
           <!-- Plot Filter Tabs inside Modal -->
           <div class="records-filter-tabs">
-            <button class="rec-tab-btn active" id="rec-tab-plot1" data-plot="plot-1">Plot 1 (St 1–3)</button>
-            <button class="rec-tab-btn" id="rec-tab-plot2" data-plot="plot-2">Plot 2 (St 4–7)</button>
-            <button class="rec-tab-btn" id="rec-tab-all" data-plot="all">All Stations</button>
+            <button class="rec-tab-btn active" id="rec-tab-all" data-plot="all">All Stations</button>
+            <button class="rec-tab-btn" id="rec-tab-plot1" data-plot="plot-1">Plot 1 (St 1–3)</button>
+            <button class="rec-tab-btn" id="rec-tab-plot2a" data-plot="plot-2a">Plot 2A (St 4–5)</button>
+            <button class="rec-tab-btn" id="rec-tab-plot2b" data-plot="plot-2b">Plot 2B (St 6–7)</button>
           </div>
 
           <!-- Dynamic Detailed Records List (Mobile-Optimized Card Grid) -->
@@ -1192,15 +1255,15 @@
   </div>
 
   <!-- Application Scripts -->
-  <script src="js/config.js?v=11.46"></script>
-  <script src="js/sampleData.js?v=11.46"></script>
-  <script src="js/googleSheetsService.js?v=11.46"></script>
-  <script src="js/drainageService.js?v=11.46"></script>
-  <script src="js/weatherService.js?v=11.46"></script>
-  <script src="js/sprayAdvisory.js?v=11.46"></script>
-  <script src="js/soilMoistureService.js?v=11.46"></script>
-  <script src="js/tapoService.js?v=11.46"></script>
-  <script src="js/radarService.js?v=11.46"></script>
-  <script src="js/app.js?v=11.46"></script>
+  <script src="js/config.js?v=11.51"></script>
+  <script src="js/sampleData.js?v=11.51"></script>
+  <script src="js/googleSheetsService.js?v=11.51"></script>
+  <script src="js/drainageService.js?v=11.51"></script>
+  <script src="js/weatherService.js?v=11.51"></script>
+  <script src="js/sprayAdvisory.js?v=11.51"></script>
+  <script src="js/soilMoistureService.js?v=11.51"></script>
+  <script src="js/tapoService.js?v=11.51"></script>
+  <script src="js/radarService.js?v=11.51"></script>
+  <script src="js/app.js?v=11.51"></script>
 </body>
 </html>
