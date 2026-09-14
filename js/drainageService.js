@@ -11,8 +11,8 @@ class DrainageService {
       name: "Drainage EC & PH monitoring",
       gid: "1176156551"
     };
-    this.cacheKey = 'kh_agrifarm_drainage_cache_v9';
-    this.lastSyncKey = 'kh_agrifarm_drainage_last_sync_v9';
+    this.cacheKey = 'kh_agrifarm_drainage_cache_v10';
+    this.lastSyncKey = 'kh_agrifarm_drainage_last_sync_v10';
     this.records = this.getCachedRecords();
     if (!this.records || this.records.length === 0) {
       this.records = this.getDefaultBaselineRecords();
@@ -35,6 +35,90 @@ class DrainageService {
   getDefaultBaselineRecords() {
     return [
       {
+        date: "14/09/2026",
+        dateRaw: "14/09/2026",
+        time: "11:40",
+        timestamp: "14/09/2026 11:40",
+        fertilizer: "AB Solution",
+        p1_fertilizer: "AB Solution",
+        p2a_fertilizer: "AB Solution",
+        p2b_fertilizer: "AB Solution",
+        p1_ecIn: 2.8,
+        p1_phIn: 5.4,
+        p2a_ecIn: 2.8,
+        p2a_phIn: 5.4,
+        p2b_ecIn: 2.8,
+        p2b_phIn: 5.4,
+        ecIn: 2.8,
+        phIn: 5.4,
+        stations: {
+          p1_s1: { ec: 1.5, ph: 7.2, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 1.3, ph: 7.3, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 2.0, ph: 6.4, name: "Station 3", plot: "plot-1" },
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 1.4, ph: 6.3, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 0.9, ph: 6.4, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: null, ph: null, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 0.9, ph: 7.1, name: "Station 8", plot: "plot-2b" }
+        }
+      },
+      {
+        date: "12/09/2026",
+        dateRaw: "12/09/2026",
+        time: "18:00",
+        timestamp: "12/09/2026 18:00",
+        fertilizer: "Seaweed Extract",
+        p1_fertilizer: "Seaweed Extract",
+        p2a_fertilizer: "Seaweed Extract",
+        p2b_fertilizer: "Seaweed Extract",
+        p1_ecIn: 1.3,
+        p1_phIn: 4.5,
+        p2a_ecIn: 1.4,
+        p2a_phIn: 4.2,
+        p2b_ecIn: 1.5,
+        p2b_phIn: 4.2,
+        ecIn: 1.3,
+        phIn: 4.5,
+        stations: {
+          p1_s1: { ec: 1.3, ph: 7.2, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 1.3, ph: 7.4, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 1.7, ph: 6.4, name: "Station 3", plot: "plot-1" },
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 1.1, ph: 6.1, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 0.7, ph: 6.1, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 0.9, ph: 6.0, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 0.8, ph: 6.6, name: "Station 8", plot: "plot-2b" }
+        }
+      },
+      {
+        date: "12/09/2026",
+        dateRaw: "12/09/2026",
+        time: "08:10",
+        timestamp: "12/09/2026 08:10",
+        fertilizer: "AB Solution",
+        p1_fertilizer: "AB Solution",
+        p2a_fertilizer: "AB Solution",
+        p2b_fertilizer: "AB Solution",
+        p1_ecIn: 2.8,
+        p1_phIn: 5.5,
+        p2a_ecIn: 2.9,
+        p2a_phIn: 5.6,
+        p2b_ecIn: 2.8,
+        p2b_phIn: 5.4,
+        ecIn: 2.8,
+        phIn: 5.5,
+        stations: {
+          p1_s1: { ec: 1.3, ph: 7.5, name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: 1.2, ph: 7.4, name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: 1.5, ph: 6.9, name: "Station 3", plot: "plot-1" },
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 0.8, ph: 6.6, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 0.8, ph: 6.6, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 0.7, ph: 6.5, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 0.8, ph: 7.0, name: "Station 8", plot: "plot-2b" }
+        }
+      },
+      {
         date: "06/09/2026",
         dateRaw: "06/09/2026",
         time: "13:06",
@@ -55,10 +139,11 @@ class DrainageService {
           p1_s1: { ec: 1.0, ph: 6.8, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.4, ph: 7.2, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.5, ph: 6.5, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.3, ph: 6.6, name: "Station 4", plot: "plot-2a" },
-          p2_s5: { ec: 1.3, ph: 6.3, name: "Station 5", plot: "plot-2a" },
-          p2_s6: { ec: 1.0, ph: 6.4, name: "Station 6", plot: "plot-2b" },
-          p2_s7: { ec: 1.4, ph: 6.9, name: "Station 7", plot: "plot-2b" }
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 1.3, ph: 6.6, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.3, ph: 6.3, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 1.0, ph: 6.4, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 1.4, ph: 6.9, name: "Station 8", plot: "plot-2b" }
         }
       },
       {
@@ -82,10 +167,11 @@ class DrainageService {
           p1_s1: { ec: 1.1, ph: 6.8, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.4, ph: 7.4, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.3, ph: 6.6, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.2, ph: 6.2, name: "Station 4", plot: "plot-2a" },
-          p2_s5: { ec: 1.2, ph: 6.0, name: "Station 5", plot: "plot-2a" },
-          p2_s6: { ec: 1.0, ph: 6.2, name: "Station 6", plot: "plot-2b" },
-          p2_s7: { ec: 1.2, ph: 6.6, name: "Station 7", plot: "plot-2b" }
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 1.2, ph: 6.2, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.2, ph: 6.0, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 1.0, ph: 6.2, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 1.2, ph: 6.6, name: "Station 8", plot: "plot-2b" }
         }
       },
       {
@@ -109,10 +195,11 @@ class DrainageService {
           p1_s1: { ec: 1.4, ph: 6.9, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.5, ph: 7.4, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.8, ph: 6.7, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.0, ph: 6.2, name: "Station 4", plot: "plot-2a" },
-          p2_s5: { ec: 0.9, ph: 6.2, name: "Station 5", plot: "plot-2a" },
-          p2_s6: { ec: 0.9, ph: 6.2, name: "Station 6", plot: "plot-2b" },
-          p2_s7: { ec: 1.3, ph: 6.7, name: "Station 7", plot: "plot-2b" }
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 1.0, ph: 6.2, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 0.9, ph: 6.2, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 0.9, ph: 6.2, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 1.3, ph: 6.7, name: "Station 8", plot: "plot-2b" }
         }
       },
       {
@@ -136,10 +223,11 @@ class DrainageService {
           p1_s1: { ec: 1.3, ph: 7.0, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.6, ph: 7.5, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.7, ph: 6.3, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 0.9, ph: 6.7, name: "Station 4", plot: "plot-2a" },
-          p2_s5: { ec: 1.0, ph: 5.7, name: "Station 5", plot: "plot-2a" },
-          p2_s6: { ec: 1.0, ph: 6.2, name: "Station 6", plot: "plot-2b" },
-          p2_s7: { ec: 1.5, ph: 6.4, name: "Station 7", plot: "plot-2b" }
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 0.9, ph: 6.7, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.0, ph: 5.7, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 1.0, ph: 6.2, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 1.5, ph: 6.4, name: "Station 8", plot: "plot-2b" }
         }
       },
       {
@@ -163,10 +251,11 @@ class DrainageService {
           p1_s1: { ec: 1.1, ph: 7.2, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.7, ph: 7.4, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.6, ph: 6.6, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.0, ph: 6.6, name: "Station 4", plot: "plot-2a" },
-          p2_s5: { ec: 1.1, ph: 5.9, name: "Station 5", plot: "plot-2a" },
-          p2_s6: { ec: 1.1, ph: 6.5, name: "Station 6", plot: "plot-2b" },
-          p2_s7: { ec: 1.6, ph: 6.7, name: "Station 7", plot: "plot-2b" }
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 1.0, ph: 6.6, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.1, ph: 5.9, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 1.1, ph: 6.5, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 1.6, ph: 6.7, name: "Station 8", plot: "plot-2b" }
         }
       },
       {
@@ -190,10 +279,11 @@ class DrainageService {
           p1_s1: { ec: 1.3, ph: 7.3, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.7, ph: 7.4, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.5, ph: 6.8, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 0.9, ph: 6.2, name: "Station 4", plot: "plot-2a" },
-          p2_s5: { ec: 1.0, ph: 5.9, name: "Station 5", plot: "plot-2a" },
-          p2_s6: { ec: 1.1, ph: 6.4, name: "Station 6", plot: "plot-2b" },
-          p2_s7: { ec: 1.4, ph: 6.8, name: "Station 7", plot: "plot-2b" }
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 0.9, ph: 6.2, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.0, ph: 5.9, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 1.1, ph: 6.4, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 1.4, ph: 6.8, name: "Station 8", plot: "plot-2b" }
         }
       },
       {
@@ -217,10 +307,11 @@ class DrainageService {
           p1_s1: { ec: 1.7, ph: 7.2, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.7, ph: 7.5, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.2, ph: 7.4, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.0, ph: 6.8, name: "Station 4", plot: "plot-2a" },
-          p2_s5: { ec: 1.7, ph: 6.7, name: "Station 5", plot: "plot-2a" },
-          p2_s6: { ec: 1.1, ph: 7.0, name: "Station 6", plot: "plot-2b" },
-          p2_s7: { ec: 1.3, ph: 7.2, name: "Station 7", plot: "plot-2b" }
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 1.0, ph: 6.8, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.7, ph: 6.7, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 1.1, ph: 7.0, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 1.3, ph: 7.2, name: "Station 8", plot: "plot-2b" }
         }
       },
       {
@@ -244,10 +335,11 @@ class DrainageService {
           p1_s1: { ec: 1.6, ph: 7.1, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.9, ph: 7.4, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.8, ph: 7.1, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.1, ph: 6.5, name: "Station 4", plot: "plot-2a" },
-          p2_s5: { ec: 1.2, ph: 6.5, name: "Station 5", plot: "plot-2a" },
-          p2_s6: { ec: 1.2, ph: 6.8, name: "Station 6", plot: "plot-2b" },
-          p2_s7: { ec: 1.4, ph: 6.9, name: "Station 7", plot: "plot-2b" }
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 1.1, ph: 6.5, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.2, ph: 6.5, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 1.2, ph: 6.8, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 1.4, ph: 6.9, name: "Station 8", plot: "plot-2b" }
         }
       },
       {
@@ -271,10 +363,11 @@ class DrainageService {
           p1_s1: { ec: 1.2, ph: 6.6, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.7, ph: 7.2, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.8, ph: 6.9, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.1, ph: 6.1, name: "Station 4", plot: "plot-2a" },
-          p2_s5: { ec: 1.2, ph: 6.0, name: "Station 5", plot: "plot-2a" },
-          p2_s6: { ec: 1.1, ph: 6.6, name: "Station 6", plot: "plot-2b" },
-          p2_s7: { ec: 1.4, ph: 6.7, name: "Station 7", plot: "plot-2b" }
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 1.1, ph: 6.1, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.2, ph: 6.0, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 1.1, ph: 6.6, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 1.4, ph: 6.7, name: "Station 8", plot: "plot-2b" }
         }
       },
       {
@@ -298,10 +391,11 @@ class DrainageService {
           p1_s1: { ec: 3.2, ph: 6.5, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 2.1, ph: 7.2, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.8, ph: 7.0, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.3, ph: 6.4, name: "Station 4", plot: "plot-2a" },
-          p2_s5: { ec: 1.5, ph: 6.4, name: "Station 5", plot: "plot-2a" },
-          p2_s6: { ec: 1.2, ph: 6.7, name: "Station 6", plot: "plot-2b" },
-          p2_s7: { ec: 1.6, ph: 6.7, name: "Station 7", plot: "plot-2b" }
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 1.3, ph: 6.4, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.5, ph: 6.4, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 1.2, ph: 6.7, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 1.6, ph: 6.7, name: "Station 8", plot: "plot-2b" }
         }
       },
       {
@@ -325,10 +419,11 @@ class DrainageService {
           p1_s1: { ec: 1.5, ph: 7.0, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 2.1, ph: 7.4, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.6, ph: 7.2, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.2, ph: 6.6, name: "Station 4", plot: "plot-2a" },
-          p2_s5: { ec: 1.1, ph: 6.6, name: "Station 5", plot: "plot-2a" },
-          p2_s6: { ec: 1.2, ph: 6.9, name: "Station 6", plot: "plot-2b" },
-          p2_s7: { ec: 1.7, ph: 6.9, name: "Station 7", plot: "plot-2b" }
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 1.2, ph: 6.6, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.1, ph: 6.6, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 1.2, ph: 6.9, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 1.7, ph: 6.9, name: "Station 8", plot: "plot-2b" }
         }
       },
       {
@@ -352,10 +447,11 @@ class DrainageService {
           p1_s1: { ec: 1.6, ph: 6.8, name: "Station 1", plot: "plot-1" },
           p1_s2: { ec: 1.9, ph: 6.7, name: "Station 2", plot: "plot-1" },
           p1_s3: { ec: 1.7, ph: 6.6, name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: 1.1, ph: 6.3, name: "Station 4", plot: "plot-2a" },
-          p2_s5: { ec: 1.2, ph: 6.3, name: "Station 5", plot: "plot-2a" },
-          p2_s6: { ec: 1.3, ph: 6.5, name: "Station 6", plot: "plot-2b" },
-          p2_s7: { ec: 1.7, ph: 6.5, name: "Station 7", plot: "plot-2b" }
+          p1_s4: { ec: null, ph: null, name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: 1.1, ph: 6.3, name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: 1.2, ph: 6.3, name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: 1.3, ph: 6.5, name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: 1.7, ph: 6.5, name: "Station 8", plot: "plot-2b" }
         }
       }
     ];
@@ -578,22 +674,25 @@ class DrainageService {
     const idxEcIn = findIndex(['ec in', 'ec_in', 'ec masuk', 'in ec']);
     const idxPhIn = findIndex(['ph in', 'ph_in', 'ph masuk', 'in ph']);
 
-    // Stations
-    const idxP1S1Ec = findIndex(['station1 ec', 'station 1 ec', 'st 1 ec', 's1 ec']);
-    const idxP1S1Ph = findIndex(['station 1 ph', 'station1 ph', 'st 1 ph', 's1 ph']);
-    const idxP1S2Ec = findIndex(['station2 ec', 'station 2 ec', 'st 2 ec', 's2 ec']);
-    const idxP1S2Ph = findIndex(['station 2 ph', 'station2 ph', 'st 2 ph', 's2 ph']);
-    const idxP1S3Ec = findIndex(['station3 ec', 'station 3 ec', 'st 3 ec', 's3 ec']);
-    const idxP1S3Ph = findIndex(['station 3 ph', 'station3 ph', 'st 3 ph', 's3 ph']);
+    // Stations (Plot 1: 1..4, Plot 2A: 5..6, Plot 2B: 7..8)
+    const idxP1S1Ec = findIndex(['plot 1 - station1 ec', 'plot 1 - station 1 ec', 'station1 ec', 'station 1 ec', 'st 1 ec', 's1 ec']);
+    const idxP1S1Ph = findIndex(['plot 1 - station 1 ph', 'plot 1 - station1 ph', 'station 1 ph', 'station1 ph', 'st 1 ph', 's1 ph']);
+    const idxP1S2Ec = findIndex(['plot 1 - station 2 ec', 'plot 1 - station2 ec', 'station 2 ec', 'station2 ec', 'st 2 ec', 's2 ec']);
+    const idxP1S2Ph = findIndex(['plot 1 - station 2 ph', 'plot 1 - station2 ph', 'station 2 ph', 'station2 ph', 'st 2 ph', 's2 ph']);
+    const idxP1S3Ec = findIndex(['plot 1 - station 3 ec', 'plot 1 - station3 ec', 'station 3 ec', 'station3 ec', 'st 3 ec', 's3 ec']);
+    const idxP1S3Ph = findIndex(['plot 1 - station 3 ph', 'plot 1 - station3 ph', 'station 3 ph', 'station3 ph', 'st 3 ph', 's3 ph']);
+    const idxP1S4Ec = findIndex(['plot 1 - station 4 ec', 'plot 1 - station4 ec', 'station 4 ec', 'station4 ec', 'st 4 ec', 's4 ec']);
+    const idxP1S4Ph = findIndex(['plot 1 - station 4 ph', 'plot 1 - station4 ph', 'station 4 ph', 'station4 ph', 'st 4 ph', 's4 ph']);
 
-    const idxP2S4Ec = findIndex(['station4 ec', 'station 4 ec', 'st 4 ec', 's4 ec']);
-    const idxP2S4Ph = findIndex(['station 4 ph', 'station4 ph', 'st 4 ph', 's4 ph']);
-    const idxP2S5Ec = findIndex(['station5 ec', 'station 5 ec', 'st 5 ec', 's5 ec']);
-    const idxP2S5Ph = findIndex(['station 5 ph', 'station5 ph', 'st 5 ph', 's5 ph']);
-    const idxP2S6Ec = findIndex(['station6 ec', 'station 6 ec', 'st 6 ec', 's6 ec']);
-    const idxP2S6Ph = findIndex(['station 6 ph', 'station6 ph', 'st 6 ph', 's6 ph']);
-    const idxP2S7Ec = findIndex(['station7 ec', 'station 7 ec', 'st 7 ec', 's7 ec']);
-    const idxP2S7Ph = findIndex(['station 7 ph', 'station7 ph', 'st 7 ph', 's7 ph']);
+    const idxP2S5Ec = findIndex(['plot 2a - station 5 ec', 'plot 2a - station5 ec', 'station 5 ec', 'station5 ec', 'st 5 ec', 's5 ec']);
+    const idxP2S5Ph = findIndex(['plot 2a - station 5 ph', 'plot 2a - station5 ph', 'station 5 ph', 'station5 ph', 'st 5 ph', 's5 ph']);
+    const idxP2S6Ec = findIndex(['plot 2a - station 6 ec', 'plot 2a - station6 ec', 'station 6 ec', 'station6 ec', 'st 6 ec', 's6 ec']);
+    const idxP2S6Ph = findIndex(['plot 2a - station 6 ph', 'plot 2a - station6 ph', 'station 6 ph', 'station6 ph', 'st 6 ph', 's6 ph']);
+
+    const idxP2S7Ec = findIndex(['plot 2b - station 7 ec', 'plot 2b - station7 ec', 'station 7 ec', 'station7 ec', 'st 7 ec', 's7 ec']);
+    const idxP2S7Ph = findIndex(['plot 2b - station 7 ph', 'plot 2b - station7 ph', 'station 7 ph', 'station7 ph', 'st 7 ph', 's7 ph']);
+    const idxP2S8Ec = findIndex(['plot 2b - station 8 ec', 'plot 2b - station8 ec', 'station 8 ec', 'station8 ec', 'st 8 ec', 's8 ec']);
+    const idxP2S8Ph = findIndex(['plot 2b - station 8 ph', 'plot 2b - station8 ph', 'station 8 ph', 'station8 ph', 'st 8 ph', 's8 ph']);
 
     const numVal = (v) => {
       if (v === undefined || v === null || v === '') return null;
@@ -616,18 +715,20 @@ class DrainageService {
       }
 
       const p1Fert = (idxP1Fert >= 0 && r[idxP1Fert]) ? r[idxP1Fert].trim() : fertVal;
-      const p2aFert = (idxP2aFert >= 0 && r[idxP2aFert]) ? r[idxP2aFert].trim() : fertVal;
-      const p2bFert = (idxP2bFert >= 0 && r[idxP2bFert]) ? r[idxP2bFert].trim() : fertVal;
+      const p2aFert = (idxP2aFert >= 0 && r[idxP2aFert]) ? r[idxP2aFert].trim() : (r.length >= 27 ? (r[13] || fertVal) : (r[11] || fertVal));
+      const p2bFert = (idxP2bFert >= 0 && r[idxP2bFert]) ? r[idxP2bFert].trim() : (r.length >= 27 ? (r[20] || fertVal) : (r[18] || fertVal));
 
       const rawEcIn = numVal(idxEcIn >= 0 ? r[idxEcIn] : (idxFertilizer >= 0 ? r[3] : r[2]));
       const rawPhIn = numVal(idxPhIn >= 0 ? r[idxPhIn] : (idxFertilizer >= 0 ? r[4] : r[3]));
 
       const p1EcIn = (idxP1EcIn >= 0 && numVal(r[idxP1EcIn]) !== null) ? numVal(r[idxP1EcIn]) : rawEcIn;
       const p1PhIn = (idxP1PhIn >= 0 && numVal(r[idxP1PhIn]) !== null) ? numVal(r[idxP1PhIn]) : rawPhIn;
-      const p2aEcIn = (idxP2aEcIn >= 0 && numVal(r[idxP2aEcIn]) !== null) ? numVal(r[idxP2aEcIn]) : rawEcIn;
-      const p2aPhIn = (idxP2aPhIn >= 0 && numVal(r[idxP2aPhIn]) !== null) ? numVal(r[idxP2aPhIn]) : rawPhIn;
-      const p2bEcIn = (idxP2bEcIn >= 0 && numVal(r[idxP2bEcIn]) !== null) ? numVal(r[idxP2bEcIn]) : rawEcIn;
-      const p2bPhIn = (idxP2bPhIn >= 0 && numVal(r[idxP2bPhIn]) !== null) ? numVal(r[idxP2bPhIn]) : rawPhIn;
+      const p2aEcIn = (idxP2aEcIn >= 0 && numVal(r[idxP2aEcIn]) !== null) ? numVal(r[idxP2aEcIn]) : (r.length >= 27 ? numVal(r[14]) : rawEcIn);
+      const p2aPhIn = (idxP2aPhIn >= 0 && numVal(r[idxP2aPhIn]) !== null) ? numVal(r[idxP2aPhIn]) : (r.length >= 27 ? numVal(r[15]) : rawPhIn);
+      const p2bEcIn = (idxP2bEcIn >= 0 && numVal(r[idxP2bEcIn]) !== null) ? numVal(r[idxP2bEcIn]) : (r.length >= 27 ? numVal(r[21]) : rawEcIn);
+      const p2bPhIn = (idxP2bPhIn >= 0 && numVal(r[idxP2bPhIn]) !== null) ? numVal(r[idxP2bPhIn]) : (r.length >= 27 ? numVal(r[22]) : rawPhIn);
+
+      const is27Cols = (r.length >= 27 || idxP1S4Ec >= 0);
 
       parsedRecords.push({
         date: normDate,
@@ -647,13 +748,14 @@ class DrainageService {
         ecIn: rawEcIn,
         phIn: rawPhIn,
         stations: {
-          p1_s1: { ec: numVal(idxP1S1Ec >= 0 ? r[idxP1S1Ec] : (idxFertilizer >= 0 ? r[5] : r[4])), ph: numVal(idxP1S1Ph >= 0 ? r[idxP1S1Ph] : (idxFertilizer >= 0 ? r[6] : r[5])), name: "Station 1", plot: "plot-1" },
-          p1_s2: { ec: numVal(idxP1S2Ec >= 0 ? r[idxP1S2Ec] : (idxFertilizer >= 0 ? r[7] : r[6])), ph: numVal(idxP1S2Ph >= 0 ? r[idxP1S2Ph] : (idxFertilizer >= 0 ? r[8] : r[7])), name: "Station 2", plot: "plot-1" },
-          p1_s3: { ec: numVal(idxP1S3Ec >= 0 ? r[idxP1S3Ec] : (idxFertilizer >= 0 ? r[9] : r[8])), ph: numVal(idxP1S3Ph >= 0 ? r[idxP1S3Ph] : (idxFertilizer >= 0 ? r[10] : r[9])), name: "Station 3", plot: "plot-1" },
-          p2_s4: { ec: numVal(idxP2S4Ec >= 0 ? r[idxP2S4Ec] : (idxFertilizer >= 0 ? r[11] : r[10])), ph: numVal(idxP2S4Ph >= 0 ? r[idxP2S4Ph] : (idxFertilizer >= 0 ? r[12] : r[11])), name: "Station 4", plot: "plot-2a" },
-          p2_s5: { ec: numVal(idxP2S5Ec >= 0 ? r[idxP2S5Ec] : (idxFertilizer >= 0 ? r[13] : r[12])), ph: numVal(idxP2S5Ph >= 0 ? r[idxP2S5Ph] : (idxFertilizer >= 0 ? r[14] : r[13])), name: "Station 5", plot: "plot-2a" },
-          p2_s6: { ec: numVal(idxP2S6Ec >= 0 ? r[idxP2S6Ec] : (idxFertilizer >= 0 ? r[15] : r[14])), ph: numVal(idxP2S6Ph >= 0 ? r[idxP2S6Ph] : (idxFertilizer >= 0 ? r[16] : r[15])), name: "Station 6", plot: "plot-2b" },
-          p2_s7: { ec: numVal(idxP2S7Ec >= 0 ? r[idxP2S7Ec] : (idxFertilizer >= 0 ? r[17] : r[16])), ph: numVal(idxP2S7Ph >= 0 ? r[idxP2S7Ph] : (idxFertilizer >= 0 ? r[18] : r[17])), name: "Station 7", plot: "plot-2b" }
+          p1_s1: { ec: numVal(idxP1S1Ec >= 0 ? r[idxP1S1Ec] : r[5]), ph: numVal(idxP1S1Ph >= 0 ? r[idxP1S1Ph] : r[6]), name: "Station 1", plot: "plot-1" },
+          p1_s2: { ec: numVal(idxP1S2Ec >= 0 ? r[idxP1S2Ec] : r[7]), ph: numVal(idxP1S2Ph >= 0 ? r[idxP1S2Ph] : r[8]), name: "Station 2", plot: "plot-1" },
+          p1_s3: { ec: numVal(idxP1S3Ec >= 0 ? r[idxP1S3Ec] : r[9]), ph: numVal(idxP1S3Ph >= 0 ? r[idxP1S3Ph] : r[10]), name: "Station 3", plot: "plot-1" },
+          p1_s4: { ec: numVal(idxP1S4Ec >= 0 ? r[idxP1S4Ec] : (is27Cols ? r[11] : null)), ph: numVal(idxP1S4Ph >= 0 ? r[idxP1S4Ph] : (is27Cols ? r[12] : null)), name: "Station 4", plot: "plot-1" },
+          p2_s5: { ec: numVal(idxP2S5Ec >= 0 ? r[idxP2S5Ec] : (is27Cols ? r[16] : r[14])), ph: numVal(idxP2S5Ph >= 0 ? r[idxP2S5Ph] : (is27Cols ? r[17] : r[15])), name: "Station 5", plot: "plot-2a" },
+          p2_s6: { ec: numVal(idxP2S6Ec >= 0 ? r[idxP2S6Ec] : (is27Cols ? r[18] : r[16])), ph: numVal(idxP2S6Ph >= 0 ? r[idxP2S6Ph] : (is27Cols ? r[19] : r[17])), name: "Station 6", plot: "plot-2a" },
+          p2_s7: { ec: numVal(idxP2S7Ec >= 0 ? r[idxP2S7Ec] : (is27Cols ? r[23] : r[21])), ph: numVal(idxP2S7Ph >= 0 ? r[idxP2S7Ph] : (is27Cols ? r[24] : r[22])), name: "Station 7", plot: "plot-2b" },
+          p2_s8: { ec: numVal(idxP2S8Ec >= 0 ? r[idxP2S8Ec] : (is27Cols ? r[25] : r[23])), ph: numVal(idxP2S8Ph >= 0 ? r[idxP2S8Ph] : (is27Cols ? r[26] : r[24])), name: "Station 8", plot: "plot-2b" }
         }
       });
     });
@@ -809,26 +911,26 @@ class DrainageService {
 
     let fert = entry.fertilizer || 'Water';
     if (plotId === 'plot-1') {
-      stationKeys = ['p1_s1', 'p1_s2', 'p1_s3'];
+      stationKeys = ['p1_s1', 'p1_s2', 'p1_s3', 'p1_s4'];
       ecIn = (entry.p1_ecIn !== undefined && entry.p1_ecIn !== null) ? entry.p1_ecIn : entry.ecIn;
       phIn = (entry.p1_phIn !== undefined && entry.p1_phIn !== null) ? entry.p1_phIn : entry.phIn;
       fert = entry.p1_fertilizer || entry.fertilizer || 'Water';
       plotLabel = "Plot 1";
     } else if (plotId === 'plot-2a') {
-      stationKeys = ['p2_s4', 'p2_s5'];
+      stationKeys = ['p2_s5', 'p2_s6'];
       ecIn = (entry.p2a_ecIn !== undefined && entry.p2a_ecIn !== null) ? entry.p2a_ecIn : entry.ecIn;
       phIn = (entry.p2a_phIn !== undefined && entry.p2a_phIn !== null) ? entry.p2a_phIn : entry.phIn;
       fert = entry.p2a_fertilizer || entry.fertilizer || 'Water';
       plotLabel = "Plot 2A";
     } else if (plotId === 'plot-2b') {
-      stationKeys = ['p2_s6', 'p2_s7'];
+      stationKeys = ['p2_s7', 'p2_s8'];
       ecIn = (entry.p2b_ecIn !== undefined && entry.p2b_ecIn !== null) ? entry.p2b_ecIn : entry.ecIn;
       phIn = (entry.p2b_phIn !== undefined && entry.p2b_phIn !== null) ? entry.p2b_phIn : entry.phIn;
       fert = entry.p2b_fertilizer || entry.fertilizer || 'Water';
       plotLabel = "Plot 2B";
     } else {
       // General plot-2 fallback
-      stationKeys = ['p2_s4', 'p2_s5', 'p2_s6', 'p2_s7'];
+      stationKeys = ['p2_s5', 'p2_s6', 'p2_s7', 'p2_s8'];
       plotLabel = "Plot 2";
     }
 
@@ -951,10 +1053,11 @@ class DrainageService {
         p1_s1: { ec: (payload.p1_s1_ec !== '' && payload.p1_s1_ec !== undefined) ? parseFloat(payload.p1_s1_ec) : null, ph: (payload.p1_s1_ph !== '' && payload.p1_s1_ph !== undefined) ? parseFloat(payload.p1_s1_ph) : null, name: "Station 1", plot: "plot-1" },
         p1_s2: { ec: (payload.p1_s2_ec !== '' && payload.p1_s2_ec !== undefined) ? parseFloat(payload.p1_s2_ec) : null, ph: (payload.p1_s2_ph !== '' && payload.p1_s2_ph !== undefined) ? parseFloat(payload.p1_s2_ph) : null, name: "Station 2", plot: "plot-1" },
         p1_s3: { ec: (payload.p1_s3_ec !== '' && payload.p1_s3_ec !== undefined) ? parseFloat(payload.p1_s3_ec) : null, ph: (payload.p1_s3_ph !== '' && payload.p1_s3_ph !== undefined) ? parseFloat(payload.p1_s3_ph) : null, name: "Station 3", plot: "plot-1" },
-        p2_s4: { ec: (payload.p2_s4_ec !== '' && payload.p2_s4_ec !== undefined) ? parseFloat(payload.p2_s4_ec) : null, ph: (payload.p2_s4_ph !== '' && payload.p2_s4_ph !== undefined) ? parseFloat(payload.p2_s4_ph) : null, name: "Station 4", plot: "plot-2a" },
+        p1_s4: { ec: (payload.p1_s4_ec !== '' && payload.p1_s4_ec !== undefined) ? parseFloat(payload.p1_s4_ec) : null, ph: (payload.p1_s4_ph !== '' && payload.p1_s4_ph !== undefined) ? parseFloat(payload.p1_s4_ph) : null, name: "Station 4", plot: "plot-1" },
         p2_s5: { ec: (payload.p2_s5_ec !== '' && payload.p2_s5_ec !== undefined) ? parseFloat(payload.p2_s5_ec) : null, ph: (payload.p2_s5_ph !== '' && payload.p2_s5_ph !== undefined) ? parseFloat(payload.p2_s5_ph) : null, name: "Station 5", plot: "plot-2a" },
-        p2_s6: { ec: (payload.p2_s6_ec !== '' && payload.p2_s6_ec !== undefined) ? parseFloat(payload.p2_s6_ec) : null, ph: (payload.p2_s6_ph !== '' && payload.p2_s6_ph !== undefined) ? parseFloat(payload.p2_s6_ph) : null, name: "Station 6", plot: "plot-2b" },
-        p2_s7: { ec: (payload.p2_s7_ec !== '' && payload.p2_s7_ec !== undefined) ? parseFloat(payload.p2_s7_ec) : null, ph: (payload.p2_s7_ph !== '' && payload.p2_s7_ph !== undefined) ? parseFloat(payload.p2_s7_ph) : null, name: "Station 7", plot: "plot-2b" }
+        p2_s6: { ec: (payload.p2_s6_ec !== '' && payload.p2_s6_ec !== undefined) ? parseFloat(payload.p2_s6_ec) : null, ph: (payload.p2_s6_ph !== '' && payload.p2_s6_ph !== undefined) ? parseFloat(payload.p2_s6_ph) : null, name: "Station 6", plot: "plot-2a" },
+        p2_s7: { ec: (payload.p2_s7_ec !== '' && payload.p2_s7_ec !== undefined) ? parseFloat(payload.p2_s7_ec) : null, ph: (payload.p2_s7_ph !== '' && payload.p2_s7_ph !== undefined) ? parseFloat(payload.p2_s7_ph) : null, name: "Station 7", plot: "plot-2b" },
+        p2_s8: { ec: (payload.p2_s8_ec !== '' && payload.p2_s8_ec !== undefined) ? parseFloat(payload.p2_s8_ec) : null, ph: (payload.p2_s8_ph !== '' && payload.p2_s8_ph !== undefined) ? parseFloat(payload.p2_s8_ph) : null, name: "Station 8", plot: "plot-2b" }
       }
     };
 
@@ -993,14 +1096,16 @@ class DrainageService {
           p1_s2_ph: newEntry.stations.p1_s2.ph,
           p1_s3_ec: newEntry.stations.p1_s3.ec,
           p1_s3_ph: newEntry.stations.p1_s3.ph,
-          p2_s4_ec: newEntry.stations.p2_s4.ec,
-          p2_s4_ph: newEntry.stations.p2_s4.ph,
+          p1_s4_ec: newEntry.stations.p1_s4.ec,
+          p1_s4_ph: newEntry.stations.p1_s4.ph,
           p2_s5_ec: newEntry.stations.p2_s5.ec,
           p2_s5_ph: newEntry.stations.p2_s5.ph,
           p2_s6_ec: newEntry.stations.p2_s6.ec,
           p2_s6_ph: newEntry.stations.p2_s6.ph,
           p2_s7_ec: newEntry.stations.p2_s7.ec,
-          p2_s7_ph: newEntry.stations.p2_s7.ph
+          p2_s7_ph: newEntry.stations.p2_s7.ph,
+          p2_s8_ec: newEntry.stations.p2_s8.ec,
+          p2_s8_ph: newEntry.stations.p2_s8.ph
         };
 
         fetch(appsScriptUrl, {
@@ -1223,21 +1328,21 @@ class DrainageService {
         const latestP1 = historyP1.length > 0 ? historyP1[0] : null;
         const summaryP1 = latestP1 ? latestP1.summary : null;
         const badgeHtml = `<span class="plot-color-indicator dot-p1"></span>`;
-        bodyContentHtml = this.buildSubPlotTelemetryBlock('plot-1', 'Plot 1 Stations (St 1, 2, 3)', badgeHtml, summaryP1, 'grid-3-tiles');
+        bodyContentHtml = this.buildSubPlotTelemetryBlock('plot-1', 'Plot 1 Stations (St 1, 2, 3, 4)', badgeHtml, summaryP1, 'grid-4-tiles');
       } else if (isP2) {
-        // Plot 2A (Stations 4 & 5)
+        // Plot 2A (Stations 5 & 6)
         const historyP2a = this.getPast5Records('plot-2a') || [];
         const latestP2a = historyP2a.length > 0 ? historyP2a[0] : null;
         const summaryP2a = latestP2a ? latestP2a.summary : null;
         const badgeP2a = `<span class="plot-color-indicator dot-p2"></span>`;
-        const blockP2a = this.buildSubPlotTelemetryBlock('plot-2a', 'Plot 2A (St 4, 5)', badgeP2a, summaryP2a, 'grid-2-tiles');
+        const blockP2a = this.buildSubPlotTelemetryBlock('plot-2a', 'Plot 2A (St 5, 6)', badgeP2a, summaryP2a, 'grid-2-tiles');
 
-        // Plot 2B (Stations 6 & 7)
+        // Plot 2B (Stations 7 & 8)
         const historyP2b = this.getPast5Records('plot-2b') || [];
         const latestP2b = historyP2b.length > 0 ? historyP2b[0] : null;
         const summaryP2b = latestP2b ? latestP2b.summary : null;
         const badgeP2b = `<span class="plot-color-indicator" style="background:#818cf8;"></span>`;
-        const blockP2b = this.buildSubPlotTelemetryBlock('plot-2b', 'Plot 2B (St 6, 7)', badgeP2b, summaryP2b, 'grid-2-tiles');
+        const blockP2b = this.buildSubPlotTelemetryBlock('plot-2b', 'Plot 2B (St 7, 8)', badgeP2b, summaryP2b, 'grid-2-tiles');
 
         bodyContentHtml = `${blockP2a}${blockP2b}`;
       }

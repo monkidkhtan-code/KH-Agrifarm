@@ -563,14 +563,16 @@ class KHAgrifarmApp {
       p1_s2_ph: document.getElementById('drainage-p1-s2-ph')?.value?.trim(),
       p1_s3_ec: document.getElementById('drainage-p1-s3-ec')?.value?.trim(),
       p1_s3_ph: document.getElementById('drainage-p1-s3-ph')?.value?.trim(),
-      p2_s4_ec: document.getElementById('drainage-p2-s4-ec')?.value?.trim(),
-      p2_s4_ph: document.getElementById('drainage-p2-s4-ph')?.value?.trim(),
+      p1_s4_ec: document.getElementById('drainage-p1-s4-ec')?.value?.trim(),
+      p1_s4_ph: document.getElementById('drainage-p1-s4-ph')?.value?.trim(),
       p2_s5_ec: document.getElementById('drainage-p2-s5-ec')?.value?.trim(),
       p2_s5_ph: document.getElementById('drainage-p2-s5-ph')?.value?.trim(),
       p2_s6_ec: document.getElementById('drainage-p2-s6-ec')?.value?.trim(),
       p2_s6_ph: document.getElementById('drainage-p2-s6-ph')?.value?.trim(),
       p2_s7_ec: document.getElementById('drainage-p2-s7-ec')?.value?.trim(),
-      p2_s7_ph: document.getElementById('drainage-p2-s7-ph')?.value?.trim()
+      p2_s7_ph: document.getElementById('drainage-p2-s7-ph')?.value?.trim(),
+      p2_s8_ec: document.getElementById('drainage-p2-s8-ec')?.value?.trim(),
+      p2_s8_ph: document.getElementById('drainage-p2-s8-ph')?.value?.trim()
     };
 
     if (window.drainageService) {

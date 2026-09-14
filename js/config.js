@@ -2,8 +2,8 @@
  * KH AGRIFARM - CONFIGURATION
  */
 const APP_CONFIG = {
-  version: "v11.52",
-  buildDate: "2026.09.13",
+  version: "v11.53",
+  buildDate: "2026.09.14",
   farmName: "KH Agrifarm",
   farmAddress: "LOT 20371, Jalan Sgg 6/3, Kampung Sungai Gulang Gulang, 45500 Tanjong Karang, Selangor",
   season: "Season 6 (June 2026 - Jan 2027)",
@@ -21,15 +21,16 @@ const APP_CONFIG = {
       plot1Stations: [
         { id: "p1_s1", name: "Station 1", ecCol: "Plot 1 - Station1 EC", phCol: "Plot 1 - Station 1 PH" },
         { id: "p1_s2", name: "Station 2", ecCol: "Plot 1 - Station 2 EC", phCol: "Plot 1 - Station 2 PH" },
-        { id: "p1_s3", name: "Station 3", ecCol: "Plot 1 - Station 3 EC", phCol: "Plot 1 - Station 3 PH" }
+        { id: "p1_s3", name: "Station 3", ecCol: "Plot 1 - Station 3 EC", phCol: "Plot 1 - Station 3 PH" },
+        { id: "p1_s4", name: "Station 4", ecCol: "Plot 1 - Station 4 EC", phCol: "Plot 1 - Station 4 PH" }
       ],
       plot2aStations: [
-        { id: "p2_s4", name: "Station 4", ecCol: "Plot 2 - Station 4 EC", phCol: "Plot 2 - Station 4 PH" },
-        { id: "p2_s5", name: "Station 5", ecCol: "Plot 2 - Station 5 EC", phCol: "Plot 2 - Station 5 PH" }
+        { id: "p2_s5", name: "Station 5", ecCol: "Plot 2A - Station 5 EC", phCol: "Plot 2A - Station 5 PH" },
+        { id: "p2_s6", name: "Station 6", ecCol: "Plot 2A - Station 6 EC", phCol: "Plot 2A - Station 6 PH" }
       ],
       plot2bStations: [
-        { id: "p2_s6", name: "Station 6", ecCol: "Plot 2 - Station 6 EC", phCol: "Plot 2 - Station 6 PH" },
-        { id: "p2_s7", name: "Station 7", ecCol: "Plot 2 - Station 7 EC", phCol: "Plot 2 - Station 7 PH" }
+        { id: "p2_s7", name: "Station 7", ecCol: "Plot 2B - Station 7 EC", phCol: "Plot 2B - Station 7 PH" },
+        { id: "p2_s8", name: "Station 8", ecCol: "Plot 2B - Station 8 EC", phCol: "Plot 2B - Station 8 PH" }
       ]
     },
     plots: [
