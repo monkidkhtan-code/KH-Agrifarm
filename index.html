@@ -26,11 +26,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Custom Styles with cache-busting -->
-  <link rel="stylesheet" href="css/styles.css?v=11.53">
+  <link rel="stylesheet" href="css/styles.css?v=11.54">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=11.53').then(reg => {
+        navigator.serviceWorker.register('./sw.js?v=11.54').then(reg => {
           reg.update();
         }).catch(() => {});
       });
@@ -979,6 +979,7 @@
                     <select id="drainage-p1-fertilizer" class="form-input inflow-fert-select">
                       <option value="AB Solution">AB Solution</option>
                       <option value="Water" selected>Water</option>
+                      <option value="Cocopeat Buffering">Cocopeat Buffering</option>
                       <option value="Seaweed Extract">Seaweed Extract</option>
                       <option value="Fulvic Acid">Fulvic Acid</option>
                       <option value="Super Nila">Super Nila</option>
@@ -1006,6 +1007,7 @@
                     <select id="drainage-p2a-fertilizer" class="form-input inflow-fert-select">
                       <option value="AB Solution">AB Solution</option>
                       <option value="Water" selected>Water</option>
+                      <option value="Cocopeat Buffering">Cocopeat Buffering</option>
                       <option value="Seaweed Extract">Seaweed Extract</option>
                       <option value="Fulvic Acid">Fulvic Acid</option>
                       <option value="Super Nila">Super Nila</option>
@@ -1033,6 +1035,7 @@
                     <select id="drainage-p2b-fertilizer" class="form-input inflow-fert-select">
                       <option value="AB Solution">AB Solution</option>
                       <option value="Water" selected>Water</option>
+                      <option value="Cocopeat Buffering">Cocopeat Buffering</option>
                       <option value="Seaweed Extract">Seaweed Extract</option>
                       <option value="Fulvic Acid">Fulvic Acid</option>
                       <option value="Super Nila">Super Nila</option>
@@ -1270,15 +1273,15 @@
   </div>
 
   <!-- Application Scripts -->
-  <script src="js/config.js?v=11.53"></script>
-  <script src="js/sampleData.js?v=11.53"></script>
-  <script src="js/googleSheetsService.js?v=11.53"></script>
-  <script src="js/drainageService.js?v=11.53"></script>
-  <script src="js/weatherService.js?v=11.53"></script>
-  <script src="js/sprayAdvisory.js?v=11.53"></script>
-  <script src="js/soilMoistureService.js?v=11.53"></script>
-  <script src="js/tapoService.js?v=11.53"></script>
-  <script src="js/radarService.js?v=11.53"></script>
-  <script src="js/app.js?v=11.53"></script>
+  <script src="js/config.js?v=11.54"></script>
+  <script src="js/sampleData.js?v=11.54"></script>
+  <script src="js/googleSheetsService.js?v=11.54"></script>
+  <script src="js/drainageService.js?v=11.54"></script>
+  <script src="js/weatherService.js?v=11.54"></script>
+  <script src="js/sprayAdvisory.js?v=11.54"></script>
+  <script src="js/soilMoistureService.js?v=11.54"></script>
+  <script src="js/tapoService.js?v=11.54"></script>
+  <script src="js/radarService.js?v=11.54"></script>
+  <script src="js/app.js?v=11.54"></script>
 </body>
 </html>
